@@ -382,7 +382,8 @@ function getOverlayStyles() {
       border-bottom: 1px solid #e5e5e5;
       display: flex; justify-content: space-between; align-items: center;
     }
-    .cd-modal-header h2 { margin: 0; font-size: 18px; font-weight: 600; color: #2d3b45; }
+    .cd-modal-header h2 { margin: 0; font-size: 18px; font-weight: 600; color: #2d3b45; display: flex; align-items: center; gap: 10px; }
+    .cd-modal-header h2 img { width: 28px; height: 28px; border-radius: 5px; }
     .cd-close-btn {
       background: none; border: none; font-size: 24px;
       cursor: pointer; color: #6b7b8d; padding: 0; line-height: 1;
@@ -393,10 +394,10 @@ function getOverlayStyles() {
       display: flex; gap: 12px; align-items: center;
     }
     .cd-controls button {
-      background: none; border: none; color: #0374B5;
+      background: none; border: none; color: #e82429;
       cursor: pointer; font-size: 13px; padding: 0; text-decoration: underline;
     }
-    .cd-controls button:hover { color: #025a8e; }
+    .cd-controls button:hover { color: #c51f23; }
     .cd-course-list { flex: 1; overflow-y: auto; padding: 8px 24px; }
     .cd-course-item {
       display: flex; align-items: center;
@@ -405,7 +406,7 @@ function getOverlayStyles() {
     .cd-course-item:last-child { border-bottom: none; }
     .cd-course-item input[type="checkbox"] {
       margin-right: 12px; width: 16px; height: 16px;
-      cursor: pointer; accent-color: #0374B5;
+      cursor: pointer; accent-color: #e82429;
     }
     .cd-course-item label { cursor: pointer; flex: 1; }
     .cd-course-name { font-size: 14px; font-weight: 500; color: #2d3b45; }
@@ -415,17 +416,24 @@ function getOverlayStyles() {
       display: flex; justify-content: space-between; align-items: center;
     }
     .cd-download-btn {
-      background: #0374B5; color: #fff; border: none; border-radius: 6px;
+      background: #e82429; color: #fff; border: none; border-radius: 6px;
       padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer;
     }
-    .cd-download-btn:hover { background: #025a8e; }
+    .cd-download-btn:hover { background: #c51f23; }
     .cd-download-btn:disabled { background: #ccc; cursor: not-allowed; }
     .cd-selected-count { font-size: 13px; color: #6b7b8d; }
     .cd-progress { padding: 16px 24px; border-top: 1px solid #e5e5e5; font-size: 13px; color: #2d3b45; }
     .cd-progress-bar-bg { background: #e5e5e5; border-radius: 4px; height: 8px; margin-top: 8px; overflow: hidden; }
-    .cd-progress-bar { background: #0374B5; height: 100%; border-radius: 4px; transition: width 0.3s; width: 0%; }
+    .cd-progress-bar { background: #e82429; height: 100%; border-radius: 4px; transition: width 0.3s; width: 0%; }
     .cd-progress-status { margin-top: 6px; font-size: 12px; color: #6b7b8d; }
     .cd-loading { padding: 40px 24px; text-align: center; color: #6b7b8d; font-size: 14px; }
+    .cd-github-footer {
+      padding: 10px 24px 14px; text-align: center;
+      font-size: 11px; color: #999; line-height: 1.5;
+      border-top: 1px solid #e5e5e5;
+    }
+    .cd-github-footer a { color: #e82429; text-decoration: none; }
+    .cd-github-footer a:hover { text-decoration: underline; }
   `;
 }
 
@@ -442,7 +450,7 @@ async function openCourseSelector() {
   overlay.innerHTML = `
     <div class="cd-modal">
       <div class="cd-modal-header">
-        <h2>Canvas Course Downloader</h2>
+        <h2><img src="${chrome.runtime.getURL("icons/icon-128.png")}" alt="">Canvas Course Downloader</h2>
         <button class="cd-close-btn" id="cd-close">&times;</button>
       </div>
       <div class="cd-loading" id="cd-loading">Loading courses...</div>
@@ -459,6 +467,10 @@ async function openCourseSelector() {
         <div id="cd-progress-text">Downloading...</div>
         <div class="cd-progress-bar-bg"><div class="cd-progress-bar" id="cd-progress-bar"></div></div>
         <div class="cd-progress-status" id="cd-progress-status"></div>
+      </div>
+      <div class="cd-github-footer">
+        Free &amp; open source on <a href="https://github.com/jasp-nerd/canvas-course-downloader" target="_blank">GitHub</a><br>
+        Enjoying it? A <a href="https://github.com/jasp-nerd/canvas-course-downloader" target="_blank">star</a> would mean a lot!
       </div>
     </div>`;
 
@@ -579,7 +591,7 @@ function injectButton() {
     btn.id = "canvas-downloader-btn";
     btn.textContent = "Download Course Content";
     btn.style.cssText = `
-      background: #0374B5; color: #fff; border: none; border-radius: 6px;
+      background: #e82429; color: #fff; border: none; border-radius: 6px;
       padding: 6px 14px; font-size: 14px; cursor: pointer;
       margin-left: 15px; font-family: inherit; font-weight: 600;
     `;
@@ -602,7 +614,7 @@ function injectButton() {
     btn.id = "canvas-downloader-home-btn";
     btn.textContent = "Download Courses";
     btn.style.cssText = `
-      background: #0374B5; color: #fff; border: none; border-radius: 6px;
+      background: #e82429; color: #fff; border: none; border-radius: 6px;
       padding: 8px 16px; font-size: 14px; font-weight: 600;
       cursor: pointer; margin-left: 15px; margin-bottom: 10px; font-family: inherit;
     `;

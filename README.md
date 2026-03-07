@@ -5,7 +5,7 @@
 <h1 align="center">Canvas Course Downloader</h1>
 
 <p align="center">
-  <strong>A browser extension that bulk-downloads everything from your Canvas LMS courses with one click.</strong><br>
+  <strong>A free, open-source browser extension that bulk-downloads everything from your Canvas LMS courses with one click.</strong><br>
   <sub>Works on Chrome, Edge, Firefox, Brave, and all Chromium-based browsers.</sub>
 </p>
 

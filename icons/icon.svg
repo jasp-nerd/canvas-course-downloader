@@ -1,23 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
-  <!-- Background circle -->
-  <circle cx="64" cy="64" r="60" fill="#0374B5"/>
-  <circle cx="64" cy="64" r="56" fill="#0589D0"/>
-
-  <!-- Document / page shape -->
-  <rect x="38" y="28" width="52" height="64" rx="4" fill="white" opacity="0.95"/>
-  <rect x="38" y="28" width="52" height="64" rx="4" fill="none" stroke="white" stroke-width="1"/>
-
-  <!-- Lines on document -->
-  <rect x="48" y="40" width="32" height="3" rx="1.5" fill="#0374B5" opacity="0.3"/>
-  <rect x="48" y="48" width="24" height="3" rx="1.5" fill="#0374B5" opacity="0.3"/>
-  <rect x="48" y="56" width="28" height="3" rx="1.5" fill="#0374B5" opacity="0.3"/>
-  <rect x="48" y="64" width="20" height="3" rx="1.5" fill="#0374B5" opacity="0.3"/>
-
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <!-- Rounded square background -->
+  <rect x="5" y="5" width="190" height="190" rx="32" ry="32" fill="#051c31"/>
+  <!-- Folder back -->
+  <path d="m30 145v-90c0-5.92 4.69-10.05 8.98-10.05h34c5.37 0 7.98 4.31 9.98 7.31 2.13 3.27 4.29 4.76 8.82 4.76h55c6.15 0 9.11 5.32 9.11 9.4v72l-7.04 15.39h-110.3c-5.05 0-8.52-5.23-8.52-8.75z" fill="#0a2e4d" stroke="#031220" stroke-miterlimit="10" stroke-width="3.7"/>
+  <!-- Folder inner panel -->
+  <path d="m40 142v-72c0-2.86 2.12-4.13 4.09-4.13h100c2.7 0 4.06 2.43 4.06 4.49v71.64h-108.2z" fill="#1a3a55"/>
+  <!-- Folder front -->
+  <path d="m168 68h-51c-5.06 0-7.41 2.58-9.83 5.33-2.43 2.75-4.4 3.85-9.29 3.85h-39c-5.41 0-8.56 5.46-9.38 9.54l-16.5 58c-1.06 5.15 2.83 10.3 8.64 10.3h108c5.46 0 8.65-4.65 9.43-8.83l17.5-67c1.66-5.65-1.94-11.15-8-11.15z" fill="#e82429" stroke="#031220" stroke-miterlimit="10" stroke-width="3.7"/>
+  <!-- Folder shadow -->
+  <path d="m175 73c-13 24-38 55-78 66-18 5.2-35 5.3-57.5 3.7-1.66-0.17-2.76 3.35-1.27 6.54 0.94 1.66 3.06 2.44 5.4 2.44l108.6-0.04c4.85-0.21 8.12-4.25 9.14-9.31l17-65.6c1.02-2.96 0.37-4.66-0.81-5.68z" fill="#031220" opacity=".3"/>
+  <!-- Folder highlight -->
+  <path d="m169 69.5h-50c-4.65 0-7.61 3.6-9.54 5.58-2.7 2.7-4.87 4.55-9.76 4.55l-38 2.43c-5.41 0-7.58 3.6-8.93 8.93l-16.3 53.5-1.93 0.37 14.9-58c1.53-5.19 5.78-8.71 9.67-8.71h38.5c5.76 0 8.51-3.19 10.4-5.54 2.26-2.66 4.19-4.6 9.8-4.6h50c3.61 0 5.54 1.28 6.55 3.78-0.89-1.28-2.38-2.33-5.65-2.33z" fill="#FDF3D8" opacity=".4"/>
+  <!-- Download bar -->
+  <path d="m125 132h-40c-2.02 0-2.14 1.5-2.14 2.6 0 1.2 0.62 2.7 2.02 2.7h40.2c1.85 0 2.36-1.25 2.36-2.7 0-1.5-0.8-2.6-2.4-2.6z" fill="white"/>
   <!-- Download arrow -->
-  <g transform="translate(64, 88)">
-    <rect x="-3" y="-20" width="6" height="16" rx="2" fill="white"/>
-    <polygon points="-10,0 0,12 10,0" fill="white"/>
-    <!-- Base line -->
-    <rect x="-14" y="14" width="28" height="3" rx="1.5" fill="white"/>
-  </g>
+  <path d="m121 109c-1.4-1.5-3.2-0.75-4.15 0.43l-7.6 7.55v-25.3c0-2.33-1.46-2.9-2.75-2.9-1.7 0-3.07 1-3.07 2.9v24.85l-6.9-7.37c-1.37-1.63-3.3-1.8-4.4-0.47-1.23 1.37-0.73 3.6 0.45 4.7l11.75 12.3c1.33 1.2 2.8 0.92 3.98-0.31l12.5-12.45c1.28-1.28 1.2-2.88 0.17-3.94z" fill="white"/>
 </svg>

@@ -10,8 +10,19 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       margin: 0;
     }
-    h2 {
-      margin: 0 0 12px;
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .header img {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+    }
+    .header h2 {
+      margin: 0;
       font-size: 16px;
       color: #2d3b45;
     }
@@ -25,7 +36,7 @@
     button {
       width: 100%;
       padding: 10px;
-      background-color: #0374B5;
+      background-color: #e82429;
       color: white;
       border: none;
       border-radius: 6px;
@@ -34,14 +45,35 @@
       font-size: 14px;
       font-weight: 600;
     }
-    button:hover { background-color: #025a8e; }
+    button:hover { background-color: #c51f23; }
     button:disabled { background-color: #ccc; cursor: not-allowed; }
+    .footer {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+      font-size: 11px;
+      color: #888;
+      text-align: center;
+      line-height: 1.6;
+    }
+    .footer a {
+      color: #e82429;
+      text-decoration: none;
+    }
+    .footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <h2>Canvas Course Downloader</h2>
+  <div class="header">
+    <img src="icons/icon-128.png" alt="Canvas Course Downloader">
+    <h2>Canvas Course Downloader</h2>
+  </div>
   <div id="status">Checking page...</div>
   <button id="downloadBtn" disabled>Download Course Content</button>
+  <div class="footer">
+    Open source on <a href="https://github.com/jasp-nerd/canvas-course-downloader" target="_blank">GitHub</a><br>
+    Like it? Give us a <a href="https://github.com/jasp-nerd/canvas-course-downloader" target="_blank">star</a>!
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>
