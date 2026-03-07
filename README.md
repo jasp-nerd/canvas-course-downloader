@@ -43,9 +43,10 @@ All courses neatly organized into folders:
 
 ![Downloaded courses organized by folder](screenshots/bulk-download-result.png)
 
-<!-- Add more screenshots of the extension in action here -->
-<!-- ![Course page with download button](screenshots/course-page.png) -->
-<!-- ![Multi-course selector](screenshots/course-selector.png) -->
+### Multi-Course Selector
+Select which courses to download directly from your Canvas dashboard:
+
+![Multi-course selector overlay on Canvas dashboard](screenshots/course-selector.png)
 
 ## Installation
 
