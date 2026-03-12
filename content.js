@@ -95,6 +95,142 @@ function showToast(message, type = "info") {
 }
 
 // ---------------------------------------------------------------------------
+// Download Progress Panel
+// ---------------------------------------------------------------------------
+
+let downloadPanel = null;
+
+function createDownloadPanel() {
+  if (downloadPanel) return downloadPanel;
+
+  const brand = getCanvasBrandColor();
+
+  const panel = document.createElement("div");
+  panel.id = "cd-download-panel";
+  panel.style.cssText = `
+    position: fixed; bottom: 24px; right: 24px; z-index: 100002;
+    width: 360px; background: #fff; border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+  `;
+
+  panel.innerHTML = `
+    <div id="cd-panel-header" style="padding:14px 16px;background:${brand};color:#fff;display:flex;justify-content:space-between;align-items:center;">
+      <span id="cd-panel-title" style="font-weight:600;font-size:14px;">Downloading...</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button id="cd-panel-minimize" style="background:none;border:none;color:#fff;cursor:pointer;font-size:18px;padding:0;line-height:1;" title="Minimize">&#8722;</button>
+        <button id="cd-panel-close" style="background:none;border:none;color:#fff;cursor:pointer;font-size:18px;padding:0;line-height:1;" title="Close">&times;</button>
+      </div>
+    </div>
+    <div id="cd-panel-body">
+      <div style="padding:12px 16px;">
+        <div id="cd-panel-current" style="font-size:12px;color:#6b7b8d;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        <div style="background:#e5e5e5;border-radius:4px;height:6px;overflow:hidden;">
+          <div id="cd-panel-bar" style="background:${brand};height:100%;border-radius:4px;transition:width 0.3s;width:0%;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:#6b7b8d;">
+          <span id="cd-panel-stats"></span>
+          <span id="cd-panel-pct"></span>
+        </div>
+      </div>
+      <div id="cd-panel-actions" style="padding:0 16px 12px;display:flex;gap:8px;">
+        <button id="cd-panel-cancel" style="background:none;border:1px solid #ddd;border-radius:4px;padding:6px 12px;font-size:12px;cursor:pointer;color:#666;">Cancel</button>
+      </div>
+      <div id="cd-panel-failed-section" style="display:none;padding:0 16px 12px;">
+        <details>
+          <summary style="font-size:12px;color:#cf222e;cursor:pointer;font-weight:500;">Failed files</summary>
+          <div id="cd-panel-failed-list" style="max-height:120px;overflow-y:auto;margin-top:4px;font-size:11px;color:#666;"></div>
+        </details>
+      </div>
+      <div id="cd-panel-done" style="display:none;padding:12px 16px;text-align:center;">
+        <div id="cd-panel-summary" style="font-size:14px;font-weight:500;color:#2d3b45;"></div>
+        <div style="margin-top:8px;display:flex;gap:8px;justify-content:center;">
+          <button id="cd-panel-retry" style="display:none;background:${brand};color:#fff;border:none;border-radius:4px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:500;">Retry Failed</button>
+          <button id="cd-panel-dismiss" style="background:none;border:1px solid #ddd;border-radius:4px;padding:6px 14px;font-size:12px;cursor:pointer;color:#666;">Dismiss</button>
+        </div>
+      </div>
+    </div>`;
+
+  document.body.appendChild(panel);
+  downloadPanel = panel;
+
+  // Minimize toggle
+  let minimized = false;
+  panel.querySelector("#cd-panel-minimize").addEventListener("click", () => {
+    minimized = !minimized;
+    panel.querySelector("#cd-panel-body").style.display = minimized ? "none" : "";
+    panel.querySelector("#cd-panel-minimize").innerHTML = minimized ? "&#43;" : "&#8722;";
+  });
+
+  // Close
+  panel.querySelector("#cd-panel-close").addEventListener("click", () => {
+    panel.remove();
+    downloadPanel = null;
+  });
+
+  // Cancel
+  panel.querySelector("#cd-panel-cancel").addEventListener("click", () => {
+    chrome.runtime.sendMessage({ type: "CANCEL_DOWNLOADS" });
+  });
+
+  // Retry
+  panel.querySelector("#cd-panel-retry").addEventListener("click", () => {
+    chrome.runtime.sendMessage({ type: "RETRY_FAILED" });
+    panel.querySelector("#cd-panel-done").style.display = "none";
+    panel.querySelector("#cd-panel-actions").style.display = "flex";
+    panel.querySelector("#cd-panel-failed-section").style.display = "none";
+  });
+
+  // Dismiss
+  panel.querySelector("#cd-panel-dismiss").addEventListener("click", () => {
+    panel.remove();
+    downloadPanel = null;
+  });
+
+  return panel;
+}
+
+function updateDownloadPanel(status) {
+  const panel = downloadPanel || createDownloadPanel();
+  const { total, completed, failed, queued, downloading, currentFile, failedFiles, done, cancelled } = status;
+
+  const pct = total > 0 ? Math.round(((completed + failed) / total) * 100) : 0;
+
+  panel.querySelector("#cd-panel-title").textContent =
+    done ? (cancelled ? "Cancelled" : failed > 0 ? "Completed with errors" : "Download complete!") : "Downloading...";
+  panel.querySelector("#cd-panel-bar").style.width = `${pct}%`;
+  panel.querySelector("#cd-panel-pct").textContent = `${pct}%`;
+  panel.querySelector("#cd-panel-stats").textContent = `${completed} done \u00B7 ${failed} failed \u00B7 ${queued + downloading} remaining`;
+
+  if (currentFile && !done) {
+    const el = panel.querySelector("#cd-panel-current");
+    el.textContent = currentFile;
+    el.title = currentFile;
+  }
+
+  if (done) {
+    panel.querySelector("#cd-panel-actions").style.display = "none";
+    panel.querySelector("#cd-panel-done").style.display = "block";
+    panel.querySelector("#cd-panel-summary").textContent =
+      `${completed} of ${total} files downloaded${failed > 0 ? `, ${failed} failed` : ""}`;
+    panel.querySelector("#cd-panel-retry").style.display = failed > 0 ? "" : "none";
+
+    if (failedFiles.length > 0) {
+      panel.querySelector("#cd-panel-failed-section").style.display = "";
+      panel.querySelector("#cd-panel-failed-list").innerHTML = failedFiles
+        .map((f) => `<div style="padding:2px 0;border-bottom:1px solid #f0f0f0;">${f.filename} &mdash; <span style="color:#cf222e;">${f.error || "Unknown error"}</span></div>`)
+        .join("");
+    } else {
+      panel.querySelector("#cd-panel-failed-section").style.display = "none";
+    }
+  } else {
+    panel.querySelector("#cd-panel-actions").style.display = "flex";
+    panel.querySelector("#cd-panel-done").style.display = "none";
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Canvas API Helpers
 // ---------------------------------------------------------------------------
 
@@ -872,8 +1008,12 @@ new MutationObserver(() => {
   }
 }).observe(document, { subtree: true, childList: true });
 
-// Listen for messages from the popup
+// Listen for messages from the popup and background
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+  if (request.type === "DOWNLOAD_STATUS") {
+    updateDownloadPanel(request.payload);
+    return;
+  }
   if (request.action === "trigger_download") {
     downloadCurrentCourse();
     sendResponse({ status: "started" });
@@ -883,4 +1023,10 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   } else if (request.action === "get_status") {
     sendResponse({ isCanvas: isCanvas(), courseId: getCourseId(), isHomepage: isCanvasHomepage() });
   }
+});
+
+// Check if downloads are already in progress (e.g. after SPA navigation)
+chrome.runtime.sendMessage({ type: "GET_DOWNLOAD_STATUS" }, (status) => {
+  if (chrome.runtime.lastError || !status) return;
+  if (status.total > 0 && !status.done) updateDownloadPanel(status);
 });
