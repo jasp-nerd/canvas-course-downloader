@@ -308,6 +308,28 @@ async function fetchAllCourses() {
 }
 
 // ---------------------------------------------------------------------------
+// Settings
+// ---------------------------------------------------------------------------
+
+const SETTING_DEFAULTS = {
+  contentTypes: {
+    files: true, pages: true, assignments: true, discussions: true,
+    announcements: true, modules: true, syllabus: true, linkedFiles: true,
+  },
+  conflictAction: "uniquify",
+  throttleMs: 250,
+  folderPrefix: "",
+  preset: "full-archive",
+};
+
+/** Loads user settings from chrome.storage.sync, falling back to defaults. */
+function loadSettings() {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get(SETTING_DEFAULTS, (s) => resolve(s));
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Course Content Fetcher
 // ---------------------------------------------------------------------------
 
@@ -320,6 +342,8 @@ async function fetchAllCourses() {
  * @param {function} onProgress - Optional callback for UI status updates
  */
 async function downloadCourse(courseId, courseName, domain, onProgress) {
+  const settings = await loadSettings();
+  const types = settings.contentTypes;
   const log = (msg) => {
     console.log(`[Canvas Downloader] [${courseName}] ${msg}`);
     if (onProgress) onProgress(msg);
@@ -330,22 +354,25 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
   const seenFileIds = new Set();
 
   // --- Files & Folders -------------------------------------------------------
-  log("Fetching files...");
-  const folders = await fetchAllPages(api("folders?per_page=100"));
-  const folderPathById = {};
-  folders.forEach((f) => (folderPathById[f.id] = f.full_name || f.name));
+  let files = [];
+  if (types.files) {
+    log("Fetching files...");
+    const folders = await fetchAllPages(api("folders?per_page=100"));
+    const folderPathById = {};
+    folders.forEach((f) => (folderPathById[f.id] = f.full_name || f.name));
 
-  const files = await fetchAllPages(api("files?per_page=100"));
+    files = await fetchAllPages(api("files?per_page=100"));
 
-  files.forEach((file) => {
-    let folder = folderPathById[file.folder_id] || "";
-    if (folder.startsWith("course files")) folder = folder.slice("course files".length);
-    if (folder && !folder.endsWith("/")) folder += "/";
-    if (folder.startsWith("/")) folder = folder.slice(1);
+    files.forEach((file) => {
+      let folder = folderPathById[file.folder_id] || "";
+      if (folder.startsWith("course files")) folder = folder.slice("course files".length);
+      if (folder && !folder.endsWith("/")) folder += "/";
+      if (folder.startsWith("/")) folder = folder.slice(1);
 
-    seenFileIds.add(String(file.id));
-    filesToDownload.push({ url: file.url, filename: file.display_name, path: `Files/${folder}` });
-  });
+      seenFileIds.add(String(file.id));
+      filesToDownload.push({ url: file.url, filename: file.display_name, path: `Files/${folder}` });
+    });
+  }
 
   // --- Hidden file extraction ------------------------------------------------
   /** Scans an HTML string for /files/ links and adds any not already queued. */
@@ -390,146 +417,163 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
   }
 
   // --- Pages -----------------------------------------------------------------
-  log("Fetching pages...");
-  const pages = await fetchAllPages(api("pages?per_page=100"));
+  let pages = [];
+  if (types.pages) {
+    log("Fetching pages...");
+    pages = await fetchAllPages(api("pages?per_page=100"));
 
-  for (const meta of pages) {
-    try {
-      const res = await fetchWithRetry(`${domain}/api/v1/courses/${courseId}/pages/${meta.url}`);
-      if (!res.ok) continue;
-      const page = await res.json();
+    for (const meta of pages) {
+      try {
+        const res = await fetchWithRetry(`${domain}/api/v1/courses/${courseId}/pages/${meta.url}`);
+        if (!res.ok) continue;
+        const page = await res.json();
 
-      filesToDownload.push({
-        url: toHtmlDataUri(page.title, page.body || ""),
-        filename: `${page.url}.html`,
-        path: "Pages/",
-      });
+        filesToDownload.push({
+          url: toHtmlDataUri(page.title, page.body || ""),
+          filename: `${page.url}.html`,
+          path: "Pages/",
+        });
 
-      if (page.body) await extractLinkedFiles(page.body, `Page: ${page.title}`);
-    } catch (err) {
-      console.warn(`[Canvas Downloader] Could not fetch page ${meta.url}:`, err);
+        if (types.linkedFiles && page.body) await extractLinkedFiles(page.body, `Page: ${page.title}`);
+      } catch (err) {
+        console.warn(`[Canvas Downloader] Could not fetch page ${meta.url}:`, err);
+      }
     }
   }
 
   // --- Assignments -----------------------------------------------------------
-  log("Fetching assignments...");
-  const assignments = await fetchAllPages(api("assignments?per_page=100"));
+  let assignments = [];
+  if (types.assignments) {
+    log("Fetching assignments...");
+    assignments = await fetchAllPages(api("assignments?per_page=100"));
 
-  for (const a of assignments) {
-    let body = `<h2><a href="${a.html_url}">${a.name}</a></h2>`;
-    if (a.due_at) body += `<p><strong>Due:</strong> ${new Date(a.due_at).toLocaleString()}</p>`;
-    if (a.description) {
-      body += `<div>${a.description}</div>`;
-      await extractLinkedFiles(a.description, `Assignment: ${a.name}`);
+    for (const a of assignments) {
+      let body = `<h2><a href="${a.html_url}">${a.name}</a></h2>`;
+      if (a.due_at) body += `<p><strong>Due:</strong> ${new Date(a.due_at).toLocaleString()}</p>`;
+      if (a.description) {
+        body += `<div>${a.description}</div>`;
+        if (types.linkedFiles) await extractLinkedFiles(a.description, `Assignment: ${a.name}`);
+      }
+      const safeName = a.name.replace(/[/\\?%*:|"<>]/g, "-").substring(0, 100);
+      filesToDownload.push({
+        url: toHtmlDataUri(a.name, body),
+        filename: `${safeName}.html`,
+        path: "Assignments/",
+      });
     }
-    const safeName = a.name.replace(/[/\\?%*:|"<>]/g, "-").substring(0, 100);
-    filesToDownload.push({
-      url: toHtmlDataUri(a.name, body),
-      filename: `${safeName}.html`,
-      path: "Assignments/",
-    });
   }
 
   // --- Announcements ---------------------------------------------------------
-  log("Fetching announcements...");
-  const announcements = await fetchAllPages(api("discussion_topics?only_announcements=true&per_page=100"));
+  let announcements = [];
+  if (types.announcements) {
+    log("Fetching announcements...");
+    announcements = await fetchAllPages(api("discussion_topics?only_announcements=true&per_page=100"));
 
-  for (const a of announcements) {
-    let body = `<h2><a href="${a.html_url}">${a.title}</a></h2>`;
-    if (a.posted_at) body += `<p><strong>Posted:</strong> ${new Date(a.posted_at).toLocaleString()}</p>`;
-    if (a.message) {
-      body += `<div>${a.message}</div>`;
-      await extractLinkedFiles(a.message, `Announcement: ${a.title}`);
+    for (const a of announcements) {
+      let body = `<h2><a href="${a.html_url}">${a.title}</a></h2>`;
+      if (a.posted_at) body += `<p><strong>Posted:</strong> ${new Date(a.posted_at).toLocaleString()}</p>`;
+      if (a.message) {
+        body += `<div>${a.message}</div>`;
+        if (types.linkedFiles) await extractLinkedFiles(a.message, `Announcement: ${a.title}`);
+      }
+      const safeName = a.title.replace(/[/\\?%*:|"<>]/g, "-").substring(0, 100);
+      filesToDownload.push({
+        url: toHtmlDataUri(a.title, body),
+        filename: `${safeName}.html`,
+        path: "Announcements/",
+      });
     }
-    const safeName = a.title.replace(/[/\\?%*:|"<>]/g, "-").substring(0, 100);
-    filesToDownload.push({
-      url: toHtmlDataUri(a.title, body),
-      filename: `${safeName}.html`,
-      path: "Announcements/",
-    });
   }
 
   // --- Discussions -----------------------------------------------------------
-  log("Fetching discussions...");
-  const allTopics = await fetchAllPages(api("discussion_topics?per_page=100"));
-  const discussions = allTopics.filter((d) => !d.is_announcement);
+  let discussions = [];
+  if (types.discussions) {
+    log("Fetching discussions...");
+    const allTopics = await fetchAllPages(api("discussion_topics?per_page=100"));
+    discussions = allTopics.filter((d) => !d.is_announcement);
 
-  for (const d of discussions) {
-    let body = `<h2><a href="${d.html_url}">${d.title}</a></h2>`;
-    if (d.user_name) body += `<p><strong>Author:</strong> ${d.user_name}</p>`;
-    if (d.posted_at) body += `<p><strong>Posted:</strong> ${new Date(d.posted_at).toLocaleString()}</p>`;
-    if (d.message) {
-      body += `<div>${d.message}</div>`;
-      await extractLinkedFiles(d.message, `Discussion: ${d.title}`);
+    for (const d of discussions) {
+      let body = `<h2><a href="${d.html_url}">${d.title}</a></h2>`;
+      if (d.user_name) body += `<p><strong>Author:</strong> ${d.user_name}</p>`;
+      if (d.posted_at) body += `<p><strong>Posted:</strong> ${new Date(d.posted_at).toLocaleString()}</p>`;
+      if (d.message) {
+        body += `<div>${d.message}</div>`;
+        if (types.linkedFiles) await extractLinkedFiles(d.message, `Discussion: ${d.title}`);
+      }
+      const safeName = d.title.replace(/[/\\?%*:|"<>]/g, "-").substring(0, 100);
+      filesToDownload.push({
+        url: toHtmlDataUri(d.title, body),
+        filename: `${safeName}.html`,
+        path: "Discussions/",
+      });
     }
-    const safeName = d.title.replace(/[/\\?%*:|"<>]/g, "-").substring(0, 100);
-    filesToDownload.push({
-      url: toHtmlDataUri(d.title, body),
-      filename: `${safeName}.html`,
-      path: "Discussions/",
-    });
   }
 
   // --- Modules ---------------------------------------------------------------
-  log("Fetching modules...");
-  const modules = await fetchAllPages(api("modules?per_page=100"));
+  let modules = [];
+  if (types.modules) {
+    log("Fetching modules...");
+    modules = await fetchAllPages(api("modules?per_page=100"));
 
-  let modulesBody = "";
-  for (const mod of modules) {
-    modulesBody += `<h2>${mod.name}</h2><ul>`;
-    const items = await fetchAllPages(api(`modules/${mod.id}/items?per_page=100`));
+    let modulesBody = "";
+    for (const mod of modules) {
+      modulesBody += `<h2>${mod.name}</h2><ul>`;
+      const items = await fetchAllPages(api(`modules/${mod.id}/items?per_page=100`));
 
-    for (const item of items) {
-      const label = item.html_url ? `<a href="${item.html_url}">${item.title}</a>` : item.title;
-      modulesBody += `<li>${label} (${item.type})</li>`;
+      for (const item of items) {
+        const label = item.html_url ? `<a href="${item.html_url}">${item.title}</a>` : item.title;
+        modulesBody += `<li>${label} (${item.type})</li>`;
 
-      if (item.type === "File" && item.url) {
-        try {
-          const res = await fetchWithRetry(item.url);
-          if (!res.ok) continue;
-          const data = await res.json();
+        if (item.type === "File" && item.url) {
+          try {
+            const res = await fetchWithRetry(item.url);
+            if (!res.ok) continue;
+            const data = await res.json();
 
-          const fileId = String(data.id || "");
-          if (fileId && !seenFileIds.has(fileId)) {
-            seenFileIds.add(fileId);
-            const safeModName = mod.name.replace(/[/\\?%*:|"<>]/g, "-");
-            filesToDownload.push({
-              url: data.url,
-              filename: data.display_name || item.title,
-              path: `Modules/${safeModName}/`,
-            });
+            const fileId = String(data.id || "");
+            if (fileId && !seenFileIds.has(fileId)) {
+              seenFileIds.add(fileId);
+              const safeModName = mod.name.replace(/[/\\?%*:|"<>]/g, "-");
+              filesToDownload.push({
+                url: data.url,
+                filename: data.display_name || item.title,
+                path: `Modules/${safeModName}/`,
+              });
+            }
+          } catch (err) {
+            console.error(`[Canvas Downloader] Module file error (${item.title}):`, err);
           }
-        } catch (err) {
-          console.error(`[Canvas Downloader] Module file error (${item.title}):`, err);
         }
       }
+      modulesBody += "</ul>";
     }
-    modulesBody += "</ul>";
+
+    filesToDownload.push({
+      url: toHtmlDataUri("Modules", modulesBody),
+      filename: "Modules.html",
+      path: "",
+    });
   }
 
-  filesToDownload.push({
-    url: toHtmlDataUri("Modules", modulesBody),
-    filename: "Modules.html",
-    path: "",
-  });
-
   // --- Syllabus --------------------------------------------------------------
-  log("Fetching syllabus...");
-  try {
-    const res = await fetchWithRetry(`${domain}/api/v1/courses/${courseId}?include[]=syllabus_body`);
-    if (res.ok) {
-      const data = await res.json();
-      if (data.syllabus_body) {
-        await extractLinkedFiles(data.syllabus_body, "Syllabus");
-        filesToDownload.push({
-          url: toHtmlDataUri(`Syllabus — ${courseName}`, data.syllabus_body),
-          filename: "Syllabus.html",
-          path: "",
-        });
+  if (types.syllabus) {
+    log("Fetching syllabus...");
+    try {
+      const res = await fetchWithRetry(`${domain}/api/v1/courses/${courseId}?include[]=syllabus_body`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.syllabus_body) {
+          if (types.linkedFiles) await extractLinkedFiles(data.syllabus_body, "Syllabus");
+          filesToDownload.push({
+            url: toHtmlDataUri(`Syllabus — ${courseName}`, data.syllabus_body),
+            filename: "Syllabus.html",
+            path: "",
+          });
+        }
       }
+    } catch (err) {
+      console.error("[Canvas Downloader] Syllabus error:", err);
     }
-  } catch (err) {
-    console.error("[Canvas Downloader] Syllabus error:", err);
   }
 
   // --- Export manifest -------------------------------------------------------
@@ -576,7 +620,16 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
 
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(
-      { type: "START_DOWNLOAD", payload: { files: filesToDownload, courseName } },
+      {
+        type: "START_DOWNLOAD",
+        payload: {
+          files: filesToDownload,
+          courseName,
+          conflictAction: settings.conflictAction,
+          throttleMs: settings.throttleMs,
+          folderPrefix: settings.folderPrefix,
+        },
+      },
       (response) => {
         if (chrome.runtime.lastError) {
           console.error("[Canvas Downloader] Background error:", chrome.runtime.lastError);

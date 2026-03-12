@@ -14,6 +14,7 @@ let nextJobId = 0;
 let isProcessing = false;
 let cancelled = false;
 let sourceTabId = null;
+let downloadSettings = { conflictAction: "uniquify", throttleMs: 250, folderPrefix: "" };
 
 // Maps Chrome download IDs → job objects for onChanged tracking
 const chromeIdToJob = new Map();
@@ -96,7 +97,7 @@ chrome.downloads.onChanged.addListener((delta) => {
 // ---------------------------------------------------------------------------
 
 function scheduleNext() {
-  setTimeout(processQueue, 250);
+  setTimeout(processQueue, downloadSettings.throttleMs || 250);
 }
 
 function processQueue() {
@@ -125,8 +126,9 @@ function processQueue() {
   let fullPath = `${nextJob.path}${sanitizedName}`;
   if (fullPath.startsWith("/")) fullPath = fullPath.substring(1);
 
+  const conflictAction = downloadSettings.conflictAction === "skip" ? "uniquify" : downloadSettings.conflictAction;
   chrome.downloads.download(
-    { url: nextJob.url, filename: fullPath, conflictAction: "uniquify" },
+    { url: nextJob.url, filename: fullPath, conflictAction },
     (downloadId) => {
       if (chrome.runtime.lastError || !downloadId) {
         nextJob.state = STATE.FAILED;
@@ -164,8 +166,15 @@ chrome.commands.onCommand.addListener((command) => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "START_DOWNLOAD") {
-    const { files, courseName } = message.payload;
+    const { files, courseName, conflictAction, throttleMs, folderPrefix } = message.payload;
     const safeName = courseName.replace(/[/\\?%*:|"<>]/g, "-");
+
+    // Store settings for this batch
+    downloadSettings = {
+      conflictAction: conflictAction || "uniquify",
+      throttleMs: throttleMs || 250,
+      folderPrefix: (folderPrefix || "").replace(/[/\\?%*:|"<>]/g, "-"),
+    };
 
     // Reset if previous batch is done
     const prev = getStatus();
@@ -178,11 +187,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     sourceTabId = sender.tab?.id || sourceTabId;
 
+    const prefix = downloadSettings.folderPrefix ? `${downloadSettings.folderPrefix}/` : "";
     const newJobs = files.map((file) => ({
       id: nextJobId++,
       url: file.url,
       filename: file.filename,
-      path: `${safeName}/${file.path}`.replace(/\/+/g, "/"),
+      path: `${prefix}${safeName}/${file.path}`.replace(/\/+/g, "/"),
       state: STATE.QUEUED,
       chromeDownloadId: null,
       error: null,

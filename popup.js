@@ -9,6 +9,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const statusDiv = document.getElementById("status");
   const downloadBtn = document.getElementById("downloadBtn");
 
+  document.getElementById("settingsLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    chrome.runtime.openOptionsPage();
+  });
+
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     chrome.tabs.sendMessage(tab.id, { action: "get_status" }, (response) => {
       if (chrome.runtime.lastError || !response) {
