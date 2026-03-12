@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Canvas Course Downloader",
   "description": "One-click bulk download of all files, assignments, modules, pages, syllabus, discussions, and announcements from Canvas LMS courses.",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "browser_specific_settings": {
     "gecko": {
       "id": "canvas-course-downloader@jasp-nerd",
@@ -31,7 +31,7 @@
       "matches": [
         "https://*/*"
       ],
-      "js": ["content.js"],
+      "js": ["jszip.min.js", "content.js"],
       "run_at": "document_idle"
     }
   ],

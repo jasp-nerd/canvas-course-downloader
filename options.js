@@ -19,6 +19,7 @@ const DEFAULTS = {
   conflictAction: "uniquify",
   throttleMs: 250,
   folderPrefix: "",
+  zipMode: false,
   incrementalMode: false,
   preset: "full-archive",
 };
@@ -87,6 +88,7 @@ function loadSettings() {
     document.getElementById("conflict").value = settings.conflictAction;
     document.getElementById("throttle").value = settings.throttleMs;
     document.getElementById("folder-prefix").value = settings.folderPrefix;
+    document.getElementById("zip-mode").checked = settings.zipMode;
     document.getElementById("incremental-mode").checked = settings.incrementalMode;
 
     // Preset highlight
@@ -104,6 +106,7 @@ function saveSettings() {
     conflictAction: document.getElementById("conflict").value,
     throttleMs: parseInt(document.getElementById("throttle").value, 10) || 250,
     folderPrefix: document.getElementById("folder-prefix").value.trim(),
+    zipMode: document.getElementById("zip-mode").checked,
     incrementalMode: document.getElementById("incremental-mode").checked,
     preset: detectPreset(),
   };

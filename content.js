@@ -298,11 +298,11 @@ async function fetchAllPages(url) {
   return results;
 }
 
-/** Returns all active courses for the current user. */
-async function fetchAllCourses() {
+/** Returns courses for the current user. */
+async function fetchAllCourses(enrollmentState = "active") {
   const domain = window.location.origin;
   const courses = await fetchAllPages(
-    `${domain}/api/v1/courses?per_page=100&enrollment_state=active&include[]=term`
+    `${domain}/api/v1/courses?per_page=100&enrollment_state=${enrollmentState}&include[]=term`
   );
   return courses.filter((c) => c.name).sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -320,6 +320,7 @@ const SETTING_DEFAULTS = {
   conflictAction: "uniquify",
   throttleMs: 250,
   folderPrefix: "",
+  zipMode: false,
   incrementalMode: false,
   preset: "full-archive",
 };
@@ -329,6 +330,79 @@ function loadSettings() {
   return new Promise((resolve) => {
     chrome.storage.sync.get(SETTING_DEFAULTS, (s) => resolve(s));
   });
+}
+
+// ---------------------------------------------------------------------------
+// ZIP Download Helper
+// ---------------------------------------------------------------------------
+
+async function downloadAsZip(files, courseName, settings, log) {
+  const zip = new JSZip();
+  const safeName = courseName.replace(/[/\\?%*:|"<>]/g, "-");
+  let completed = 0;
+  let failed = 0;
+
+  createDownloadPanel();
+
+  for (const file of files) {
+    const filePath = `${file.path}${file.filename}`;
+
+    updateDownloadPanel({
+      total: files.length, completed, failed, queued: files.length - completed - failed,
+      downloading: 1, currentFile: file.filename, failedFiles: [], done: false, cancelled: false,
+    });
+
+    try {
+      let content;
+      if (file.url.startsWith("data:")) {
+        // Decode data URI
+        const commaIdx = file.url.indexOf(",");
+        const encoded = file.url.substring(commaIdx + 1);
+        content = decodeURIComponent(encoded);
+      } else {
+        const res = await fetch(file.url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        content = await res.blob();
+      }
+      zip.file(filePath, content);
+      completed++;
+    } catch (err) {
+      console.warn(`[Canvas Downloader] ZIP: failed to fetch ${file.filename}:`, err);
+      failed++;
+    }
+  }
+
+  log("Generating ZIP file...");
+  updateDownloadPanel({
+    total: files.length, completed, failed, queued: 0,
+    downloading: 0, currentFile: "Generating ZIP...", failedFiles: [], done: false, cancelled: false,
+  });
+
+  const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 5 } });
+  const url = URL.createObjectURL(blob);
+
+  const prefix = settings.folderPrefix ? `${settings.folderPrefix.replace(/[/\\?%*:|"<>]/g, "-")}/` : "";
+  const filename = `${prefix}${safeName}.zip`;
+
+  await new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(
+      { type: "START_DOWNLOAD", payload: { files: [{ url, filename, path: "" }], courseName: "", conflictAction: settings.conflictAction, throttleMs: 0, folderPrefix: "" } },
+      (response) => {
+        if (chrome.runtime.lastError) return reject(chrome.runtime.lastError);
+        resolve(response);
+      }
+    );
+  });
+
+  // Clean up blob URL after a delay
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+
+  updateDownloadPanel({
+    total: files.length, completed, failed, queued: 0, downloading: 0,
+    currentFile: null, failedFiles: [], done: true, cancelled: false,
+  });
+
+  log(`ZIP created: ${safeName}.zip (${completed} files, ${failed} failed)`);
 }
 
 // ---------------------------------------------------------------------------
@@ -681,8 +755,12 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
     }
   }
 
-  // --- Hand off to background for downloading --------------------------------
-  log(`Queuing ${filesToDownload.length} files for download...`);
+  // --- ZIP mode or individual download handoff --------------------------------
+  log(`${filesToDownload.length} files ready.`);
+
+  if (settings.zipMode && typeof JSZip !== "undefined") {
+    return await downloadAsZip(filesToDownload, courseName, settings, log);
+  }
 
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(
@@ -759,88 +837,122 @@ function getOverlayStyles() {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     .cd-modal {
-      background: #fff; border-radius: 10px;
-      width: 520px; max-height: 80vh;
+      background: #fff; border-radius: 12px;
+      width: 560px; max-height: 80vh;
       display: flex; flex-direction: column;
       box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .cd-modal *:focus-visible {
+      outline: 2px solid ${brand}; outline-offset: 2px; border-radius: 3px;
     }
     .cd-modal-header {
       padding: 20px 24px 16px;
       border-bottom: 1px solid #e5e5e5;
       display: flex; justify-content: space-between; align-items: center;
     }
-    .cd-modal-header h2 { margin: 0; font-size: 18px; font-weight: 600; color: #2d3b45; display: flex; align-items: center; gap: 10px; }
+    .cd-modal-header h2 { margin: 0; font-size: 18px; font-weight: 700; color: #2d3b45; display: flex; align-items: center; gap: 10px; }
     .cd-modal-header h2 img { width: 28px; height: 28px; border-radius: 5px; }
     .cd-close-btn {
       background: none; border: none; font-size: 24px;
-      cursor: pointer; color: #6b7b8d; padding: 0; line-height: 1;
+      cursor: pointer; color: #6b7b8d; padding: 4px 8px; line-height: 1;
+      border-radius: 4px; transition: background 0.15s;
     }
-    .cd-close-btn:hover { color: #2d3b45; }
+    .cd-close-btn:hover { color: #2d3b45; background: #f0f0f0; }
+    .cd-tabs {
+      display: flex; border-bottom: 1px solid #e5e5e5;
+    }
+    .cd-tab {
+      flex: 1; padding: 10px 16px; font-size: 13px; font-weight: 500;
+      background: none; border: none; border-bottom: 2px solid transparent;
+      cursor: pointer; color: #6b7b8d; transition: all 0.15s;
+    }
+    .cd-tab:hover { color: #2d3b45; background: #fafafa; }
+    .cd-tab.active { color: ${brand}; border-bottom-color: ${brand}; font-weight: 600; }
     .cd-search {
       padding: 12px 24px; border-bottom: 1px solid #e5e5e5;
     }
     .cd-search input {
-      width: 100%; box-sizing: border-box; padding: 8px 12px;
-      border: 1px solid #ddd; border-radius: 6px; font-size: 13px;
-      font-family: inherit; outline: none;
+      width: 100%; box-sizing: border-box; padding: 10px 14px;
+      border: 1px solid #ddd; border-radius: 8px; font-size: 13px;
+      font-family: inherit; outline: none; transition: border-color 0.15s;
     }
-    .cd-search input:focus { border-color: ${brand}; }
+    .cd-search input:focus { border-color: ${brand}; box-shadow: 0 0 0 3px ${brand}22; }
     .cd-controls {
-      padding: 12px 24px; border-bottom: 1px solid #e5e5e5;
+      padding: 10px 24px; border-bottom: 1px solid #e5e5e5;
       display: flex; gap: 12px; align-items: center;
     }
     .cd-controls button {
       background: none; border: none; color: ${brand};
-      cursor: pointer; font-size: 13px; padding: 0; text-decoration: underline;
+      cursor: pointer; font-size: 13px; padding: 2px 0; text-decoration: underline;
     }
     .cd-controls button:hover { color: ${brandHover}; }
-    .cd-course-list { flex: 1; overflow-y: auto; padding: 8px 24px; }
+    .cd-course-list { flex: 1; overflow-y: auto; padding: 4px 24px 8px; }
+    .cd-empty-state {
+      padding: 40px 24px; text-align: center; color: #6b7b8d;
+    }
+    .cd-empty-state .cd-empty-icon { font-size: 32px; margin-bottom: 12px; }
+    .cd-empty-state .cd-empty-text { font-size: 14px; font-weight: 500; color: #2d3b45; margin-bottom: 4px; }
+    .cd-empty-state .cd-empty-hint { font-size: 12px; }
     .cd-course-item {
       display: flex; align-items: center;
-      padding: 10px 0; border-bottom: 1px solid #f0f0f0;
+      padding: 10px 8px; border-radius: 8px;
+      margin: 2px 0; transition: background 0.1s;
     }
-    .cd-course-item:last-child { border-bottom: none; }
+    .cd-course-item:hover { background: #f8f9fa; }
     .cd-course-item input[type="checkbox"] {
       margin-right: 12px; width: 16px; height: 16px;
-      cursor: pointer; accent-color: ${brand};
+      cursor: pointer; accent-color: ${brand}; flex-shrink: 0;
     }
-    .cd-course-item label { cursor: pointer; flex: 1; }
-    .cd-course-name { font-size: 14px; font-weight: 500; color: #2d3b45; }
+    .cd-course-item label { cursor: pointer; flex: 1; min-width: 0; }
+    .cd-course-name { font-size: 14px; font-weight: 500; color: #2d3b45; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .cd-course-code { font-size: 12px; color: #6b7b8d; margin-top: 2px; }
-    .cd-term-group { margin-top: 4px; }
+    .cd-term-group { margin-top: 2px; }
     .cd-term-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 0; cursor: pointer; user-select: none;
-      border-bottom: 1px solid #e5e5e5;
+      padding: 10px 8px; cursor: pointer; user-select: none;
+      border-radius: 6px; transition: background 0.1s;
     }
-    .cd-term-header:hover { background: #f8f8f8; }
+    .cd-term-header:hover { background: #f8f9fa; }
     .cd-term-name { font-size: 13px; font-weight: 600; color: #2d3b45; }
-    .cd-term-toggle { font-size: 12px; color: #6b7b8d; }
-    .cd-term-select { font-size: 11px; color: ${brand}; cursor: pointer; background: none; border: none; padding: 0; text-decoration: underline; }
+    .cd-term-count { font-size: 11px; color: #6b7b8d; margin-left: 6px; font-weight: 400; }
+    .cd-term-toggle { font-size: 12px; color: #6b7b8d; transition: transform 0.2s; }
+    .cd-term-select { font-size: 11px; color: ${brand}; cursor: pointer; background: none; border: none; padding: 2px 4px; text-decoration: underline; border-radius: 3px; }
     .cd-term-select:hover { color: ${brandHover}; }
     .cd-modal-footer {
       padding: 16px 24px; border-top: 1px solid #e5e5e5;
       display: flex; justify-content: space-between; align-items: center;
     }
     .cd-download-btn {
-      background: ${brand}; color: #fff; border: none; border-radius: 6px;
+      background: ${brand}; color: #fff; border: none; border-radius: 8px;
       padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
     }
     .cd-download-btn:hover { background: ${brandHover}; }
-    .cd-download-btn:disabled { background: #ccc; cursor: not-allowed; }
+    .cd-download-btn:active { transform: scale(0.98); }
+    .cd-download-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
     .cd-selected-count { font-size: 13px; color: #6b7b8d; }
-    .cd-progress { padding: 16px 24px; border-top: 1px solid #e5e5e5; font-size: 13px; color: #2d3b45; }
-    .cd-progress-bar-bg { background: #e5e5e5; border-radius: 4px; height: 8px; margin-top: 8px; overflow: hidden; }
-    .cd-progress-bar { background: ${brand}; height: 100%; border-radius: 4px; transition: width 0.3s; width: 0%; }
-    .cd-progress-status { margin-top: 6px; font-size: 12px; color: #6b7b8d; }
-    .cd-loading { padding: 40px 24px; text-align: center; color: #6b7b8d; font-size: 14px; }
-    .cd-github-footer {
-      padding: 10px 24px 14px; text-align: center;
-      font-size: 11px; color: #999; line-height: 1.5;
-      border-top: 1px solid #e5e5e5;
+    .cd-progress { padding: 20px 24px; border-top: 1px solid #e5e5e5; font-size: 13px; color: #2d3b45; }
+    .cd-progress-bar-bg { background: #e5e5e5; border-radius: 6px; height: 8px; margin-top: 10px; overflow: hidden; }
+    .cd-progress-bar { background: ${brand}; height: 100%; border-radius: 6px; transition: width 0.3s; width: 0%; }
+    .cd-progress-status { margin-top: 8px; font-size: 12px; color: #6b7b8d; }
+    .cd-finish-screen { padding: 32px 24px; text-align: center; display: none; }
+    .cd-finish-icon { font-size: 40px; margin-bottom: 12px; }
+    .cd-finish-title { font-size: 18px; font-weight: 600; color: #2d3b45; margin-bottom: 4px; }
+    .cd-finish-subtitle { font-size: 13px; color: #6b7b8d; margin-bottom: 16px; }
+    .cd-finish-btn {
+      background: ${brand}; color: #fff; border: none; border-radius: 8px;
+      padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer;
     }
-    .cd-github-footer a { color: ${brand}; text-decoration: none; }
-    .cd-github-footer a:hover { text-decoration: underline; }
+    .cd-finish-btn:hover { background: ${brandHover}; }
+    .cd-loading { padding: 48px 24px; text-align: center; color: #6b7b8d; font-size: 14px; }
+    .cd-loading .cd-spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #e5e5e5; border-top-color: ${brand}; border-radius: 50%; animation: cd-spin 0.8s linear infinite; margin-bottom: 12px; }
+    @keyframes cd-spin { to { transform: rotate(360deg); } }
+    .cd-github-footer {
+      padding: 8px 24px 10px; text-align: center;
+      font-size: 10px; color: #bbb; line-height: 1.5;
+    }
+    .cd-github-footer a { color: #999; text-decoration: none; }
+    .cd-github-footer a:hover { text-decoration: underline; color: #666; }
   `;
 }
 
@@ -848,145 +960,247 @@ async function openCourseSelector() {
   document.getElementById("cd-overlay")?.remove();
 
   const style = document.createElement("style");
+  style.id = "cd-overlay-styles";
   style.textContent = getOverlayStyles();
   document.head.appendChild(style);
 
   const overlay = document.createElement("div");
   overlay.id = "cd-overlay";
   overlay.className = "cd-overlay";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", "Course selector");
   overlay.innerHTML = `
-    <div class="cd-modal">
+    <div class="cd-modal" role="document">
       <div class="cd-modal-header">
-        <h2><img src="${chrome.runtime.getURL("icons/icon-128.png")}" alt="">Canvas Course Downloader</h2>
-        <button class="cd-close-btn" id="cd-close">&times;</button>
+        <h2><img src="${chrome.runtime.getURL("icons/icon-128.png")}" alt="">Course Downloader</h2>
+        <button class="cd-close-btn" id="cd-close" aria-label="Close">&times;</button>
       </div>
-      <div class="cd-loading" id="cd-loading">Loading courses...</div>
+      <div class="cd-tabs" role="tablist">
+        <button class="cd-tab active" role="tab" aria-selected="true" data-tab="active" id="cd-tab-active">Active Courses</button>
+        <button class="cd-tab" role="tab" aria-selected="false" data-tab="completed" id="cd-tab-past">Past Courses</button>
+      </div>
+      <div class="cd-loading" id="cd-loading"><div class="cd-spinner"></div><div>Loading courses...</div></div>
       <div class="cd-search" id="cd-search" style="display:none">
-        <input type="text" id="cd-search-input" placeholder="Search courses by name, code, or term...">
+        <input type="text" id="cd-search-input" placeholder="Search courses..." aria-label="Search courses">
       </div>
       <div class="cd-controls" id="cd-controls" style="display:none">
         <button id="cd-select-all">Select All</button>
         <button id="cd-deselect-all">Deselect All</button>
       </div>
-      <div class="cd-course-list" id="cd-course-list" style="display:none"></div>
+      <div class="cd-course-list" id="cd-course-list" style="display:none" role="list" aria-live="polite"></div>
       <div class="cd-modal-footer" id="cd-footer" style="display:none">
-        <span class="cd-selected-count" id="cd-selected-count">0 courses selected</span>
+        <span class="cd-selected-count" id="cd-selected-count" aria-live="polite">0 courses selected</span>
         <button class="cd-download-btn" id="cd-download-btn" disabled>Download Selected</button>
       </div>
-      <div class="cd-progress" id="cd-progress" style="display:none">
+      <div class="cd-progress" id="cd-progress" style="display:none" aria-live="polite">
         <div id="cd-progress-text">Downloading...</div>
-        <div class="cd-progress-bar-bg"><div class="cd-progress-bar" id="cd-progress-bar"></div></div>
+        <div class="cd-progress-bar-bg" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="cd-progress-bar" id="cd-progress-bar"></div></div>
         <div class="cd-progress-status" id="cd-progress-status"></div>
       </div>
+      <div class="cd-finish-screen" id="cd-finish-screen">
+        <div class="cd-finish-icon" id="cd-finish-icon"></div>
+        <div class="cd-finish-title" id="cd-finish-title"></div>
+        <div class="cd-finish-subtitle" id="cd-finish-subtitle"></div>
+        <button class="cd-finish-btn" id="cd-finish-btn">Close</button>
+      </div>
       <div class="cd-github-footer">
-        Free &amp; open source on <a href="https://github.com/jasp-nerd/canvas-course-downloader" target="_blank">GitHub</a><br>
-        Enjoying it? A <a href="https://github.com/jasp-nerd/canvas-course-downloader" target="_blank">star</a> would mean a lot!
+        <a href="https://github.com/jasp-nerd/canvas-course-downloader" target="_blank">GitHub</a>
       </div>
     </div>`;
 
   document.body.appendChild(overlay);
 
-  const closeOverlay = () => overlay.remove();
+  // --- Focus trapping ---
+  const modal = overlay.querySelector(".cd-modal");
+  const focusableSelector = 'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  function trapFocus(e) {
+    if (e.key !== "Tab") return;
+    const focusable = Array.from(modal.querySelectorAll(focusableSelector)).filter((el) => el.offsetParent !== null);
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+
+  const closeOverlay = () => {
+    overlay.remove();
+    document.getElementById("cd-overlay-styles")?.remove();
+    document.removeEventListener("keydown", keyHandler);
+  };
+
+  function keyHandler(e) {
+    if (e.key === "Escape") closeOverlay();
+    trapFocus(e);
+  }
+  document.addEventListener("keydown", keyHandler);
+
   overlay.addEventListener("click", (e) => { if (e.target === overlay) closeOverlay(); });
   document.getElementById("cd-close").addEventListener("click", closeOverlay);
-  document.addEventListener("keydown", function escHandler(e) {
-    if (e.key === "Escape") { closeOverlay(); document.removeEventListener("keydown", escHandler); }
-  });
+  document.getElementById("cd-finish-btn").addEventListener("click", closeOverlay);
 
-  // Fetch courses
-  let courses;
-  try {
-    courses = await fetchAllCourses();
-  } catch {
-    document.getElementById("cd-loading").textContent = "Failed to load courses. Make sure you are logged in.";
-    return;
+  // Focus the close button initially
+  document.getElementById("cd-close").focus();
+
+  // --- Course loading & tab switching ---
+  const courseCache = {};
+  let currentTab = "active";
+
+  async function loadCourses(enrollmentState) {
+    if (courseCache[enrollmentState]) return courseCache[enrollmentState];
+    const courses = await fetchAllCourses(enrollmentState);
+    courseCache[enrollmentState] = courses;
+    return courses;
   }
 
-  if (courses.length === 0) {
-    document.getElementById("cd-loading").textContent = "No active courses found.";
-    return;
-  }
+  function renderCourses(courses) {
+    const listEl = document.getElementById("cd-course-list");
+    listEl.innerHTML = "";
 
-  document.getElementById("cd-loading").style.display = "none";
-  document.getElementById("cd-search").style.display = "block";
-  document.getElementById("cd-controls").style.display = "flex";
-  document.getElementById("cd-course-list").style.display = "block";
-  document.getElementById("cd-footer").style.display = "flex";
-
-  const listEl = document.getElementById("cd-course-list");
-
-  // Group courses by term, sorted by start date (most recent first)
-  const termMap = new Map();
-  for (const course of courses) {
-    const termName = course.term?.name || "Other";
-    if (!termMap.has(termName)) {
-      termMap.set(termName, { startAt: course.term?.start_at || null, courses: [] });
+    if (courses.length === 0) {
+      listEl.innerHTML = `
+        <div class="cd-empty-state">
+          <div class="cd-empty-icon">&#128218;</div>
+          <div class="cd-empty-text">No courses found</div>
+          <div class="cd-empty-hint">${currentTab === "active" ? "No active enrollments. Try the Past Courses tab." : "No completed courses found."}</div>
+        </div>`;
+      document.getElementById("cd-controls").style.display = "none";
+      document.getElementById("cd-footer").style.display = "none";
+      return;
     }
-    termMap.get(termName).courses.push(course);
-  }
 
-  const sortedTerms = Array.from(termMap.entries()).sort(([nameA, a], [nameB, b]) => {
-    const isDefaultA = !a.startAt || nameA === "Other" || nameA.toLowerCase().includes("default");
-    const isDefaultB = !b.startAt || nameB === "Other" || nameB.toLowerCase().includes("default");
-    if (isDefaultA && !isDefaultB) return 1;
-    if (!isDefaultA && isDefaultB) return -1;
-    if (a.startAt && b.startAt) return new Date(b.startAt) - new Date(a.startAt);
-    return nameA.localeCompare(nameB);
-  });
+    document.getElementById("cd-controls").style.display = "flex";
+    document.getElementById("cd-footer").style.display = "flex";
 
-  for (const [termName, { courses: termCourses }] of sortedTerms) {
-    const group = document.createElement("div");
-    group.className = "cd-term-group";
-    group.dataset.term = termName.toLowerCase();
-
-    const header = document.createElement("div");
-    header.className = "cd-term-header";
-    header.innerHTML = `
-      <span class="cd-term-name">${termName} (${termCourses.length})</span>
-      <span style="display:flex;gap:8px;align-items:center;">
-        <button class="cd-term-select" data-term-action="toggle">Select all</button>
-        <span class="cd-term-toggle">&#9660;</span>
-      </span>`;
-    group.appendChild(header);
-
-    const courseContainer = document.createElement("div");
-    courseContainer.className = "cd-term-courses";
-
-    for (const course of termCourses) {
-      const item = document.createElement("div");
-      item.className = "cd-course-item";
-      item.dataset.searchable = `${course.name} ${course.course_code || ""} ${termName}`.toLowerCase();
-      item.innerHTML = `
-        <input type="checkbox" id="cd-course-${course.id}" data-course-id="${course.id}" data-course-name="${course.name.replace(/"/g, "&quot;")}">
-        <label for="cd-course-${course.id}">
-          <div class="cd-course-name">${course.name}</div>
-          <div class="cd-course-code">${course.course_code || ""}</div>
-        </label>`;
-      courseContainer.appendChild(item);
+    // Group by term
+    const termMap = new Map();
+    for (const course of courses) {
+      const termName = course.term?.name || "Other";
+      if (!termMap.has(termName)) termMap.set(termName, { startAt: course.term?.start_at || null, courses: [] });
+      termMap.get(termName).courses.push(course);
     }
-    group.appendChild(courseContainer);
-    listEl.appendChild(group);
 
-    // Toggle collapse
-    header.addEventListener("click", (e) => {
-      if (e.target.classList.contains("cd-term-select")) return;
-      const isHidden = courseContainer.style.display === "none";
-      courseContainer.style.display = isHidden ? "" : "none";
-      header.querySelector(".cd-term-toggle").textContent = isHidden ? "\u25BC" : "\u25B6";
+    const sortedTerms = Array.from(termMap.entries()).sort(([nameA, a], [nameB, b]) => {
+      const isDefaultA = !a.startAt || nameA === "Other" || nameA.toLowerCase().includes("default");
+      const isDefaultB = !b.startAt || nameB === "Other" || nameB.toLowerCase().includes("default");
+      if (isDefaultA && !isDefaultB) return 1;
+      if (!isDefaultA && isDefaultB) return -1;
+      if (a.startAt && b.startAt) return new Date(b.startAt) - new Date(a.startAt);
+      return nameA.localeCompare(nameB);
     });
 
-    // Select all in term
-    header.querySelector(".cd-term-select").addEventListener("click", () => {
-      const cbs = courseContainer.querySelectorAll("input[type='checkbox']:not(:disabled)");
-      const allChecked = Array.from(cbs).every((cb) => cb.checked);
-      cbs.forEach((cb) => (cb.checked = !allChecked));
-      updateCount();
-    });
+    for (const [termName, { courses: termCourses }] of sortedTerms) {
+      const group = document.createElement("div");
+      group.className = "cd-term-group";
+      group.dataset.term = termName.toLowerCase();
+      group.setAttribute("role", "group");
+      group.setAttribute("aria-label", termName);
+
+      const header = document.createElement("div");
+      header.className = "cd-term-header";
+      header.setAttribute("role", "button");
+      header.setAttribute("tabindex", "0");
+      header.setAttribute("aria-expanded", "true");
+      header.innerHTML = `
+        <span><span class="cd-term-name">${termName}</span><span class="cd-term-count">(${termCourses.length})</span></span>
+        <span style="display:flex;gap:8px;align-items:center;">
+          <button class="cd-term-select" data-term-action="toggle" tabindex="0">Select all</button>
+          <span class="cd-term-toggle">&#9660;</span>
+        </span>`;
+      group.appendChild(header);
+
+      const courseContainer = document.createElement("div");
+      courseContainer.className = "cd-term-courses";
+
+      for (const course of termCourses) {
+        const item = document.createElement("div");
+        item.className = "cd-course-item";
+        item.setAttribute("role", "listitem");
+        item.dataset.searchable = `${course.name} ${course.course_code || ""} ${termName}`.toLowerCase();
+        item.innerHTML = `
+          <input type="checkbox" id="cd-course-${course.id}" data-course-id="${course.id}" data-course-name="${course.name.replace(/"/g, "&quot;")}">
+          <label for="cd-course-${course.id}">
+            <div class="cd-course-name">${course.name}</div>
+            <div class="cd-course-code">${course.course_code || ""}</div>
+          </label>`;
+        courseContainer.appendChild(item);
+      }
+      group.appendChild(courseContainer);
+      listEl.appendChild(group);
+
+      // Toggle collapse
+      const toggleCollapse = (e) => {
+        if (e.target.classList.contains("cd-term-select")) return;
+        if (e.type === "keydown" && e.key !== "Enter" && e.key !== " ") return;
+        if (e.type === "keydown") e.preventDefault();
+        const isHidden = courseContainer.style.display === "none";
+        courseContainer.style.display = isHidden ? "" : "none";
+        header.querySelector(".cd-term-toggle").textContent = isHidden ? "\u25BC" : "\u25B6";
+        header.setAttribute("aria-expanded", isHidden ? "true" : "false");
+      };
+      header.addEventListener("click", toggleCollapse);
+      header.addEventListener("keydown", toggleCollapse);
+
+      // Select all in term
+      header.querySelector(".cd-term-select").addEventListener("click", (e) => {
+        e.stopPropagation();
+        const cbs = courseContainer.querySelectorAll("input[type='checkbox']:not(:disabled)");
+        const allChecked = Array.from(cbs).every((cb) => cb.checked);
+        cbs.forEach((cb) => (cb.checked = !allChecked));
+        updateCount();
+      });
+    }
+
+    updateCount();
   }
+
+  const updateCount = () => {
+    const listEl = document.getElementById("cd-course-list");
+    const n = listEl.querySelectorAll("input:checked").length;
+    document.getElementById("cd-selected-count").textContent = `${n} course${n !== 1 ? "s" : ""} selected`;
+    document.getElementById("cd-download-btn").disabled = n === 0;
+  };
+
+  async function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll(".cd-tab").forEach((t) => {
+      const isActive = t.dataset.tab === tab;
+      t.classList.toggle("active", isActive);
+      t.setAttribute("aria-selected", isActive ? "true" : "false");
+    });
+
+    const listEl = document.getElementById("cd-course-list");
+    const loading = document.getElementById("cd-loading");
+    listEl.style.display = "none";
+    loading.style.display = "block";
+    document.getElementById("cd-search").style.display = "none";
+    document.getElementById("cd-controls").style.display = "none";
+    document.getElementById("cd-footer").style.display = "none";
+
+    try {
+      const courses = await loadCourses(tab === "active" ? "active" : "completed");
+      loading.style.display = "none";
+      listEl.style.display = "block";
+      document.getElementById("cd-search").style.display = "block";
+      document.getElementById("cd-search-input").value = "";
+      renderCourses(courses);
+    } catch {
+      loading.innerHTML = '<div>Failed to load courses. Make sure you are logged in.</div>';
+    }
+  }
+
+  // Tab click handlers
+  document.getElementById("cd-tab-active").addEventListener("click", () => switchTab("active"));
+  document.getElementById("cd-tab-past").addEventListener("click", () => switchTab("completed"));
+
+  // Initial load
+  await switchTab("active");
 
   // Search filter
   document.getElementById("cd-search-input").addEventListener("input", (e) => {
     const q = e.target.value.toLowerCase().trim();
+    const listEl = document.getElementById("cd-course-list");
     listEl.querySelectorAll(".cd-course-item").forEach((item) => {
       item.style.display = !q || item.dataset.searchable.includes(q) ? "" : "none";
     });
@@ -996,12 +1210,7 @@ async function openCourseSelector() {
     });
   });
 
-  const updateCount = () => {
-    const n = listEl.querySelectorAll("input:checked").length;
-    document.getElementById("cd-selected-count").textContent = `${n} course${n !== 1 ? "s" : ""} selected`;
-    document.getElementById("cd-download-btn").disabled = n === 0;
-  };
-
+  const listEl = document.getElementById("cd-course-list");
   listEl.addEventListener("change", updateCount);
   document.getElementById("cd-select-all").addEventListener("click", () => {
     listEl.querySelectorAll("input:not(:disabled)").forEach((cb) => (cb.checked = true));
@@ -1022,18 +1231,24 @@ async function openCourseSelector() {
 
     document.getElementById("cd-download-btn").disabled = true;
     document.getElementById("cd-controls").style.display = "none";
-    listEl.querySelectorAll("input").forEach((cb) => (cb.disabled = true));
+    document.getElementById("cd-search").style.display = "none";
+    document.querySelector(".cd-tabs").style.display = "none";
+    listEl.style.display = "none";
 
     const bar = document.getElementById("cd-progress-bar");
+    const barBg = bar.parentElement;
     const text = document.getElementById("cd-progress-text");
     const status = document.getElementById("cd-progress-status");
     document.getElementById("cd-progress").style.display = "block";
+    document.getElementById("cd-footer").style.display = "none";
 
     const domain = window.location.origin;
+    let failedCount = 0;
 
     for (let i = 0; i < selected.length; i++) {
       const pct = Math.round((i / selected.length) * 100);
       bar.style.width = `${pct}%`;
+      barBg.setAttribute("aria-valuenow", pct);
       text.textContent = `Downloading ${i + 1} of ${selected.length}: ${selected[i].name}`;
       status.textContent = "Starting...";
 
@@ -1044,15 +1259,29 @@ async function openCourseSelector() {
       } catch (err) {
         console.error(`[Canvas Downloader] Failed: ${selected[i].name}`, err);
         status.textContent = `Error on ${selected[i].name}, continuing...`;
+        failedCount++;
         await new Promise((r) => setTimeout(r, 1000));
       }
 
       if (i < selected.length - 1) await new Promise((r) => setTimeout(r, 500));
     }
 
-    bar.style.width = "100%";
-    text.textContent = `Done! Downloaded ${selected.length} course${selected.length !== 1 ? "s" : ""}.`;
-    status.textContent = "All downloads have been queued.";
+    // Show finish screen
+    document.getElementById("cd-progress").style.display = "none";
+    const finishScreen = document.getElementById("cd-finish-screen");
+    finishScreen.style.display = "block";
+
+    if (failedCount === 0) {
+      document.getElementById("cd-finish-icon").textContent = "\u2705";
+      document.getElementById("cd-finish-title").textContent = "All downloads queued!";
+      document.getElementById("cd-finish-subtitle").textContent = `${selected.length} course${selected.length !== 1 ? "s" : ""} successfully processed.`;
+    } else {
+      document.getElementById("cd-finish-icon").textContent = "\u26A0\uFE0F";
+      document.getElementById("cd-finish-title").textContent = "Downloads completed with errors";
+      document.getElementById("cd-finish-subtitle").textContent = `${selected.length - failedCount} succeeded, ${failedCount} failed. Check the console for details.`;
+    }
+
+    document.getElementById("cd-finish-btn").focus();
   });
 }
 
@@ -1140,7 +1369,7 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     openCourseSelector();
     sendResponse({ status: "opened" });
   } else if (request.action === "get_status") {
-    sendResponse({ isCanvas: isCanvas(), courseId: getCourseId(), isHomepage: isCanvasHomepage() });
+    sendResponse({ isCanvas: isCanvas(), courseId: getCourseId(), isHomepage: isCanvasHomepage(), courseName: getCourseId() ? getCourseName() : null });
   }
 });
 
