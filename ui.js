@@ -357,7 +357,7 @@ async function openCourseSelector() {
         <button class="cd-finish-btn" id="cd-finish-btn">Close</button>
       </div>
       <div class="cd-github-footer">
-        <a href="https://github.com/jasp-nerd/canvas-course-downloader" target="_blank">GitHub</a>
+        <a href="https://github.com/jasp-nerd/canvas-course-downloader" target="_blank">⭐ Star on GitHub</a>
       </div>
     </div>`;
 

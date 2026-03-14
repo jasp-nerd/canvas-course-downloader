@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Canvas Course Downloader",
   "description": "Bulk-download Canvas LMS course files, pages, assignments, grades, and more into organized folders.",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "browser_specific_settings": {
     "gecko": {
       "id": "canvas-course-downloader@jasp-nerd",

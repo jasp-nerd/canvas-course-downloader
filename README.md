@@ -51,7 +51,11 @@ Pick which courses to download from your Canvas dashboard:
 
 ## Installation
 
-### Chrome / Edge / Brave
+### Chrome Web Store
+
+Install directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/mmnmcnffbkcnhcjiidmdnaclpfeekiol). Also works on Edge and Brave.
+
+### Manual install (Chrome / Edge / Brave)
 
 1. Clone this repository:
    ```bash
