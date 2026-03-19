@@ -20,6 +20,8 @@ const SETTING_DEFAULTS = {
   folderPrefix: "",
   zipMode: false,
   incrementalMode: false,
+  excludeVideos: false,
+  maxFileSizeMB: 0,
   preset: "full-archive",
 };
 
@@ -144,7 +146,7 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
       if (folder.startsWith("/")) folder = folder.slice(1);
 
       seenFileIds.add(String(file.id));
-      filesToDownload.push({ url: file.url, filename: file.display_name, path: `Files/${folder}` });
+      filesToDownload.push({ url: file.url, filename: file.display_name, path: `Files/${folder}`, size: file.size || 0, contentType: file["content-type"] || "" });
     });
   }
 
@@ -169,6 +171,8 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
             url: data.url,
             filename: data.display_name || link.textContent.trim() || `file_${id}`,
             path: "Extracted_Files/",
+            size: data.size || 0,
+            contentType: data["content-type"] || "",
           });
         }
       } catch (err) {
@@ -299,6 +303,8 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
                 url: data.url,
                 filename: data.display_name || item.title,
                 path: `Modules/${safeModName}/`,
+                size: data.size || 0,
+                contentType: data["content-type"] || "",
               });
             }
           } catch (err) {
@@ -398,6 +404,39 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
     filesToDownload.push(...filtered);
   }
 
+  // --- File filters: exclude videos and large files --------------------------
+  const VIDEO_EXTENSIONS = /\.(mp4|mov|avi|mkv|webm|wmv|flv|m4v)$/i;
+  let filteredOutCount = 0;
+
+  if (settings.excludeVideos || settings.maxFileSizeMB > 0) {
+    const maxBytes = settings.maxFileSizeMB > 0 ? settings.maxFileSizeMB * 1024 * 1024 : Infinity;
+    const before = filesToDownload.length;
+
+    const kept = [];
+    for (const file of filesToDownload) {
+      // Skip data URIs (generated HTML/CSV/JSON) — always keep those
+      if (file.url.startsWith("data:")) { kept.push(file); continue; }
+
+      if (settings.excludeVideos) {
+        if (VIDEO_EXTENSIONS.test(file.filename) || (file.contentType && file.contentType.startsWith("video/"))) {
+          continue;
+        }
+      }
+      if (settings.maxFileSizeMB > 0 && file.size > maxBytes) {
+        continue;
+      }
+      kept.push(file);
+    }
+
+    filteredOutCount = before - kept.length;
+    filesToDownload.length = 0;
+    filesToDownload.push(...kept);
+
+    if (filteredOutCount > 0) {
+      log(`File filters: excluded ${filteredOutCount} file(s).`);
+    }
+  }
+
   // --- Export manifest -------------------------------------------------------
   const manifest = {
     course: courseName,
@@ -414,6 +453,7 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
       modules: modules.length,
       extractedFiles: filesToDownload.filter((f) => f.path === "Extracted_Files/").length,
       skippedIncremental: skippedCount,
+      skippedFilters: filteredOutCount,
       total: filesToDownload.length,
     },
   };

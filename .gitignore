@@ -3,3 +3,4 @@
 *.crx
 *.pem
 node_modules/
+.claude/

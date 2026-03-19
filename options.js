@@ -21,6 +21,8 @@ const DEFAULTS = {
   folderPrefix: "",
   zipMode: false,
   incrementalMode: false,
+  excludeVideos: false,
+  maxFileSizeMB: 0,
   preset: "full-archive",
 };
 
@@ -90,6 +92,8 @@ function loadSettings() {
     document.getElementById("folder-prefix").value = settings.folderPrefix;
     document.getElementById("zip-mode").checked = settings.zipMode;
     document.getElementById("incremental-mode").checked = settings.incrementalMode;
+    document.getElementById("exclude-videos").checked = settings.excludeVideos;
+    document.getElementById("max-file-size").value = settings.maxFileSizeMB || "";
 
     // Preset highlight
     const preset = detectPreset();
@@ -108,6 +112,8 @@ function saveSettings() {
     folderPrefix: document.getElementById("folder-prefix").value.trim(),
     zipMode: document.getElementById("zip-mode").checked,
     incrementalMode: document.getElementById("incremental-mode").checked,
+    excludeVideos: document.getElementById("exclude-videos").checked,
+    maxFileSizeMB: parseInt(document.getElementById("max-file-size").value, 10) || 0,
     preset: detectPreset(),
   };
 
