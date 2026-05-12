@@ -224,7 +224,6 @@
     .save-btn:active { transform: scale(0.98); }
     .save-status {
       font-size: 12.5px;
-      color: #15803d;
       font-weight: 500;
       display: inline-flex;
       align-items: center;
@@ -235,9 +234,38 @@
     .save-status::before {
       content: "";
       width: 6px; height: 6px; border-radius: 999px;
-      background: #22c55e;
+      flex-shrink: 0;
     }
+    .save-status.success { color: #15803d; }
+    .save-status.success::before { background: #22c55e; }
+    .save-status.error { color: #dc2626; }
+    .save-status.error::before { background: #dc2626; }
     .save-status.visible { opacity: 1; }
+
+    /* Schedule section */
+    .schedule-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 8px 12px;
+      line-height: 1.5;
+    }
+    #schedule-section.schedule-disabled #schedule-enabled,
+    #schedule-section.schedule-disabled #schedule-interval,
+    #schedule-section.schedule-disabled #save-schedule-btn {
+      opacity: 0.45;
+      pointer-events: none;
+    }
+    #schedule-section.schedule-off #schedule-interval,
+    #schedule-section.schedule-off #schedule-course-list,
+    #schedule-section.schedule-off #save-schedule-btn {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    .schedule-status-line {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
 
     /* About */
     .about-card .about-text {
@@ -283,6 +311,35 @@
       <label><input type="checkbox" data-key="syllabus"> Syllabus</label>
       <label><input type="checkbox" data-key="grades"> Grades (CSV export)</label>
       <label><input type="checkbox" data-key="linkedFiles"> Linked / extracted files</label>
+    </div>
+  </div>
+
+  <div class="card" id="schedule-section">
+    <h2>Scheduled Downloads</h2>
+    <div class="toggle-row" style="border-top:none;padding-top:0;margin-top:0;">
+      <label><input type="checkbox" id="schedule-enabled" class="custom-checkbox"> Enable recurring downloads</label>
+      <div class="hint">Automatically re-download selected courses on a fixed schedule. Downloads run when Canvas is open; if Canvas is closed they are deferred to the next time you open a Canvas page.</div>
+    </div>
+    <div class="field" style="margin-top:14px;">
+      <label for="schedule-interval">Download interval</label>
+      <select id="schedule-interval">
+        <option value="720">Every 12 hours</option>
+        <option value="1440" selected>Every 24 hours</option>
+        <option value="2880">Every 48 hours</option>
+        <option value="10080">Every 7 days</option>
+      </select>
+    </div>
+    <div style="margin-top:14px;">
+      <div style="font-size:12.5px;font-weight:500;color:var(--text);margin-bottom:6px;">Courses to download</div>
+      <div id="schedule-course-list" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:9px;padding:4px 0;background:var(--surface);"></div>
+    </div>
+    <div style="margin-top:14px;display:flex;align-items:center;gap:12px;">
+      <button class="save-btn" id="save-schedule-btn" style="padding:9px 18px;font-size:13px;">Save Schedule</button>
+      <span class="save-status" id="schedule-save-status">Schedule saved</span>
+    </div>
+    <div style="margin-top:12px;" class="schedule-status-line">
+      <div id="schedule-last-run">Last run: Never</div>
+      <div id="schedule-next-run">Next run: Not scheduled</div>
     </div>
   </div>
 
@@ -333,7 +390,7 @@
 
   <div class="save-bar">
     <button class="save-btn" id="save-btn">Save Settings</button>
-    <span class="save-status" id="save-status">Settings saved</span>
+    <span class="save-status success" id="save-status">Settings saved</span>
   </div>
 
   <div class="card about-card">
