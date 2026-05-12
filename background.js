@@ -249,5 +249,61 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     isProcessing = false;
     broadcastStatus();
     sendResponse({ status: "cancelled" });
+  } else if (message.type === "REGISTER_SCHEDULE") {
+    registerScheduleAlarm(message.payload.intervalMinutes);
+    sendResponse({ status: "ok" });
+  } else if (message.type === "UNREGISTER_SCHEDULE") {
+    unregisterScheduleAlarm();
+    sendResponse({ status: "ok" });
+  } else if (message.type === "GET_SCHEDULE_STATUS") {
+    chrome.storage.local.get("lastScheduledRun", ({ lastScheduledRun }) => {
+      chrome.alarms.get("scheduled_download", (alarm) => {
+        sendResponse({ 
+          lastRun: lastScheduledRun || null, 
+          nextRunAt: alarm?.scheduledTime || null 
+        });
+      });
+    });
+    return true;
   }
 });
+
+// ---------------------------------------------------------------------------
+// Scheduled download alarm handling
+// ---------------------------------------------------------------------------
+
+function registerScheduleAlarm(intervalMinutes) {
+  chrome.alarms.create("scheduled_download", { periodInMinutes: intervalMinutes });
+}
+
+function unregisterScheduleAlarm() {
+  chrome.alarms.clear("scheduled_download");
+}
+
+async function findOpenCanvasTab() {
+  const { canvasDomain } = await chrome.storage.local.get("canvasDomain");
+  if (!canvasDomain) return null;
+  const tabs = await chrome.tabs.query({ url: canvasDomain + "/*" });
+  return tabs[0] || null;
+}
+
+async function handleScheduleAlarm(alarm) {
+  if (alarm.name !== "scheduled_download") return;
+  const { scheduleConfig } = await chrome.storage.sync.get("scheduleConfig");
+  if (!scheduleConfig?.enabled || !scheduleConfig.courseIds?.length) return;
+
+  const { courseIds, courseNames } = scheduleConfig;
+  const tab = await findOpenCanvasTab();
+
+  if (tab) {
+    try {
+      await chrome.tabs.sendMessage(tab.id, { type: "TRIGGER_SCHEDULED_DOWNLOAD", payload: { courseIds, courseNames } });
+    } catch {
+      await chrome.storage.local.set({ pendingRun: { scheduledAt: Date.now(), courseIds, courseNames } });
+    }
+  } else {
+    await chrome.storage.local.set({ pendingRun: { scheduledAt: Date.now(), courseIds, courseNames } });
+  }
+}
+
+chrome.alarms.onAlarm.addListener(handleScheduleAlarm);

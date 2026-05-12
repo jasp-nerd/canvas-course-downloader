@@ -34,6 +34,11 @@ document.addEventListener("DOMContentLoaded", () => {
     chrome.runtime.openOptionsPage();
   });
 
+  document.getElementById("scheduleNudge").addEventListener("click", (e) => {
+    e.preventDefault();
+    chrome.runtime.openOptionsPage();
+  });
+
   // Load settings and show content type tags
   chrome.storage.sync.get({
     contentTypes: {

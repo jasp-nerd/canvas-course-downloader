@@ -16,9 +16,11 @@
   },
   "permissions": [
     "activeTab",
+    "alarms",
     "downloads",
     "notifications",
-    "storage"
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "*://*.instructure.com/*"

@@ -1,6 +1,6 @@
 # Privacy Policy — Canvas Course Downloader
 
-**Last updated:** March 14, 2026
+**Last updated:** May 11, 2026
 
 ## Overview
 
@@ -24,10 +24,22 @@ The extension requests the following browser permissions:
 | Permission | Why it's needed |
 |---|---|
 | `activeTab` | To communicate with the content script on the current tab |
+| `alarms` | To fire scheduled download runs on a recurring interval |
 | `downloads` | To save course files to your computer |
 | `notifications` | To notify you when a download batch finishes |
-| `storage` | To save your settings and track which files have been downloaded in incremental mode |
+| `storage` | To save your settings, track which files have been downloaded in incremental mode, and store your schedule configuration |
+| `tabs` | To locate an open Canvas tab when a scheduled alarm fires, so the download can be delivered to the right page |
 | Host permissions (`https://*/*`) | Canvas LMS can be hosted on any domain, so the extension needs to detect Canvas on any HTTPS page |
+
+## Scheduled Downloads
+
+When you configure a schedule, the extension stores the following locally in your browser:
+
+- Your schedule configuration (enabled state, interval, selected course IDs and names) — synced across your Chrome profile via `chrome.storage.sync`
+- The Canvas domain you are logged into (e.g. `https://canvas.instructure.com`) — stored in `chrome.storage.local` so the background service worker can find an open Canvas tab when an alarm fires
+- The timestamp and result of the last scheduled run — stored in `chrome.storage.local` and displayed in the Settings page
+
+None of this data leaves your browser or is sent to any server other than the Canvas instance you are logged into.
 
 ## Third-Party Services
 

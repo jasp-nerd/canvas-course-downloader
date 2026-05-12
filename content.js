@@ -15,6 +15,12 @@
 
 injectButton();
 
+// Persist domain and check for deferred scheduled runs on Canvas pages
+if (isCanvas()) {
+  persistCanvasDomain();
+  checkPendingDownload();
+}
+
 // Re-inject after Canvas SPA navigations
 let lastUrl = location.href;
 new MutationObserver(() => {
@@ -28,6 +34,11 @@ new MutationObserver(() => {
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request.type === "DOWNLOAD_STATUS") {
     updateDownloadPanel(request.payload);
+    return;
+  }
+  if (request.type === "TRIGGER_SCHEDULED_DOWNLOAD") {
+    runScheduledDownload(request.payload.courseIds, request.payload.courseNames);
+    sendResponse({ status: "started" });
     return;
   }
   if (request.action === "trigger_download") {
@@ -46,3 +57,48 @@ chrome.runtime.sendMessage({ type: "GET_DOWNLOAD_STATUS" }, (status) => {
   if (chrome.runtime.lastError || !status) return;
   if (status.total > 0 && !status.done) updateDownloadPanel(status);
 });
+
+// ---------------------------------------------------------------------------
+// Scheduled Downloads Support
+// ---------------------------------------------------------------------------
+
+function persistCanvasDomain() {
+  chrome.storage.local.get("canvasDomain", ({ canvasDomain }) => {
+    if (!canvasDomain) chrome.storage.local.set({ canvasDomain: window.location.origin });
+  });
+}
+
+async function checkPendingDownload() {
+  const { pendingRun } = await chrome.storage.local.get("pendingRun");
+  if (!pendingRun?.courseIds?.length) return;
+  // Clear before running to prevent a second tab from also triggering
+  await chrome.storage.local.remove("pendingRun");
+  runScheduledDownload(pendingRun.courseIds, pendingRun.courseNames);
+}
+
+async function runScheduledDownload(courseIds, courseNames) {
+  const domain = window.location.origin;
+  const startedAt = Date.now();
+  let completed = 0;
+  let failed = 0;
+
+  downloadCancelled = false;
+
+  for (let i = 0; i < courseIds.length; i++) {
+    if (downloadCancelled) break;
+    const id = courseIds[i];
+    const name = (courseNames && courseNames[id]) || `Course ${id}`;
+    try {
+      await downloadCourse(String(id), name, domain, null);
+      completed++;
+    } catch (err) {
+      console.error(`[Canvas Downloader] Scheduled download failed for course ${id}:`, err);
+      failed++;
+    }
+    if (i < courseIds.length - 1) await new Promise((r) => setTimeout(r, 500));
+  }
+
+  chrome.storage.local.set({
+    lastScheduledRun: { startedAt, completedAt: Date.now(), completed, failed, courseIds },
+  });
+}

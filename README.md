@@ -29,6 +29,7 @@ Having a local copy of your course materials also means you can feed them into A
 - Export your grades as a CSV with assignment names, due dates, points, scores, and letter grades
 - Finds files embedded in assignments, pages, announcements, and discussions that don't appear in the file browser
 - Saves into organized subfolders per course with your original Canvas folder structure preserved
+- Scheduled downloads: automatically re-download selected courses every 12 h, 24 h, 48 h, or 7 days — runs silently when Canvas is open, or defers to the next time you open a Canvas page
 - Four built-in presets (Full Archive, Files Only, Text Only, Linked Only) plus custom configuration
 - Configurable download throttling, file conflict handling, and folder prefix
 - Keyboard shortcut: <kbd>Ctrl+Shift+D</kbd> (Mac: <kbd>Cmd+Shift+D</kbd>)
@@ -99,6 +100,17 @@ Install directly from the [Chrome Web Store](https://chromewebstore.google.com/d
 
 You can also trigger downloads from the extension popup icon or with the keyboard shortcut.
 
+### Scheduled downloads
+
+Set up automatic recurring downloads from the **Settings** page.
+1. Open **Settings → Scheduled Downloads**
+2. Check **Enable recurring downloads**
+3. Choose an interval: every 12 hours, 24 hours, 48 hours, or 7 days
+4. Select which courses to include from the course list
+5. Click **Save Schedule**
+
+The alarm persists across browser restarts. If Canvas isn't open when a scheduled run fires, the run is deferred and executes automatically the next time you open any Canvas page. All settings (content types, ZIP mode, incremental mode, file conflict handling, throttle) apply as configured.
+
 ### Settings
 
 Open settings from the extension popup or your browser's extension options page.
@@ -112,6 +124,7 @@ Open settings from the extension popup or your browser's extension options page.
 | Folder prefix | Custom string prepended to all download paths |
 | ZIP bundling | Bundle each course into a single `.zip` file |
 | Incremental mode | Track what's been downloaded per course and skip those files next time |
+| Scheduled downloads | Automatically download selected courses on a fixed interval (12 h / 24 h / 48 h / 7 days) |
 
 ## Supported content
 
