@@ -408,17 +408,28 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
     log("Fetching grades...");
     try {
       const gradeAssignments = await fetchAllPages(
-        api("assignments?per_page=100&include[]=submission")
+        api("assignments?per_page=100&include[]=submission&include[]=score_statistics")
       );
       if (gradeAssignments.length > 0) {
-        const csvRows = ["Assignment,Due Date,Points Possible,Score,Grade"];
+        const csvRows = [
+          "Assignment,Due Date,Points Possible,Score,Grade,Mean,Median,High,Upper Quartile,Low,Lower Quartile",
+        ];
         for (const a of gradeAssignments) {
           const name = (a.name || "").replace(/"/g, '""');
           const due = a.due_at ? new Date(a.due_at).toLocaleDateString() : "";
           const possible = a.points_possible ?? "";
           const score = a.submission?.score ?? "";
           const grade = a.submission?.grade ?? "";
-          csvRows.push(`"${name}","${due}",${possible},${score},"${grade}"`);
+          const stats = a.score_statistics || {};
+          const mean = stats.mean ?? "";
+          const median = stats.median ?? "";
+          const high = stats.max ?? "";
+          const upperQuartile = stats.upper_quartile ?? "";
+          const low = stats.min ?? "";
+          const lowerQuartile = stats.lower_quartile ?? "";
+          csvRows.push(
+            `"${name}","${due}",${possible},${score},"${grade}",${mean},${median},${high},${upperQuartile},${low},${lowerQuartile}`
+          );
         }
         filesToDownload.push({
           url: `data:text/csv;charset=utf-8,${encodeURIComponent(csvRows.join("\n"))}`,
