@@ -26,7 +26,7 @@ Having a local copy of your course materials also means you can feed them into A
 - Pick between active and past courses, grouped by term, with search filtering
 - Bundle each course into a single `.zip` file instead of loose folders
 - Incremental mode skips files you've already downloaded on previous runs
-- Export your grades as a CSV with assignment names, due dates, points, scores, and letter grades
+- Export your grades (and class averages!) as a CSV with assignment names, due dates, points, scores, and letter grades
 - Finds files embedded in assignments, pages, announcements, and discussions that don't appear in the file browser
 - Saves into organized subfolders per course with your original Canvas folder structure preserved
 - Four built-in presets (Full Archive, Files Only, Text Only, Linked Only) plus custom configuration
