@@ -156,6 +156,68 @@ function renderOwnQuizAnswers(questions) {
 }
 
 // ---------------------------------------------------------------------------
+// Quiz Review Page Scraper (concluded-course fallback)
+// ---------------------------------------------------------------------------
+
+// Canvas returns 403 on quiz submission API endpoints for concluded courses,
+// but the quiz review page is still accessible manually.
+async function fetchQuizReviewViaHtml(quiz) {
+  try {
+    const historyUrl = quiz.html_url.replace(/\?.*$/, "") + "/history";
+    const histRes = await fetchWithRetry(historyUrl);
+    if (!histRes.ok) return null;
+    
+    const histDoc = new DOMParser().parseFromString(await histRes.text(), "text/html");
+    const questionsEl = histDoc.querySelector("#questions");
+    if (!questionsEl || questionsEl.querySelectorAll(".question").length === 0) return null;
+    let html = "";
+    for (const sel of [".quiz-submission-data", ".submission_details", ".quiz_score"]) {
+      const el = histDoc.querySelector(sel);
+      if (el) {
+        const text = el.textContent.replace(/\s+/g, " ").trim();
+        if (text) { html += `<p>${escapeHtml(text)}</p>`; break; }
+      }
+    }
+    questionsEl.querySelectorAll(".question").forEach((q, i) => {
+      const qTextEl = q.querySelector(".question_text");
+      const ptsEl = q.querySelector(".user_points, .points_awarded");
+      const pts = ptsEl ? ` · ${escapeHtml(ptsEl.textContent.trim())}` : "";
+      const qText = qTextEl ? cleanCanvasHtml(qTextEl.innerHTML) : "";
+      html += `<div class="quiz-question"><p><strong>Q${i + 1}${pts}.</strong> ${qText}</p>`;
+      const answerDivs = q.querySelectorAll(".answer");
+      if (answerDivs.length) {
+        html += "<ul>";
+        answerDivs.forEach((ans) => {
+          const isSelected = ans.classList.contains("selected_answer");
+          const isCorrect = ans.classList.contains("correct_answer");
+          const htmlEl = ans.querySelector(".answer_html");
+          const textEl = ans.querySelector(".answer_text");
+          const source = (htmlEl && htmlEl.innerHTML.trim()) ? htmlEl.innerHTML : textEl ? textEl.innerHTML : null;
+          const text = source
+            ? cleanCanvasHtml(source).replace(/<\/?p[^>]*>/gi, " ").trim()
+            : escapeHtml(ans.textContent.trim());
+          let prefix = "";
+          let style = "";
+          if (isSelected && isCorrect) { prefix = "✓ "; style = ' style="color:#16a34a;font-weight:600"'; }
+          else if (isSelected)         { prefix = "✗ "; style = ' style="color:#dc2626;font-weight:600"'; }
+          else if (isCorrect)          { prefix = "◇ "; style = ' style="color:#16a34a"'; }
+          html += `<li${style}>${prefix}${text}</li>`;
+        });
+        html += "</ul>";
+      } else {
+        const responseEl = q.querySelector(".quiz_response_text, .user_content");
+        if (responseEl) html += `<p><strong>Your answer:</strong> ${cleanCanvasHtml(responseEl.innerHTML)}</p>`;
+      }
+      html += "</div>";
+    });
+    return html;
+  } catch (err) {
+    console.warn(`[Canvas Downloader] Quiz review scrape failed for "${quiz.title}":`, err);
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // ZIP Download Helper
 // ---------------------------------------------------------------------------
 
@@ -1096,6 +1158,10 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
                 console.warn(`[Canvas Downloader] Own quiz answers unavailable (${quiz.title}):`, err);
               }
             }
+          }
+          else if (res.status === 403) {
+            const scraped = await fetchQuizReviewViaHtml(quiz);
+            if (scraped) body += scraped;
           }
         } catch (err) {
           console.error(`[Canvas Downloader] Quiz result error (${quiz.title}):`, err);
