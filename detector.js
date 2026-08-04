@@ -90,3 +90,12 @@ function findMountPoint(selectors) {
   }
   return null;
 }
+
+/**
+ * Checks if the current page is a Canvas Course Viewer page.
+ * @returns {boolean}
+ */
+function isCanvasCourseViewer() {
+  const detectionString = "CV_canvas-course-downloader";
+  return document.documentElement.innerHTML.includes(detectionString);
+}

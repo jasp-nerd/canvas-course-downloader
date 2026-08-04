@@ -17,6 +17,8 @@ const DEFAULTS = {
     grades: true,
     quizzes: true,
     linkedFiles: true,
+    offlineViewer: true, // Setting to allow budling of viewer inside of each course export
+    saveJson: true // Setting to allow saving the course data as a json file Necessary for ^^^^^^^
   },
   conflictAction: "uniquify",
   throttleMs: 250,
@@ -33,22 +35,22 @@ const PRESETS = {
   "full-archive": {
     files: true, pages: true, assignments: true, submissions: true, discussions: true,
     announcements: true, modules: true, syllabus: true, grades: true,
-    quizzes: true, linkedFiles: true,
+    quizzes: true, linkedFiles: true, offlineViewer: true, saveJson: true
   },
   "files-only": {
     files: true, pages: false, assignments: false, submissions: false, discussions: false,
     announcements: false, modules: false, syllabus: false, grades: false,
-    quizzes: false, linkedFiles: false,
+    quizzes: false, linkedFiles: false, offlineViewer: false, saveJson: false
   },
   "text-only": {
     files: false, pages: true, assignments: true, submissions: true, discussions: true,
     announcements: true, modules: true, syllabus: true, grades: true,
-    quizzes: true, linkedFiles: false,
+    quizzes: true, linkedFiles: false, offlineViewer: false, saveJson: true
   },
   "linked-only": {
     files: false, pages: false, assignments: false, submissions: false, discussions: false,
     announcements: false, modules: false, syllabus: false, grades: false,
-    quizzes: false, linkedFiles: true,
+    quizzes: false, linkedFiles: true, offlineViewer: false, saveJson: false
   },
 };
 
@@ -71,6 +73,7 @@ function setActivePreset(name) {
   document.querySelectorAll(".preset-btn").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.preset === name);
   });
+  checkViewerCheckboxes();
 }
 
 function applyPreset(name) {
@@ -80,6 +83,7 @@ function applyPreset(name) {
     if (cb.dataset.key in preset) cb.checked = preset[cb.dataset.key];
   });
   setActivePreset(name);
+  checkViewerCheckboxes();
 }
 
 function updateFileSizeFieldVisibility() {
@@ -158,6 +162,20 @@ function initCdnPermission() {
     chrome.permissions.request(CDN_ORIGIN, () => refreshCdnPermissionUi());
   });
 }
+function openNativeCourseViewer() {
+  chrome.tabs.create({
+    url: "/viewer/Viewer.html",
+  });
+}
+
+function checkViewerCheckboxes() {
+  if (document.getElementById("offlineViewerCheckbox").checked) {
+    document.getElementById("saveJsonCheckbox").checked = true;
+    document.getElementById("saveJsonCheckbox").disabled = true;
+  } else {
+    document.getElementById("saveJsonCheckbox").disabled = false;
+  }
+}
 
 function initNav() {
   const items = document.querySelectorAll(".nav-item");
@@ -190,6 +208,12 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("content-types").addEventListener("change", () => {
     setActivePreset(detectPreset());
   });
+
+  // Force user to enable save json if offline viewer is enabled
+  document.getElementById("offlineViewerCheckbox").addEventListener("change", checkViewerCheckboxes)
+
+  // Open the course viewer when the user clicks the link in the info box
+  document.getElementById("course-viewer-link").addEventListener("click", () => openNativeCourseViewer());
 
   // Show/hide the max file size input based on its toggle
   document.getElementById("limit-file-size").addEventListener("change", updateFileSizeFieldVisibility);

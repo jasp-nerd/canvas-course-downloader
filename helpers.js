@@ -84,6 +84,45 @@ function sanitizeHtml(html) {
 }
 
 /**
+ * Recursively walks a JSON-serializable object or array and sanitizes any HTML
+ * content fields (`body`, `description`, `long_description`, `message`, `syllabus_body`)
+ * using `sanitizeHtml()`.
+ *
+ * Ensures raw API HTML written to JSON files (e.g. Pages.json, Assignments.json,
+ * Announcements.json, Discussions.json, Submissions.json) lands on disk sanitized
+ * against script tags and dangerous event handlers.
+ */
+function sanitizeJsonHtml(data) {
+  if (data === null || data === undefined) return data;
+  if (Array.isArray(data)) {
+    return data.map((item) => sanitizeJsonHtml(item));
+  }
+  if (typeof data === "object") {
+    const htmlFields = new Set([
+      "body",
+      "description",
+      "long_description",
+      "message",
+      "syllabus_body",
+    ]);
+    const result = {};
+    for (const key of Object.keys(data)) {
+      const val = data[key];
+      if (htmlFields.has(key) && typeof val === "string") {
+        result[key] = sanitizeHtml(val);
+      } else if (val !== null && typeof val === "object") {
+        result[key] = sanitizeJsonHtml(val);
+      } else {
+        result[key] = val;
+      }
+    }
+    return result;
+  }
+  return data;
+}
+
+
+/**
  * Removes empty-tag litter that Canvas's WYSIWYG editor leaves behind, while
  * preserving any whitespace those tags were holding.
  *
@@ -232,17 +271,15 @@ function relativePathToCourseRoot(filePath) {
 }
 
 /** Wraps content in an HTML page that links to `styles.css` at the course root. */
-function toHtmlDataUri(title, body, filePath = "") {
+function toHtmlString(title, body, filePath = "") {
   const safeBody = sanitizeHtml(body);
   const cssHref = `${relativePathToCourseRoot(filePath)}/styles.css`;
-  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${title}</title><link rel="stylesheet" href="${cssHref}"></head><body><h1>${title}</h1>${safeBody}</body></html>`;
-  return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${title}</title><link rel="stylesheet" href="${cssHref}"></head><body><h1>${title}</h1>${safeBody}</body></html>`;
 }
 
-/** Wraps a Markdown body in a `# Title` heading and returns a data-URI. */
-function toMarkdownDataUri(title, mdBody) {
-  const md = `# ${title}\n\n${mdBody}`;
-  return `data:text/markdown;charset=utf-8,${encodeURIComponent(md)}`;
+/** Wraps a Markdown body in a `# Title` heading. */
+function toMarkdownString(title, mdBody) {
+  return `# ${title}\n\n${mdBody}`;
 }
 
 /**

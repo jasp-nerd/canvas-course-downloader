@@ -173,8 +173,9 @@
       color: #92400e;
     }
 
-    /* Primary button */
-    button#downloadBtn {
+    /* Primary Button & Secondary Button */
+    button#downloadBtn, 
+    button#viewBtn {
       width: 100%;
       padding: 10px 14px;
       background: var(--brand);
@@ -205,8 +206,43 @@
       cursor: not-allowed;
       box-shadow: none;
     }
-    button#downloadBtn svg { width: 14px; height: 14px; }
-
+    button#downloadBtn svg { 
+      width: 14px; 
+      height: 14px; 
+    }
+    /*
+    Used to provide different styling depending on context
+    View button background is white while on a canvas page, but 
+    turns red to draw attention when the download button is disabled
+    */
+    button#viewBtn:not(:hover):not(:disabled):not(.view-btn-red) { 
+      background: #fff;
+      border: 1px solid var(--brand);
+      color: var(--brand);
+    }
+    button#viewBtn:hover:not(:disabled) {
+      background: var(--brand-hover);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      border: 1px solid var(--brand-hover);
+    }
+    button#viewBtn:active { transform: scale(0.98); }
+    button#viewBtn:disabled {
+      background: var(--border);
+      color: var(--text-faint);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    button#viewBtn svg { 
+      width: 16px; 
+      height: 16px; 
+      fill: #fff 
+    }
+    button#viewBtn:disabled svg { 
+      fill: var(--text-faint)
+    }
+    button#viewBtn:not(:hover):not(:disabled):not(.view-btn-red) svg { 
+      fill: var(--brand) 
+    }
     /* Feedback prompt */
     .feedback-card {
       margin-top: 12px;
@@ -308,6 +344,13 @@
       <path d="M12 4v12"/><path d="M6 12l6 6 6-6"/><path d="M5 20h14"/>
     </svg>
     <span id="downloadBtnLabel">Download Course Content</span>
+  </button>
+
+  <button id="viewBtn">
+    <svg viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg">
+      <path d="M960 1489.82c-348.474 0-668.545-202.323-841.298-529.918C291.455 632.306 611.526 429.984 960 429.984s668.545 202.322 841.298 529.918C1628.545 1287.497 1308.474 1489.82 960 1489.82Zm948.342-553.552C1720.645 558.648 1357.332 324 960 324c-397.333 0-760.645 234.648-948.342 612.268L0 959.902l11.658 23.634c187.697 377.62 551.01 612.268 948.342 612.268 397.333 0 760.645-234.648 948.342-612.268L1920 959.902l-11.658-23.634ZM960 1171.869c-116.9 0-211.967-95.067-211.967-211.967 0-116.9 95.067-211.967 211.967-211.967 116.9 0 211.967 95.067 211.967 211.967 0 116.9-95.067 211.967-211.967 211.967m0-529.918c-175.297 0-317.951 142.654-317.951 317.951 0 175.297 142.654 317.95 317.951 317.95 175.297 0 317.951-142.653 317.951-317.95S1135.297 641.951 960 641.951" fill-rule="evenodd"/>
+    </svg>
+    <span id="viewBtnLabel">View Downloaded Course</span>
   </button>
 
   <div class="feedback-card" id="feedbackCard">

@@ -41,7 +41,9 @@ async function ensureCdnPermission() {
 document.addEventListener("DOMContentLoaded", () => {
   const statusDiv = document.getElementById("status");
   const downloadBtn = document.getElementById("downloadBtn");
+  const viewBtn = document.getElementById("viewBtn");
   const downloadBtnLabel = document.getElementById("downloadBtnLabel");
+  const viewBtnLabel = document.getElementById("viewBtnLabel");
 
   const setStatus = (text, state) => {
     statusDiv.textContent = text;
@@ -52,6 +54,15 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("settingsLink").addEventListener("click", (e) => {
     e.preventDefault();
     chrome.runtime.openOptionsPage();
+  });
+
+  viewBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (!viewBtn.disabled) {
+      chrome.tabs.create({
+        url: "/viewer/Viewer.html",
+      });
+    }
   });
 
   // Load settings and show content type tags
@@ -82,12 +93,26 @@ document.addEventListener("DOMContentLoaded", () => {
   maybeShowFeedbackPrompt();
 
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+    const baseExtensionURL = chrome.runtime.getURL('');
+    let isCanvasViewerExtensionPage = false;
+    if (tab.url?.startsWith(baseExtensionURL) && tab.url?.includes(baseExtensionURL + "viewer/Viewer.html")) {
+      viewBtn.disabled = true;
+      viewBtnLabel.textContent = "Already Viewing";
+      setStatus("Viewing a course, navigate to a canvas page to download.", "success")
+      isCanvasViewerExtensionPage = true;
+    }
     chrome.tabs.sendMessage(tab.id, { action: "get_status" }, (response) => {
       if (chrome.runtime.lastError || !response) {
+        if (isCanvasViewerExtensionPage) return;          
         setStatus("Not on a Canvas page.", "error");
+        viewBtn.classList.add("view-btn-red")
         return;
       }
-
+      if (response.isCanvasCourseViewer) {
+        viewBtn.disabled = true;
+        viewBtnLabel.textContent = "Already Viewing";
+        setStatus("Viewing a course, navigate to a canvas page to download.", "success")
+      }
       if (response.isCanvas && response.courseId) {
         setStatus("Course detected", "success");
         downloadBtnLabel.textContent = "Download course content";

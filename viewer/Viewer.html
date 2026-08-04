@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <!-- Canvas Viewer part of Canvas Course Downloader (https://github.com/jasp-nerd/canvas-course-downloader) -->
+  <!--
+      DO NOT REMOVE
+      Detection string: "CV_canvas-course-downloader"
+      This string is used to detect that this is a canvas course viewer page
+    -->
+  <title>Canvas Viewer</title>
+
+  <!-- React Scripts DOM & React -->
+  <script src="./vendors/react.development.js"></script>
+  <script src="./vendors/react-dom.development.js"></script>
+
+  <!-- Babel (Converting JSX / React to JS in browser) (link: https://unpkg.com/@babel/standalone@7.29.8/babel.min.js) -->
+  <!-- Compiled as a part of bundle.js-->
+  <!-- <script src="./vendors/babel.min.js"></script> -->
+
+  <!-- JS Zip (For unzipping)-->
+  <script src="./vendors/jszip.min.js"></script>
+
+  <!-- JS Mammoth (For rendering .docx files)-->
+  <script src="./vendors/mammoth.browser.min.js"></script>
+
+  <!-- JS Chart.js and PPTXViewJS (For rendering Powerpoint files)-->
+  <script src="./vendors/chart.umd.min.js"></script>
+  <script src="./vendors/PptxViewJS.min.js"></script>
+
+  <!-- IndexedDB Key Value Store -->
+  <script src="./vendors/idb-keyval-iife.min.js"></script>
+
+  <!-- External CSS Styles -->
+  <link rel="stylesheet" href="./style/google_fonts.css"/>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./style/style.css"/>
+</head>
+
+<body>
+  <!-- React Components (Must use type="text/babel") -->
+  <!-- Moved to bundle.js
+  <script type="text/babel" src="./contexts/CourseContext.jsx"></script>
+  <script type="text/babel" src="./contexts/NavigationContext.jsx"></script>
+  -->
+
+  <!-- Pages-->
+  <!-- Moved to bundle.js
+    <script type="text/babel" src="./pages/AnnouncementDetailPage.jsx"></script>
+    <script type="text/babel" src="./pages/AnnouncementsPage.jsx"></script>
+    <script type="text/babel" src="./pages/App.jsx"></script>
+    <script type="text/babel" src="./pages/AssignmentsPage.jsx"></script>
+    <script type="text/babel" src="./pages/AssignmentDetailView.jsx"></script>
+    <script type="text/babel" src="./pages/DiscussionsPage.jsx"></script>
+    <script type="text/babel" src="./pages/DiscussionDetailView.jsx"></script>
+    <script type="text/babel" src="./pages/FilesPage.jsx"></script>
+    <script type="text/babel" src="./pages/FilesPageDetailView.jsx"></script>
+    <script type="text/babel" src="./pages/GradesPage.jsx"></script>
+    <script type="text/babel" src="./pages/HomePage.jsx"></script>
+    <script type="text/babel" src="./pages/MainContent.jsx"></script>
+    <script type="text/babel" src="./pages/ModulesPage.jsx"></script>
+    <script type="text/babel" src="./pages/NameProfileCard.jsx"></script>
+    <script type="text/babel" src="./pages/PagesPage.jsx"></script>
+    <script type="text/babel" src="./pages/PageDetailView.jsx"></script>
+    -->
+
+  <!-- Components -->
+  <!-- Moved to bundle.js
+    <script type="text/babel" src="./components/AssignmentRubric.jsx"></script>
+    <script type="text/babel" src="./components/CanvasItemIcon.jsx"></script>
+    <script type="text/babel" src="./components/CanvasSubmission.jsx"></script>
+    <script type="text/babel" src="./components/ContextPill.jsx"></script>
+    <script type="text/babel" src="./components/CollapseTable.jsx"></script>
+    <script type="text/babel" src="./components/CoursePicker.jsx"></script>
+    <script type="text/babel" src="./components/CourseList.jsx"></script>
+    <script type="text/babel" src="./components/DocxMemoryViewer.jsx"></script>
+    <script type="text/babel" src="./components/LocalAtatchmentViewer.jsx"></script>
+    <script type="text/babel" src="./components/PptxMemoryViewer.jsx"></script>
+    <script type="text/babel" src="./components/ScoreDistributionGraph.jsx"></script>
+    <script type="text/babel" src="./components/TopBreadcrumbs.jsx"></script>
+  -->
+  <!-- Helpers -->
+  <!-- Moved to bundle.js
+  <script type="text/babel" src="./helpers/Helpers.jsx"></script>
+  --> 
+  
+  <!-- The container where React renders (must go above the .bundle.js)-->
+  <div id="root" style="display: flex; width: 100%"></div>
+  <!-- Bundled Scripts -->
+  <script src="./bundle.js"></script>
+</body>
+
+</html

@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2020",
+    "jsx": "react",
+    "checkJs": false
+  },
+  "include": [
+    "viewer/**/*.js",
+    "viewer/**/*.jsx"
+  ]
+}

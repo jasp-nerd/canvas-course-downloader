@@ -156,6 +156,11 @@ function scheduleNext() {
   setTimeout(processQueue, downloadSettings.throttleMs || 250);
 }
 
+/** Converts a text string to a data-URI in a Service Worker. */
+function stringToDataUrl(content, mimeType = "text/plain;charset=utf-8") {
+  return `data:${mimeType},${encodeURIComponent(content)}`;
+}
+
 async function processQueue() {
   if (cancelled) {
     isProcessing = false;
@@ -185,8 +190,17 @@ async function processQueue() {
   let fullPath = `${nextJob.path}${sanitizedName}`;
   if (fullPath.startsWith("/")) fullPath = fullPath.substring(1);
 
+  let downloadUrl = nextJob.url;
+  if (!downloadUrl && nextJob.content) {
+    downloadUrl = stringToDataUrl(nextJob.content, nextJob.mimeType || "text/plain;charset=utf-8");
+  }
+
   try {
-    const downloadId = await chrome.downloads.download({ url: nextJob.url, filename: fullPath, conflictAction: downloadSettings.conflictAction });
+    const downloadId = await chrome.downloads.download({
+      url: downloadUrl,
+      filename: fullPath,
+      conflictAction: downloadSettings.conflictAction,
+    });
     if (cancelled) {
       // User cancelled while this job was mid-handshake with chrome.downloads.
       // Cancel the started download immediately so the file isn't saved.
@@ -235,7 +249,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     if (message.type === "START_DOWNLOAD") {
       const { files, courseName, conflictAction, throttleMs, folderPrefix } = message.payload;
-      const safeName = courseName.replace(/[/\\?%*:|"<>]/g, "-");
+      const safeName = courseName ? courseName.replace(/[/\\?%*:|"<>]/g, "-") : "";
 
       // Store settings for this batch
       downloadSettings = {
@@ -256,11 +270,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sourceTabId = sender.tab?.id || sourceTabId;
 
       const prefix = downloadSettings.folderPrefix ? `${downloadSettings.folderPrefix}/` : "";
+      const courseFolder = safeName ? `${safeName}/` : "";
       const newJobs = files.map((file) => ({
         id: nextJobId++,
-        url: file.url,
+        url: file.url || null,
+        buffer: file.buffer || null,
+        content: file.content || null,
+        mimeType: file.mimeType || null,
         filename: file.filename,
-        path: `${prefix}${safeName}/${file.path}`.replace(/\/+/g, "/"),
+        path: `${prefix}${courseFolder}${file.path || ""}`.replace(/\/+/g, "/"),
         state: STATE.QUEUED,
         chromeDownloadId: null,
         error: null,
