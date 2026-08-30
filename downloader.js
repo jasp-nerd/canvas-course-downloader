@@ -489,6 +489,21 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
   // /files/<id> references. Canvas embeds inline images as <img src=".../files/
   // <id>/preview">, which are otherwise neither downloaded nor link-rewritten —
   // so without this they render as broken images in the offline archive.
+  //
+  // Links that can't be fetched (no access, deleted, locked) are collected in
+  // `inaccessibleLinks` and reported at the end of the export instead of being
+  // dropped silently — an archive missing 20 lecture PDFs should say so.
+  const inaccessibleLinks = [];
+  const inaccessibleFileIds = new Set();
+  function recordInaccessible(link, ref, source, status, sourceCourseId) {
+    const id = ref.match(/\/files\/(\d+)/)?.[1];
+    if (id) {
+      if (inaccessibleFileIds.has(id)) return;
+      inaccessibleFileIds.add(id);
+    }
+    inaccessibleLinks.push({ source, text: (link.textContent || "").trim(), url: ref, status, sourceCourseId });
+  }
+
   async function extractLinkedFiles(html, source) {
     const doc = new DOMParser().parseFromString(html, "text/html");
     const links = doc.querySelectorAll(
@@ -498,12 +513,50 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
     for (const link of links) {
       const ref = link.getAttribute("href") || link.getAttribute("src") || "";
       const id = ref.match(/\/files\/(\d+)/)?.[1];
-      if (!id || seenFileIds.has(id)) continue;
+      if (!id || seenFileIds.has(id) || inaccessibleFileIds.has(id)) continue;
+
+      // Carry the link's access-granting query params over to the API call.
+      // Canvas's "file association access" authorises a file through the
+      // *location* it is linked from: `location=course_syllabus_85509` lets
+      // anyone who can view that course's syllabus read the file — even when
+      // the file lives in a course they aren't enrolled in (typically a
+      // syllabus carried over from last year still linking last year's
+      // slides). `verifier` is the older public-token equivalent. Without
+      // these, the bare /api/v1/files/<id> call is refused for files the
+      // browser opens fine. The API echoes `location` into the download URL
+      // it returns, so the actual download is authorised the same way.
+      const apiParams = new URLSearchParams();
+      try {
+        const parsed = new URL(ref, domain);
+        for (const key of ["location", "verifier"]) {
+          const value = parsed.searchParams.get(key);
+          if (value) apiParams.set(key, value);
+        }
+      } catch {
+        // Malformed ref — fall through without params.
+      }
+      const query = apiParams.toString() ? `?${apiParams}` : "";
+
+      // Files linked from another course keep that course id so the offline
+      // link rewrite can map the original cross-course URL onto the local copy.
+      const linkedCourseId = ref.match(/\/courses\/(\d+)\/files\//)?.[1];
+      const sourceCourseId = linkedCourseId && linkedCourseId !== String(courseId) ? linkedCourseId : undefined;
 
       try {
-        const res = await fetchWithRetry(`${domain}/api/v1/files/${id}`);
-        if (!res.ok) continue;
+        const res = await fetchWithRetry(`${domain}/api/v1/files/${id}${query}`);
+        if (!res.ok) {
+          recordInaccessible(link, ref, source, String(res.status), sourceCourseId);
+          continue;
+        }
         const data = await res.json();
+
+        // A file that is locked for the user comes back with an empty `url`.
+        // Queueing it would fetch("") — the current Canvas page — and store
+        // that HTML under the PDF's name, so report it instead.
+        if (!data.url) {
+          recordInaccessible(link, ref, source, data.locked_for_user ? "locked" : "no-url", sourceCourseId);
+          continue;
+        }
 
         const fileId = String(data.id || id);
         if (!seenFileIds.has(fileId)) {
@@ -516,10 +569,12 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
             contentType: data["content-type"] || "",
             updatedAt: data.updated_at || data.modified_at || "",
             canvasId: fileId,
+            ...(sourceCourseId ? { sourceCourseId } : {}),
           });
         }
       } catch (err) {
         console.error(`[Canvas Downloader] Error fetching linked file ${id} from ${source}:`, err);
+        recordInaccessible(link, ref, source, "error", sourceCourseId);
       }
     }
   }
@@ -1284,6 +1339,33 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
   }
   chrome.storage.local.set({ [incrementalKey]: incrementalRecord });
 
+  // --- Inaccessible linked files report -------------------------------------
+  // Surface every linked file we found but couldn't fetch, with the reason.
+  // Cross-course links are called out explicitly: they usually mean the
+  // instructor carried content over from an older course without relinking,
+  // which is something the user can act on (ask for a relink) but can't fix.
+  if (inaccessibleLinks.length > 0) {
+    const csvCell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const rows = ["source,link_text,url,status,linked_course_id"];
+    for (const l of inaccessibleLinks) {
+      rows.push([l.source, l.text, l.url, l.status, l.sourceCourseId || ""].map(csvCell).join(","));
+    }
+    filesToDownload.push({
+      url: `data:text/csv;charset=utf-8,${encodeURIComponent(rows.join("\n"))}`,
+      filename: "_inaccessible_links.csv",
+      path: "",
+    });
+
+    const otherCourses = [...new Set(inaccessibleLinks.map((l) => l.sourceCourseId).filter(Boolean))];
+    const crossCount = inaccessibleLinks.filter((l) => l.sourceCourseId).length;
+    const n = inaccessibleLinks.length;
+    let msg = `Warning: ${n} linked file${n === 1 ? "" : "s"} could not be fetched — listed in _inaccessible_links.csv.`;
+    if (crossCount > 0) {
+      msg += ` ${crossCount} of them point to another course (${otherCourses.join(", ")}) — usually content carried over from an earlier edition; ask the instructor to relink them.`;
+    }
+    log(msg);
+  }
+
   // --- Export manifest -------------------------------------------------------
   const manifest = {
     course: courseName,
@@ -1303,6 +1385,7 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
       quizzes: quizCount,
       modules: modules.length,
       extractedFiles: filesToDownload.filter((f) => f.path === "Extracted_Files/").length,
+      inaccessibleLinkedFiles: inaccessibleLinks.length,
       skippedIncremental: skippedCount,
       skippedFilters: filteredOutCount,
       total: filesToDownload.length,
@@ -1373,6 +1456,9 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
     } else if (f.canvasId) {
       urlMap.set(`${domain}/courses/${courseId}/files/${f.canvasId}`, target);
       urlMap.set(`${domain}/files/${f.canvasId}`, target);
+      // Linked files pulled from another course are referenced by that
+      // course's URL in the exported HTML.
+      if (f.sourceCourseId) urlMap.set(`${domain}/courses/${f.sourceCourseId}/files/${f.canvasId}`, target);
     }
   }
   // Dereference /modules/items/<id> URLs through the items→resource map.

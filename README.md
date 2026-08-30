@@ -145,7 +145,7 @@ Open settings from the extension popup or your browser's extension options page.
 | Grades | Students get a personal `Grades.csv` (your scores plus class Low/Lower-quartile/Median/Mean/Upper-quartile/High stats). Teachers/TAs get a full `Gradebook.csv` (every student × assignment) and a `Students.csv` roster |
 | Student submissions | *Teacher/TA:* every student's work for each assignment — all attempts, organized as `Submissions/<Assignment>/<Student>/`, with a per-assignment `_grades.csv` and rubric feedback. *Student:* your own submissions and attempt history |
 | Quizzes | Quiz metadata and description for everyone. *Teacher/TA:* the question bank with answer key plus a per-student score table and `_grades.csv`. *Student:* your score and (when the instructor left responses visible) your answered questions |
-| Linked files | Files embedded in page/assignment/announcement/discussion HTML that don't appear in the file browser, including inline images |
+| Linked files | Files embedded in page/assignment/announcement/discussion/syllabus HTML that don't appear in the file browser, including inline images and files linked from another course (when Canvas grants access through the linking page). Links that can't be fetched are listed in `_inaccessible_links.csv` |
 
 Each export also includes a `manifest.json` with metadata: export date, file counts per type, source URL, and extension version.
 

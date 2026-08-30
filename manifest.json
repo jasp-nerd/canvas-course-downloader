@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Canvas Course Downloader & Exporter",
   "description": "Download, export, and back up Canvas LMS course files, pages, assignments, grades, and more into organized folders.",
-  "version": "2.10.1",
+  "version": "2.10.2",
   "browser_specific_settings": {
     "gecko": {
       "id": "canvas-course-downloader@jasp-nerd",
