@@ -14,6 +14,7 @@ const SETTING_DEFAULTS = {
     files: true, pages: true, assignments: true, submissions: true, discussions: true,
     announcements: true, modules: true, syllabus: true, grades: true,
     quizzes: true, linkedFiles: true,
+    saveJson: true // Setting to allow saving the course data as a json file
   },
   conflictAction: "uniquify",
   throttleMs: 250,
@@ -409,6 +410,20 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
   const isTeacher = await fetchCourseRole(domain, courseId);
   log(isTeacher ? "Teacher role detected — archiving student data" : "Student role — archiving own view");
 
+  // Fetch the course object itself so we can access the term name, other data.
+  let courseTerm = null;
+  let useAssignmentGroups = true;
+  try {
+    const courseData = await fetchWithRetry(api("?include[]=term"));
+    const courseDataJson = await courseData.json();
+    courseTerm = courseDataJson?.term;
+    console.log(`[Canvas Downloader] Course Term: ${JSON.stringify(courseTerm)}`);
+    useAssignmentGroups = courseDataJson?.apply_assignment_group_weights ?? true;
+  } catch (err) {
+    console.error("[Canvas Downloader] Failed to fetch course data:", err);
+  }
+
+
   // Counts surfaced in the export manifest.
   let discussionReplyCount = 0;
   let studentSubmissionCount = 0;
@@ -482,6 +497,15 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
       seenFileIds.add(String(file.id));
       filesToDownload.push({ url: file.url, filename: file.display_name, path: `Files/${folder}`, size: file.size || 0, contentType: file["content-type"] || "", updatedAt: file.updated_at || file.modified_at || "", canvasId: String(file.id) });
     });
+    if (types.saveJson) {
+      // Saves information about the files and folders to a JSON file for the viewer to use later.
+      let files_obj = { files: files, folders: folders }; // store the files and folders arrays in a single object and saves them to the Files.json
+      filesToDownload.push({
+        url: `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(sanitizeJsonHtml(files_obj)))}`,
+        filename: "Files.json",
+        path: "Files/",
+      });
+    }
   }
 
   // --- Hidden file extraction ------------------------------------------------
@@ -584,12 +608,16 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
   // only appear as module items (Canvas's Pages list omits those for students
   // when the page isn't in the main pages navigation).
   let pages = [];
+  const pages_included_in_obj = new Set(); // store the page slugs in a Set to save them to pages.json for use later in the viewer.
   const pageSlugsToFetch = new Set();
   if (types.pages) {
     log("Fetching pages list...");
     pages = await fetchAllPages(api("pages?per_page=100"));
     for (const p of pages) {
-      if (p.url) pageSlugsToFetch.add(p.url);
+      if (p.url) {
+        pageSlugsToFetch.add(p.url);
+        pages_included_in_obj.add(p.url);
+      }
     }
   }
 
@@ -652,7 +680,7 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
           const base = att.display_name || att.filename || `attachment_${fileId}`;
           filesToDownload.push({
             url: att.url,
-            filename: `${attemptLabel(h)}${base}`,
+            filename: sanitizeFilename(`${attemptLabel(h)}${base}`),
             path: folder,
             size: att.size || 0,
             contentType: att["content-type"] || "",
@@ -740,6 +768,7 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
   // /self endpoint is always readable for your own work, so this needs no
   // roster and runs whenever a student requests assignments.
   if (!isTeacher && types.submissions && assignments.length > 0) {
+    let self_submission_obj = {} // a.id: response object for each assignment to save to submissions.json for use later in the viewer.
     log("Fetching your submissions...");
     for (const a of assignments) {
       if (!(a.submission_types || []).some((t) => ONLINE_SUBMISSION_TYPES.has(t))) continue;
@@ -754,11 +783,20 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
         console.warn(`[Canvas Downloader] Own submission fetch failed for ${a.name}:`, err);
         continue;
       }
+      if (s) self_submission_obj[a.id] = s; // store the submission response object for this assignment
       const safeAssignment = sanitizeFilename(a.name).substring(0, 80);
       const studentName = s.user?.sortable_name || s.user?.name || "You";
       if (await renderSubmission(a, s, `Submissions/${safeAssignment}/`, studentName, "")) {
         studentSubmissionCount++;
       }
+    }
+    // Save the submissions object to a JSON file for use later in the viewer.
+    if (types.saveJson) {
+      filesToDownload.push({
+        url: `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(sanitizeJsonHtml(self_submission_obj)))}`,
+        filename: "Submissions.json",
+        path: "Submissions/",
+      });
     }
   }
 
@@ -777,6 +815,14 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
       }
       const safeName = sanitizeFilename(a.title).substring(0, 100);
       filesToDownload.push(buildDocEntry(a.title, body, safeName, "Announcements/", "announcement", String(a.id)));
+    }
+    if (announcements.length > 0 && types.saveJson) {
+      // Save the announcements object to a JSON file for use later in the viewer.
+      filesToDownload.push({
+        url: `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(sanitizeJsonHtml(announcements)))}`,
+        filename: "Announcements.json",
+        path: "Announcements/",
+      });
     }
   }
 
@@ -824,7 +870,7 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
       html += "</ul>";
       return html;
     };
-
+    let discussion_obj = {}; // store the discussions and their replies in an object to save them to discussions.json for use later in the viewer.
     for (const d of discussions) {
       let body = "";
       if (d.user_name) body += `<p><strong>Author:</strong> ${d.user_name}</p>`;
@@ -848,6 +894,8 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
           const safeTopic = sanitizeFilename(d.title).substring(0, 80);
           const repliesHtml = await renderEntries(view.view, participantName, d.title, `Discussions/${safeTopic}/`);
           if (repliesHtml) body += `<hr><h3>Replies</h3>${repliesHtml}`;
+          d.view = view;
+          discussion_obj[d.id] = d; // store the discussion topic and its replies in the discussions object
         } else {
           console.warn(`[Canvas Downloader] Discussion thread unavailable (${d.title}) — HTTP ${res.status}`);
         }
@@ -891,26 +939,52 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
       const safeName = sanitizeFilename(d.title).substring(0, 100);
       filesToDownload.push(buildDocEntry(d.title, body, safeName, "Discussions/", "discussion", String(d.id)));
     }
+    if (types.saveJson){ // Saves the Discussions to the course file for the viewer
+      filesToDownload.push({
+        url: `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(sanitizeJsonHtml(discussion_obj), null, 2))}`,
+        filename: `Discussions.json`,
+        path: `Discussions/`,
+      });
+    }
   }
 
   // --- Modules ---------------------------------------------------------------
   let modules = [];
+  let modules_obj = {} // initialize an empty object to hold module data
   if (types.modules) {
     log("Fetching modules...");
     modules = await fetchAllPages(api("modules?per_page=100"));
-
+    const gradeAssignments = await fetchAllPages(
+      api("assignments?per_page=100&include[]=submission&include[]=score_statistics")
+    );
     let modulesBody = "";
-    for (const mod of modules) {
+    for (const [index, mod] of modules.entries()) { // added index parameter to the for loop
+      log("Fetching module " + (index + 1) + "/" + modules.length);
       modulesBody += `<h2>${mod.name}</h2><ul>`;
       const items = await fetchAllPages(api(`modules/${mod.id}/items?per_page=100`));
 
+      modules_obj[mod.id] = { ...mod, items: [] }; // store the module object in the modules_obj using its id as the key and store the items array in the module object
+
       for (const item of items) {
+        let mergedItem = { ...item }; //start with the item object
+        const item_with_grade = gradeAssignments.find((a) => a.id === item.content_id);
+        if (item_with_grade) { // if there is a grade assignment, merge it with the item object
+          for (const [key, value] of Object.entries(item_with_grade)) {
+            if (key in item) {
+              mergedItem[`assignment_${key}`] = value;
+            } else {
+              mergedItem[key] = value;
+            }
+          }
+        }
+        modules_obj[mod.id].items.push(mergedItem); // store the item with grade in the module object
+
         const label = item.html_url ? `<a href="${item.html_url}">${item.title}</a>` : item.title;
         modulesBody += `<li>${label} (${item.type})</li>`;
-
         // Track module-item → underlying-resource linkage for cross-ref rewriting.
         if (item.id) {
           if (item.type === "Page" && item.page_url) {
+            pages_included_in_obj.add(item.page_url);
             moduleItemIdToResource.set(String(item.id), { type: "page", key: item.page_url });
           } else if (item.content_id) {
             const typeKey = { Assignment: "assignment", Discussion: "discussion", File: "file", Quiz: "quiz" }[item.type];
@@ -966,6 +1040,13 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
     }
 
     filesToDownload.push(buildDocEntry("Modules", modulesBody, "Modules", "", "module-index"));
+    if (types.saveJson){ // Saves Modules Data for use later in the viewer.
+      filesToDownload.push({
+        url: `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(sanitizeJsonHtml(modules_obj), null, 2))}`,
+        filename: "Modules.json",
+        path: "",
+      });
+    }
   }
 
   // --- Pages: fetch bodies for every slug (from Pages list + Modules) -------
@@ -977,6 +1058,7 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
   if (pageSlugsToFetch.size > 0) {
     log(`Fetching ${pageSlugsToFetch.size} page${pageSlugsToFetch.size === 1 ? "" : "s"}...`);
     console.log("[Canvas Downloader] Page slugs to fetch:", [...pageSlugsToFetch]);
+    const pageDetailsMap = new Map();
     for (const slug of pageSlugsToFetch) {
       try {
         const res = await fetchWithRetry(`${domain}/api/v1/courses/${courseId}/pages/${slug}`);
@@ -985,6 +1067,7 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
           continue;
         }
         const page = await res.json();
+        if (page && page.url) pageDetailsMap.set(page.url, page);
 
         if (types.pages) {
           filesToDownload.push(
@@ -1005,10 +1088,39 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
         console.warn(`[Canvas Downloader] Could not fetch page ${slug}:`, err);
       }
     }
+    // Store the list of pages and their data to json file
+    let pages_obj = (pages.length > 0 ? pages : [...pageDetailsMap.values()])
+      .filter((p) => pages_included_in_obj.has(p.url))
+      .map((p) => pageDetailsMap.get(p.url) || p);
+    let pages_path = "Pages/";
+    if (types.saveJson){ // Saves the Pages to a json file for the viewer.
+      filesToDownload.push({
+        url: `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(sanitizeJsonHtml(pages_obj), null, 2))}`,
+        filename: "Pages.json",
+        path: pages_path,
+      });
+    }
+
+
   } else if (types.pages) {
     console.log("[Canvas Downloader] No pages found via Pages API list or Modules — nothing to fetch.");
   }
-
+  // --- Home Page (front page) -------------------------------------------------------
+  if (types.saveJson){
+    try {
+      let frontPageData = await fetchWithRetry(api('front_page'));
+      let frontPageJson = await frontPageData.json();
+      if (frontPageData && frontPageJson && frontPageJson.page_id){ // Saves the front page to a json file for the viewer.
+        filesToDownload.push({
+          url: `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(sanitizeJsonHtml(frontPageJson), null, 2))}`,
+          filename: "FrontPage.json",
+          path: "",
+        });
+      }
+    } catch (err) {
+      console.warn("[Canvas Downloader] Could not fetch front page:", err);
+    }
+  }
   // --- Syllabus --------------------------------------------------------------
   if (types.syllabus) {
     log("Fetching syllabus...");
@@ -1092,6 +1204,7 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
       const gradeAssignments = await fetchAllPages(
         api("assignments?per_page=100&include[]=submission&include[]=score_statistics")
       );
+      let assignments_obj = {} // initialize an empty object to hold assignment data for storage later
       if (gradeAssignments.length > 0) {
         const csvRows = [
           "Assignment,Due Date,Points Possible,Score,Grade,Low,Lower Quartile,Median,Mean,Upper Quartile,High",
@@ -1112,12 +1225,21 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
           csvRows.push(
             `"${name}","${due}",${possible},${score},"${grade}",${low},${lowerQuartile},${median},${mean},${upperQuartile},${high}`
           );
+          assignments_obj[a.id] = a;
         }
         filesToDownload.push({
           url: `data:text/csv;charset=utf-8,${encodeURIComponent(csvRows.join("\n"))}`,
           filename: "Grades.csv",
           path: "",
         });
+        // store the assignment data to a JSON file for use later
+        if (types.assignments && types.saveJson) {
+          filesToDownload.push({
+            url: `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(sanitizeJsonHtml(assignments_obj), null, 2))}`,
+            filename: "Assignments.json",
+            path: "Assignments/",
+          });
+        }
       }
     } catch (err) {
       console.error("[Canvas Downloader] Grades error:", err);
@@ -1127,6 +1249,8 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
   // --- Grading weights (both roles) ------------------------------------------
   // Assignment-group weights determine the final grade when the course applies
   // them. Students see these on their own grades page, so this isn't gated.
+  // Furthermore, we store the grading periods to be able to calculate individual semester/quarter 
+  // grades if it is a multi-term course.
   if (types.grades) {
     try {
       const groups = await fetchAllPages(api("assignment_groups?per_page=100"));
@@ -1139,6 +1263,30 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
         }
         body += `<tr><th>Total</th><th>${fmtPoints(total)}%</th></tr></tbody></table>`;
         filesToDownload.push(buildDocEntry(`Grading Weights — ${courseName}`, body, "Grading Weights", "", "grading-weights"));
+      }
+      if (types.saveJson){
+        filesToDownload.push({ // store the assignment group data to json file for use later
+          url: `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(sanitizeJsonHtml(groups), null, 2))}`,
+          filename: "AssignmentGroups.json",
+          path: "Assignments/",
+        });
+      }
+
+      //store the grading periods data to json file for use later
+      if (types.saveJson) {
+        try {
+          const gradingPeriodsResponse = await fetchWithRetry(api("grading_periods?per_page=100"));
+          const gradingPeriods = await gradingPeriodsResponse.json();
+
+          filesToDownload.push({
+            url: `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(sanitizeJsonHtml(gradingPeriods), null, 2))}`,
+            filename: "GradingPeriods.json",
+            path: "Assignments/",
+          });
+
+        } catch (err) {
+          console.error("[Canvas Downloader] Grading periods error:", err);
+        }
       }
     } catch (err) {
       console.error("[Canvas Downloader] Grading weights error:", err);
@@ -1373,6 +1521,9 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
     sourceUrl: `${domain}/courses/${courseId}`,
     exportDate: new Date().toISOString(),
     extensionVersion: chrome.runtime.getManifest().version,
+    manifestVersion: 2, //used for detecting if downloaded course has data required to use viewer
+    courseTerm: courseTerm,
+    useAssignmentGroupsForWeighting: useAssignmentGroups,
     counts: {
       files: files.length,
       pages: exportedPagesCount,

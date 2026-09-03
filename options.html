@@ -196,7 +196,14 @@
       margin: 0;
       flex-shrink: 0;
     }
-
+    label:has(input[type="checkbox"]:disabled) {
+      color: #878787;
+      cursor: not-allowed;
+    }
+    input[type="checkbox"]:disabled {
+      opacity: 0.75;
+      cursor: not-allowed;
+    }
     /* Expander for role/inclusion details */
     .info {
       margin-top: 16px;
@@ -231,7 +238,14 @@
       padding: 0.5px 4px;
       font-size: 0.92em;
     }
-
+    .info-body a {
+      text-decoration: underline;
+      color: var(--brand);
+      cursor: pointer;
+    }
+    .info-body > p {
+      margin-bottom: .5em;
+    }
     /* Fields */
     .field { margin-bottom: 16px; }
     .field:last-child { margin-bottom: 0; }
@@ -441,6 +455,9 @@
               <label><input type="checkbox" data-key="discussions"> Discussions</label>
               <label><input type="checkbox" data-key="grades"> Grades (CSV export)</label>
               <label><input type="checkbox" data-key="quizzes"> Quizzes</label>
+              <div class="ct-subhead">Course Viewer &amp; JSON - <strong><i>Beta</i></strong></div>
+              <label><input type="checkbox" data-key="offlineViewer" id="offlineViewerCheckbox" disabled> Course Viewer</label>
+              <label><input type="checkbox" data-key="saveJson" id="saveJsonCheckbox"> Save Course JSON</label>
             </div>
           </div>
 
@@ -458,6 +475,30 @@
               <strong>Quizzes</strong> include the question bank with the answer key plus per-student scores. Handle these
               exports accordingly. As a student the same group gives you only your own view: your submissions, your quiz
               scores (and answers when the instructor allows it), and your personal grades.
+            </div>
+          </details>
+          <details class="info">
+            <summary>
+              <svg class="chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+              Explaining "Course Viewer & JSON"
+            </summary>
+            <div class="info-body">
+              <p>
+                The <strong>Course Viewer</strong> is a planned <i>potential</i> change that would allow users to view their downloaded courses
+                in a way that closely resembles the actual canvas interface, using only the downloaded files. This means that users could navigate through their course
+                in a similar manner to using the actual canvas website.
+              </p>
+              <p>
+                While the <strong>Course Viewer</strong> is under active development, the option to Save Course JSON has been added in the meantime
+                to allow users to begin saving all the data necessary to use it in the future.
+              </p>
+              <p>
+                <strong><i>Why save the JSON?</i></strong>
+                <br>
+                While the Course Viewer is a planned potential change that would allow users to view their downloaded courses in a way that closely resembles the actual canvas interface,
+                there is still some question if it will be possible to make the Course Viewer function within the extension itself. 
+                The best way to be <strong>100%</strong> sure you'll be able to use this feature with your current classes is to save the JSON file.
+              </p>
             </div>
           </details>
         </section>
