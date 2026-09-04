@@ -186,6 +186,7 @@ async function fetchQuizReviewViaHtml(quiz) {
       html += `<div class="quiz-question"><p><strong>Q${i + 1}${pts}.</strong> ${qText}</p>`;
       const answerDivs = q.querySelectorAll(".answer");
       if (answerDivs.length) {
+        const showsCorrectness = Array.from(answerDivs).some((ans) => ans.classList.contains("correct_answer"));
         html += "<ul>";
         answerDivs.forEach((ans) => {
           const isSelected = ans.classList.contains("selected_answer");
@@ -199,7 +200,8 @@ async function fetchQuizReviewViaHtml(quiz) {
           let prefix = "";
           let style = "";
           if (isSelected && isCorrect) { prefix = "✓ "; style = ' style="color:#16a34a;font-weight:600"'; }
-          else if (isSelected)         { prefix = "✗ "; style = ' style="color:#dc2626;font-weight:600"'; }
+          else if (isSelected && showsCorrectness) { prefix = "✗ "; style = ' style="color:#dc2626;font-weight:600"'; }
+          else if (isSelected)         { prefix = "• "; style = ' style="font-weight:600"'; }
           else if (isCorrect)          { prefix = "◇ "; style = ' style="color:#16a34a"'; }
           html += `<li${style}>${prefix}${text}</li>`;
         });
