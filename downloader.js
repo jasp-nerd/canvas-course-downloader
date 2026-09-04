@@ -652,7 +652,7 @@ async function downloadCourse(courseId, courseName, domain, onProgress) {
           const base = att.display_name || att.filename || `attachment_${fileId}`;
           filesToDownload.push({
             url: att.url,
-            filename: `${attemptLabel(h)}${base}`,
+            filename: sanitizeFilename(`${attemptLabel(h)}${base}`),
             path: folder,
             size: att.size || 0,
             contentType: att["content-type"] || "",
