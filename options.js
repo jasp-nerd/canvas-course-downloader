@@ -17,6 +17,7 @@ const DEFAULTS = {
     grades: true,
     quizzes: true,
     linkedFiles: true,
+    saveJson: true // Setting to allow saving the course data as a json file 
   },
   conflictAction: "uniquify",
   throttleMs: 250,
@@ -33,27 +34,27 @@ const PRESETS = {
   "full-archive": {
     files: true, pages: true, assignments: true, submissions: true, discussions: true,
     announcements: true, modules: true, syllabus: true, grades: true,
-    quizzes: true, linkedFiles: true,
+    quizzes: true, linkedFiles: true, saveJson: true
   },
   "files-only": {
     files: true, pages: false, assignments: false, submissions: false, discussions: false,
     announcements: false, modules: false, syllabus: false, grades: false,
-    quizzes: false, linkedFiles: false,
+    quizzes: false, linkedFiles: false, saveJson: false
   },
   "text-only": {
     files: false, pages: true, assignments: true, submissions: true, discussions: true,
     announcements: true, modules: true, syllabus: true, grades: true,
-    quizzes: true, linkedFiles: false,
+    quizzes: true, linkedFiles: false, saveJson: true
   },
   "linked-only": {
     files: false, pages: false, assignments: false, submissions: false, discussions: false,
     announcements: false, modules: false, syllabus: false, grades: false,
-    quizzes: false, linkedFiles: true,
+    quizzes: false, linkedFiles: true, saveJson: false
   },
 };
 
 function getCheckboxes() {
-  return document.querySelectorAll('#content-types input[type="checkbox"]');
+  return document.querySelectorAll('#content-types input[type="checkbox"]:not([data-key="offlineViewer"]');
 }
 
 function detectPreset() {
