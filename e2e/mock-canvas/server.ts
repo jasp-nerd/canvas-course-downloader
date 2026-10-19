@@ -26,6 +26,8 @@ export interface FaultRule {
   throttle?: boolean;
   /** Destroy the socket without answering. */
   drop?: boolean;
+  /** Answer 200 with a login page instead of JSON, as Canvas does when a session expired. */
+  loginPage?: boolean;
   delayMs?: number;
   /** Number of matching requests to affect; every match when omitted. */
   times?: number;
@@ -37,6 +39,8 @@ export interface MockState {
   brand?: string;
   apiDelayMs: number;
   fileDelayMs: number;
+  /** Rate-limit budget; X-Rate-Limit-Remaining is this minus 50 per API request in flight. */
+  rateLimitBudget: number;
   faults: FaultRule[];
 }
 
@@ -52,6 +56,8 @@ export interface MockCanvas {
   state: MockState;
   log: RequestLogEntry[];
   unexpected: string[];
+  /** Highest number of API requests handled at the same time since the last reset. */
+  stats: { maxConcurrentApi: number };
   addFault(rule: FaultRule): void;
   reset(): void;
   close(): Promise<void>;
@@ -64,6 +70,7 @@ const initialState = (): MockState => ({
   requireSessionCookie: false,
   apiDelayMs: 0,
   fileDelayMs: 0,
+  rateLimitBudget: 700,
   faults: [],
 });
 
@@ -178,16 +185,19 @@ function paginate(items: unknown[], url: URL): { body: unknown[]; link: string }
 export async function startMockCanvas(port = 0): Promise<MockCanvas> {
   const { key, cert } = ensureCerts();
   const sockets = new Set<Duplex>();
+  let activeApi = 0;
   const mock: MockCanvas = {
     port: 0,
     state: initialState(),
     log: [],
     unexpected: [],
+    stats: { maxConcurrentApi: 0 },
     addFault: (rule) => mock.state.faults.push({ ...rule }),
     reset() {
       mock.state = initialState();
       mock.log.length = 0;
       mock.unexpected.length = 0;
+      mock.stats.maxConcurrentApi = 0;
     },
     close: () =>
       new Promise((resolve) => {
@@ -222,6 +232,15 @@ export async function startMockCanvas(port = 0): Promise<MockCanvas> {
     if (rule.delayMs) await sleep(rule.delayMs);
     if (rule.drop) {
       req.socket.destroy();
+      return true;
+    }
+    if (rule.loginPage) {
+      send(
+        res,
+        200,
+        'text/html',
+        '<!doctype html><html><body><form id="login_form">Log in</form></body></html>',
+      );
       return true;
     }
     if (rule.throttle) {
@@ -310,6 +329,9 @@ export async function startMockCanvas(port = 0): Promise<MockCanvas> {
     }
 
     if (path.startsWith('/api/v1/')) {
+      activeApi++;
+      mock.stats.maxConcurrentApi = Math.max(mock.stats.maxConcurrentApi, activeApi);
+      res.on('close', () => activeApi--);
       if (mock.state.apiDelayMs) await sleep(mock.state.apiDelayMs);
       const hasSession = (req.headers.cookie ?? '').includes(SESSION_COOKIE);
       if (!mock.state.signedIn || (mock.state.requireSessionCookie && !hasSession)) {
@@ -342,7 +364,8 @@ export async function startMockCanvas(port = 0): Promise<MockCanvas> {
           JSON.stringify({ errors: [{ message: `mock canvas: no handler for ${path}` }] }),
         );
       }
-      const headers = { 'x-rate-limit-remaining': '700', 'x-request-cost': '1' };
+      const remaining = mock.state.rateLimitBudget - 50 * activeApi;
+      const headers = { 'x-rate-limit-remaining': String(remaining), 'x-request-cost': '1' };
       if (Array.isArray(result)) {
         const { body, link } = paginate(result, url);
         return send(res, 200, 'application/json', JSON.stringify(body), { ...headers, link });
