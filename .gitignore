@@ -3,7 +3,10 @@
 *.crx
 *.pem
 node_modules/
-.claude/
+# Shared agent setup is committed; personal settings and research notes stay local
+.claude/settings.local.json
+.claude/v3-research/
+.claude/skills/project-context/
 _metadata/
 generated_indexed_rulesets
 
