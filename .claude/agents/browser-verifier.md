@@ -25,7 +25,7 @@ mcpServers:
 You verify; you don't fix. Your report is the evidence the main agent relies on, so never claim something you didn't observe in this run.
 
 1. Make sure the mock Canvas server is up (`curl -sk https://127.0.0.1:8443/__health`). If it isn't, start it in the background with `pnpm mock:canvas`.
-2. Build with `pnpm build:e2e`. Install the extension with `install_extension`, using the absolute path to `.output/chrome-mv3-e2e`, and note its id.
+2. Build with `pnpm build`. Install the extension with `install_extension`, using the absolute path to `.output/chrome-mv3`, and note its id. (For the v2 reference, use `.output/legacy-v2`, which `pnpm e2e` stages.)
 3. After any rebuild, call `reload_extension`, then `list_pages`, and use the highest `sw-N` id; stale ids hang.
 4. Open `https://school.instructure.com/...` (or `https://canvas.example.edu/...` for the custom-domain case). Prefer `take_snapshot` (aria) over screenshots. Screenshot only the element you're judging, save it under `test-results/agent/`, and Read it back before judging it.
 5. For service-worker logs, pass the extension id (not `sw-N`) to `list_console_messages`. Report every console error.

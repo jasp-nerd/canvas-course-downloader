@@ -22,3 +22,6 @@ playwright-report/
 .env
 .env.*
 !.env.example
+
+# Mock Canvas TLS cert (generated)
+e2e/.certs/

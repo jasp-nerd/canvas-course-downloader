@@ -23,11 +23,13 @@
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "test:watch": "vitest",
     "check:manifest": "pnpm build:all && node scripts/check-manifest.mjs",
     "verify:fast": "pnpm typecheck && pnpm lint && pnpm test",
-    "verify": "pnpm verify:fast && pnpm check:manifest"
+    "verify": "pnpm verify:fast && pnpm check:manifest && playwright test",
+    "mock:canvas": "node e2e/mock-canvas/cli.ts",
+    "e2e": "wxt build && playwright test"
   },
   "dependencies": {
     "@joplin/turndown-plugin-gfm": "^1.0.68",
@@ -41,6 +43,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
+    "@playwright/test": "^1.64.0",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "@types/node": "^24.0.0",
     "@types/turndown": "^5.0.6",

@@ -2,9 +2,10 @@ import js from '@eslint/js';
 import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
 import ts from 'typescript-eslint';
+import { defineConfig } from 'eslint/config';
 import svelteConfig from './svelte.config.js';
 
-export default ts.config(
+export default defineConfig(
   {
     ignores: [
       '.output/',
@@ -36,6 +37,10 @@ export default ts.config(
   {
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { ignoreRestSiblings: true, argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/ban-ts-comment': [
         'error',
         { 'ts-expect-error': 'allow-with-description' },
@@ -56,6 +61,12 @@ export default ts.config(
         },
       ],
     },
+  },
+  {
+    // Playwright reads fixture dependencies from the first parameter, which must
+    // be a destructuring pattern even when empty: `async ({}, use) => ...`.
+    files: ['e2e/**/*.ts'],
+    rules: { 'no-empty-pattern': 'off' },
   },
   {
     files: ['**/*.js', '**/*.mjs'],
