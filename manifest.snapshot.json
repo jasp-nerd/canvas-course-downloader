@@ -1,0 +1,65 @@
+{
+  "chrome-mv3": {
+    "manifest_version": 3,
+    "permissions": [
+      "activeTab",
+      "declarativeNetRequest",
+      "downloads",
+      "notifications",
+      "storage"
+    ],
+    "host_permissions": [
+      "*://*.instructure.com/*"
+    ],
+    "optional_permissions": [],
+    "optional_host_permissions": [
+      "*://*.canvas-user-content.com/*"
+    ],
+    "content_script_matches": [
+      "https://*/*"
+    ],
+    "gecko_id": null
+  },
+  "edge-mv3": {
+    "manifest_version": 3,
+    "permissions": [
+      "activeTab",
+      "declarativeNetRequest",
+      "downloads",
+      "notifications",
+      "storage"
+    ],
+    "host_permissions": [
+      "*://*.instructure.com/*"
+    ],
+    "optional_permissions": [],
+    "optional_host_permissions": [
+      "*://*.canvas-user-content.com/*"
+    ],
+    "content_script_matches": [
+      "https://*/*"
+    ],
+    "gecko_id": null
+  },
+  "firefox-mv3": {
+    "manifest_version": 3,
+    "permissions": [
+      "activeTab",
+      "declarativeNetRequest",
+      "downloads",
+      "notifications",
+      "storage"
+    ],
+    "host_permissions": [
+      "*://*.instructure.com/*"
+    ],
+    "optional_permissions": [],
+    "optional_host_permissions": [
+      "*://*.canvas-user-content.com/*"
+    ],
+    "content_script_matches": [
+      "https://*/*"
+    ],
+    "gecko_id": "canvas-course-downloader@jasp-nerd"
+  }
+}

@@ -5,3 +5,17 @@
 node_modules/
 .claude/
 _metadata/
+generated_indexed_rulesets
+
+# WXT and test output
+.output/
+.wxt/
+web-ext.config.ts
+test-results/
+playwright-report/
+.context/
+
+# Secrets (store API credentials live only in CI secrets)
+.env
+.env.*
+!.env.example

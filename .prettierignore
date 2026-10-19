@@ -1,0 +1,8 @@
+legacy/
+marketing/
+screenshots/
+.output/
+.wxt/
+pnpm-lock.yaml
+*.md
+manifest.snapshot.json

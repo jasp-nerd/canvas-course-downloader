@@ -1,0 +1,61 @@
+{
+  "name": "canvas-course-downloader",
+  "description": "Download, export, and back up Canvas LMS course files, pages, assignments, grades, and more into organized folders.",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "packageManager": "pnpm@11.13.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "build:edge": "wxt build -b edge",
+    "build:all": "wxt build && wxt build -b firefox && wxt build -b edge",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "postinstall": "wxt prepare",
+    "typecheck": "tsc --noEmit && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "check:manifest": "pnpm build:all && node scripts/check-manifest.mjs",
+    "verify:fast": "pnpm typecheck && pnpm lint && pnpm test",
+    "verify": "pnpm verify:fast && pnpm check:manifest"
+  },
+  "dependencies": {
+    "@joplin/turndown-plugin-gfm": "^1.0.68",
+    "@webext-core/messaging": "^4.0.0",
+    "@wxt-dev/storage": "^1.3.0",
+    "client-zip": "^2.5.1",
+    "dompurify": "^3.4.17",
+    "svelte": "^5.57.2",
+    "turndown": "^7.2.4",
+    "valibot": "^1.5.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@types/node": "^24.0.0",
+    "@types/turndown": "^5.0.6",
+    "@wxt-dev/module-svelte": "^2.0.5",
+    "eslint": "^10.12.0",
+    "eslint-plugin-svelte": "^3.23.1",
+    "globals": "^17.0.0",
+    "jsdom": "^30.1.2",
+    "prettier": "^3.9.10",
+    "prettier-plugin-svelte": "^4.1.1",
+    "svelte-check": "^4.7.6",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4",
+    "wxt": "^0.21.4"
+  }
+}
