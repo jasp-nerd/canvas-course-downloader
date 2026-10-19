@@ -1,0 +1,261 @@
+{
+  "scenario": "student-zip-default",
+  "description": "Student, default settings: everything, HTML, one ZIP.",
+  "files": [
+    {
+      "path": "Introduction to Psychology.zip!/Announcements/Room change for Thursday.html",
+      "size": 329,
+      "sha256": "e5174333f89ee8762064afde1473fa1450a19988e60a6df0d41d32e937ebaccd"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Announcements/Slides for week 2 are online.html",
+      "size": 341,
+      "sha256": "15c8437d42a5603439a7cde68ff6ef6f2b4bbe64c00f9194ce9f448ff4b78043"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Announcements/Welcome to the course!.html",
+      "size": 323,
+      "sha256": "6268bcad7d23839a3e25a44c6fe34c6e3617023c3fc61c5b9e2ea21937ab4763"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Assignments/Assignment 1.html",
+      "size": 335,
+      "sha256": "0fd3c9481c93cdafd2d9e0888e41ff362d9358ffadcc1aaae79a8f88a7978350"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Assignments/Assignment 2.html",
+      "size": 335,
+      "sha256": "8c018f74cea2133dff1ceb82608d5a23a9bdf08c08b82445d703d5ad74fb7afe"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Assignments/Assignment 3.html",
+      "size": 335,
+      "sha256": "f002ce45c7057da15b407656090422ce9e22f8588aa0f73ef8c4d94b7910f95c"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Assignments/Final project.html",
+      "size": 338,
+      "sha256": "a7c34a861064d109f146472db3769a8f33c2768729fafa009023aad64e554e72"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Assignments/Midterm project.html",
+      "size": 344,
+      "sha256": "fdb7efce415d9543b2b53a69c351089c41646679e7b7e8ca6b2fde1b62e9d648"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Discussions/Exam preparation.html",
+      "size": 1152,
+      "sha256": "4e13a10cd988aa9f8c66fd88d5a3e9b7cf9945526966686830a3d24d7e8b4161"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Discussions/Introduce yourself.html",
+      "size": 1158,
+      "sha256": "71806604b9bac804470f79649fc6e35f9a89410ea11d5bfb8ef497918978e0e3"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Discussions/Questions about assignment 1.html",
+      "size": 1188,
+      "sha256": "e66d151b09f97c1f12fce1aec78bbea156c5cd0cafdf0d42aa2effcc037753d7"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Assignments/Assignment 1 brief.pdf",
+      "size": 737,
+      "sha256": "2870224fddce3eafbf596dea9fcd0cceedf856ecc1cc8db1bd4475edfdc35ed9"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Assignments/Assignment 2 brief.pdf",
+      "size": 737,
+      "sha256": "d63974c92b71d7753ae5236316e7be72a2a602a15786331baf58202dd35ecd71"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Assignments/Project guidelines.pdf",
+      "size": 737,
+      "sha256": "c908a9fea9e3de499a076262ff16526f77116a479167d075e08562a2a7e12551"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Assignments/Rubric.pdf",
+      "size": 725,
+      "sha256": "a44e887a7e52f9fcca3aaac5ca5534e7fa170d9a49492b9f7a739598f01a49fd"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Exam prep/Formula sheet.pdf",
+      "size": 732,
+      "sha256": "9f21fc98c3956f93b81a3d173b7130f0fddde2f5a7d334273ef471ec233346ac"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Exam prep/Practice exam - solutions.pdf",
+      "size": 744,
+      "sha256": "9050951bd9fb23d172f4cffda79a4a6e08621460d82120639d5236c919ea89b4"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Exam prep/Practice exam.pdf",
+      "size": 732,
+      "sha256": "42fb21c09ff6fde81cc43a0438ba4a4a86c97119f72eb7f833e922c4beccc192"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Lectures/Lecture 01 - What is psychology?.pdf",
+      "size": 751,
+      "sha256": "482fabf3283dc63a7dfad46a0e76310db07b33da51c22539dc76f116723c1f75"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Lectures/Lecture 02 - Research methods.pdf",
+      "size": 748,
+      "sha256": "1d0d6ff7a092fa83ba69971930baddc2ee6b06ec7a3430570658e98029be2c44"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Lectures/Lecture 03 - The brain and behaviour.pdf",
+      "size": 755,
+      "sha256": "8d801196f919ececa94ce0f309b4e7f0e8fa253451852221717c224d57e9b771"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Lectures/Lecture 04 - Sensation and perception.pdf",
+      "size": 756,
+      "sha256": "0aa3af6d8dd5602f24181be4067bef51e0b863ee39767724c61fc927e8f4d029"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Lectures/Lecture 05 - Learning.pdf",
+      "size": 740,
+      "sha256": "bf344aa81c55cb53388e8232a5c621efd2e669522b05ce940cb225451ba99498"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Lectures/Lecture 06 - Memory.pdf",
+      "size": 738,
+      "sha256": "86c3697729921a45125ecd92a6da92b68a5fc04fdf65d1939e1f70bf2e18c566"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Lectures/Lecture 07 - Thinking and language.pdf",
+      "size": 753,
+      "sha256": "7273bd7fb85670b557310efb85fd9f5c0478b8ce7dedc572b01648c1724f3892"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Lectures/Lecture 08 - Development.pdf",
+      "size": 743,
+      "sha256": "3d7f9a0e19c588658fe67c18764dd1bacfc4d7c205f13a052fa180d38ba456fa"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Lectures/Lecture 09 - Personality.pdf",
+      "size": 743,
+      "sha256": "bf19711604d465fbaa4fbf4b0d04f5a9afd7e31931b8e1d5115fc6495ac2c2a8"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Lectures/Lecture 10 - Social psychology.pdf",
+      "size": 749,
+      "sha256": "a85de0520996138132a2bb058e5fc4ea0adffb6796ec100d6ca3395fbcee26e0"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Lectures/Lecture 11 - Stress and health.pdf",
+      "size": 749,
+      "sha256": "84070600959369409d06ef8f93eb54e5a0f1261511dff1b4f83a73e1de194954"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Lectures/Lecture 12 - Psychological disorders.pdf",
+      "size": 755,
+      "sha256": "13894709aaa2cd596672b10a0132a56ea545433f28f8a65b0fdb287134daa36f"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Readings/Week 1 - Core reading.pdf",
+      "size": 740,
+      "sha256": "c9d6d76bfa28c8956ce7bbb5807305f8677bc168e992c7fef0945ae87827c8b2"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Readings/Week 10 - Further reading.pdf",
+      "size": 744,
+      "sha256": "c2a2514d045f6f2f6f0bad0fce2fb47fdd3aae5ff5058fdd77e5d015d991cb7f"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Readings/Week 4 - Background article.pdf",
+      "size": 746,
+      "sha256": "2d446df854d1b75c737b6377f843fef4fca3c9a4207aca9d4cc57bdcb5b64ecb"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Readings/Week 7 - Case study.pdf",
+      "size": 738,
+      "sha256": "3ce99d3d96aed0c3e869732ebcb3b1500fe88507aa73748013de3b5817d81ec8"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Files/Syllabus.pdf",
+      "size": 727,
+      "sha256": "f10cc8c7348af5a40f7f518a5d73b0ecafe727694257ef1ad62a1953e887993d"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Grades.csv",
+      "size": 325,
+      "sha256": "b6ecca7bc171a2b08604a38a869e7b1aa1900327d200c15be347e0396e89a91a"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Grading Weights.html",
+      "size": 443,
+      "sha256": "7ab5d9da012075b67dd97ab45c9632767a2f404491e18a2c836da69352f2ba8a"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/manifest.json",
+      "size": 575,
+      "sha256": "716788598d4b567a68c042297fef9093bfe648510eedd402a11ea0cd82edc6b5"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Modules.html",
+      "size": 1114,
+      "sha256": "fdda7868156fd69aba85194698a144e47c317e93ca93393266c46f5a10311cbf"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Pages/course-schedule.html",
+      "size": 785,
+      "sha256": "4ed96fbc51b382075c0aeba462ea07aab0753059dc7fb575937606826876e92e"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Pages/exam-information.html",
+      "size": 296,
+      "sha256": "e54b2bb879c4875f894040a389f4f8007821baabb8158bf12f54cce7c7c1ebfb"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Pages/how-to-get-help.html",
+      "size": 313,
+      "sha256": "cf7732b9f72513ec5a8b7ecc9a991ef6c5ea38f0e8ff91f9fcedb8bea7b5dc4c"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Pages/welcome-to-the-course.html",
+      "size": 344,
+      "sha256": "9cf888983e4a163aa1beaa5de1b25544417294ec76ed39ada75db296be398f5f"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Quizzes/Midterm practice quiz/Midterm practice quiz.html",
+      "size": 343,
+      "sha256": "cbf7adfbdaefaae0b2861c1934368972cdd46f6a64a684a1e25e87288072a312"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Quizzes/Week 3 quiz/Week 3 quiz.html",
+      "size": 373,
+      "sha256": "172e6ea045d627948bb59d32b214ebd38eae46f2def6031c414c5a566aae2578"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/styles.css",
+      "size": 991,
+      "sha256": "03f865bd295c6b8931d23f38e880dbc49157909cf5334ac5bc07d441da470ea5"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Submissions/Assignment 1/You.html",
+      "size": 367,
+      "sha256": "a920cab255982e22ab15cd9f0c3e594640c25287ceda47db672aea10dacd8c8c"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Submissions/Assignment 2/You.html",
+      "size": 363,
+      "sha256": "9c4d082ac909491f9b3a70c51df437a721f53d27b69c7eda33cf80aa67f83a66"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Submissions/Assignment 3/You.html",
+      "size": 367,
+      "sha256": "28ac80824488984c31d73c7f4c04f0834e9a831cc5baca9901abea231aac957e"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Submissions/Midterm project/You.html",
+      "size": 371,
+      "sha256": "11a5a0387efedc671017156b3388fcedcc880f205acdbc093a5e281a473d033f"
+    },
+    {
+      "path": "Introduction to Psychology.zip!/Syllabus.html",
+      "size": 716,
+      "sha256": "94fef7a83e5881042d602a3c1b06ea78910fda8df536182d49ef8ac5af41a068"
+    }
+  ]
+}

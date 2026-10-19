@@ -6,3 +6,4 @@ screenshots/
 pnpm-lock.yaml
 *.md
 manifest.snapshot.json
+tests/golden/

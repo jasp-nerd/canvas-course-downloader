@@ -14,4 +14,9 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
+  projects: [
+    { name: 'e2e', testIgnore: 'golden/**' },
+    // Regenerates tests/golden from the v2 reference build: `pnpm golden:capture`.
+    { name: 'golden', testMatch: 'golden/**/*.spec.ts' },
+  ],
 });

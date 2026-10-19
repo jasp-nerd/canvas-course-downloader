@@ -27,9 +27,10 @@
     "test:watch": "vitest",
     "check:manifest": "pnpm build:all && node scripts/check-manifest.mjs",
     "verify:fast": "pnpm typecheck && pnpm lint && pnpm test",
-    "verify": "pnpm verify:fast && pnpm check:manifest && playwright test",
+    "verify": "pnpm verify:fast && pnpm check:manifest && playwright test --project e2e",
     "mock:canvas": "node e2e/mock-canvas/cli.ts",
-    "e2e": "wxt build && playwright test"
+    "e2e": "wxt build && playwright test --project e2e",
+    "golden:capture": "wxt build && playwright test --project golden"
   },
   "dependencies": {
     "@joplin/turndown-plugin-gfm": "^1.0.68",

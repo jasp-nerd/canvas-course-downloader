@@ -4,9 +4,10 @@
 // Use `test.use({ extensionPath: V2_BUILD })` to run the same scenario
 // against the v2.11.0 reference build.
 import { chromium, expect, test as base, type BrowserContext, type Worker } from '@playwright/test';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import type { browser } from 'wxt/browser';
 import { MOCK_HOSTS, startMockCanvas, type MockCanvas } from './mock-canvas/server.ts';
 
 export const V3_BUILD = path.resolve('.output/chrome-mv3');
@@ -18,6 +19,8 @@ export const NOT_CANVAS = `https://${MOCK_HOSTS.notCanvas}`;
 
 interface WorkerFixtures {
   extensionPath: string;
+  /** Where Chrome saves downloads, with the folder structure the extension asked for. */
+  downloadsDir: string;
   mock: MockCanvas;
   extContext: BrowserContext;
   serviceWorker: Worker;
@@ -36,9 +39,30 @@ export const test = base.extend<object, WorkerFixtures>({
     { scope: 'worker' },
   ],
 
+  downloadsDir: [
+    async ({}, use) => {
+      const dir = mkdtempSync(path.join(os.tmpdir(), 'ccd-downloads-'));
+      await use(dir);
+      rmSync(dir, { recursive: true, force: true });
+    },
+    { scope: 'worker' },
+  ],
+
   extContext: [
-    async ({ extensionPath, mock }, use) => {
+    async ({ extensionPath, mock, downloadsDir }, use) => {
       const userDataDir = mkdtempSync(path.join(os.tmpdir(), 'ccd-e2e-'));
+      // Chrome's own download settings, so chrome.downloads keeps real names and subfolders.
+      mkdirSync(path.join(userDataDir, 'Default'), { recursive: true });
+      writeFileSync(
+        path.join(userDataDir, 'Default', 'Preferences'),
+        JSON.stringify({
+          download: {
+            default_directory: downloadsDir,
+            prompt_for_download: false,
+            directory_upgrade: true,
+          },
+        }),
+      );
       const rules = Object.values(MOCK_HOSTS)
         .map((host) => `MAP ${host} 127.0.0.1:${mock.port}`)
         .join(', ');
@@ -48,14 +72,30 @@ export const test = base.extend<object, WorkerFixtures>({
         headless: !process.env.HEADED,
         ignoreHTTPSErrors: true,
         viewport: { width: 1280, height: 800 },
+        // Exports contain local dates. Pin the whole browser process (pages, service
+        // worker, workers) to one zone and locale so results match on every machine.
+        env: { ...process.env, TZ: 'UTC' },
+        timezoneId: 'UTC',
+        locale: 'en-US',
         args: [
           `--disable-extensions-except=${extensionPath}`,
           `--load-extension=${extensionPath}`,
           // DNS-level mapping, so service-worker and downloads traffic reach the mock too.
           `--host-resolver-rules=${rules}`,
           '--ignore-certificate-errors',
+          '--lang=en-US',
         ],
       });
+      // Playwright intercepts downloads by default and saves them under GUID names.
+      // Hand them back to Chrome so the Preferences above apply.
+      const setup = await context.newPage();
+      const cdp = await context.newCDPSession(setup);
+      await cdp.send('Browser.setDownloadBehavior', {
+        behavior: 'default',
+        downloadPath: downloadsDir,
+      });
+      await setup.close();
+
       await use(context);
       await context.close();
       rmSync(userDataDir, { recursive: true, force: true });
@@ -88,3 +128,13 @@ export const test = base.extend<object, WorkerFixtures>({
 });
 
 export { expect };
+
+/** Clears extension storage and writes the given storage.sync settings, from the service worker. */
+export async function resetExtensionStorage(sw: Worker, syncSettings: Record<string, unknown>) {
+  await sw.evaluate(async (settings) => {
+    const { storage } = (globalThis as unknown as { chrome: typeof browser }).chrome;
+    await storage.sync.clear();
+    await storage.local.clear();
+    await storage.sync.set(settings);
+  }, syncSettings);
+}
