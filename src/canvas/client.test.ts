@@ -97,6 +97,15 @@ describe('Canvas client', () => {
     expect(apiCalls('/api/v1/courses/101')).toBe(1);
   });
 
+  it('treats a 401 for a hidden area as that item being unavailable, not a lost session', async () => {
+    mock.addFault({ path: '^/api/v1/courses/101/files', status: 401 });
+    const { canvas } = client();
+    await expect(canvas.list('/courses/101/files')).rejects.toMatchObject({
+      kind: 'permanent',
+      status: 401,
+    });
+  });
+
   it('treats a login page in place of JSON as a lost session', async () => {
     mock.addFault({ path: '^/api/v1/courses/101$', loginPage: true });
     const { canvas } = client();
@@ -135,6 +144,13 @@ describe('Canvas client', () => {
     });
     await expect(canvas.get('/courses/101')).rejects.toMatchObject({ kind: 'aborted' });
     expect(mock.log).toHaveLength(0);
+  });
+});
+
+describe('getHtml', () => {
+  it('returns a Canvas web page as text', async () => {
+    const { canvas } = client();
+    await expect(canvas.getHtml('/courses/101')).resolves.toContain('Introduction to Psychology');
   });
 });
 

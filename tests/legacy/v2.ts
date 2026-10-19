@@ -22,6 +22,9 @@ export interface V2Helpers {
   toHtmlDataUri(title: string, body: string, filePath?: string): string;
   toMarkdownDataUri(title: string, body: string): string;
   FALLBACK_EXPORT_CSS: string;
+  extractMediaRefs(html: string): unknown[];
+  pickMediaSource(sources: unknown): unknown;
+  mediaFilename(info: unknown, source: unknown, fallbackStem?: string): string;
 }
 
 let cached: V2Helpers | undefined;
@@ -39,6 +42,7 @@ export function loadV2Helpers(): V2Helpers {
     'sanitizeFilename', 'sanitizeHtml', 'cleanCanvasHtml', 'convertLocalMediaEmbeds',
     'rewriteCanvasLinks', 'relativePathToCourseRoot', 'relativeUrlFromTo', 'htmlToMarkdown',
     'formatDate', 'parsePaginationLink', 'toHtmlDataUri', 'toMarkdownDataUri', 'FALLBACK_EXPORT_CSS',
+    'extractMediaRefs', 'pickMediaSource', 'mediaFilename',
   ];
   cached = load<V2Helpers>(read('helpers.js'), 'TurndownService, turndownPluginGfm', `{ ${names.join(', ')} }`, TurndownService, turndownPluginGfm);
   return cached;

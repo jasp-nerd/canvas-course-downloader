@@ -105,7 +105,10 @@ export function createCanvasClient(options: CanvasClientOptions) {
     });
   }
 
-  async function request(url: string): Promise<{ data: unknown; link: string | null }> {
+  async function request(
+    url: string,
+    expect: 'json' | 'html' = 'json',
+  ): Promise<{ data: unknown; link: string | null }> {
     let throttles = 0;
     let transients = 0;
     for (;;) {
@@ -133,7 +136,11 @@ export function createCanvasClient(options: CanvasClientOptions) {
             throw new CanvasError('throttled', url, res.status);
           continue;
         }
-        if (res.status === 401) throw new CanvasError('session', url, 401);
+        // Canvas sends 401 both when logged out ("unauthenticated") and when an
+        // area is hidden from this user ("unauthorized"); only the first pauses the export.
+        if (res.status === 401) {
+          throw new CanvasError(/unauthenticated/.test(body) ? 'session' : 'permanent', url, 401);
+        }
         if (res.status >= 500) {
           if (++transients > MAX_TRANSIENT_RETRIES)
             throw new CanvasError('transient', url, res.status);
@@ -141,11 +148,11 @@ export function createCanvasClient(options: CanvasClientOptions) {
           continue;
         }
         if (!res.ok) throw new CanvasError('permanent', url, res.status);
+        throttleStreak = 0;
+        if (expect === 'html') return { data: body, link: null };
         // A login page instead of JSON means the session expired.
         if (!(res.headers.get('content-type') ?? '').includes('json'))
           throw new CanvasError('session', url, res.status);
-
-        throttleStreak = 0;
         return {
           data: JSON.parse(body.replace(/^while\(1\);/, '')),
           link: res.headers.get('link'),
@@ -174,6 +181,11 @@ export function createCanvasClient(options: CanvasClientOptions) {
     /** One API object, e.g. `get('/courses/101')`. */
     async get<T>(path: string, params?: Record<string, string | string[]>): Promise<T> {
       return (await request(apiUrl(path, params))).data as T;
+    },
+
+    /** A Canvas web page (not the API) as HTML, e.g. a quiz's review page. */
+    async getHtml(url: string): Promise<string> {
+      return (await request(new URL(url, options.origin).toString(), 'html')).data as string;
     },
 
     /** Every page of an API list. Throws if any page fails, rather than returning part of it. */
