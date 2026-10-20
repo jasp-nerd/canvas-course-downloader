@@ -20,6 +20,8 @@ export default defineContentScript({
     const courseId = courseIdFromPath(location.pathname);
 
     onMessage('downloadCurrent', () => (courseId ? startExport([courseId]) : openPicker()));
+    onMessage('pageInfo', () => ({ origin: location.origin, courseId }));
+    onMessage('openPicker', openPicker);
 
     const button = await createShadowRootUi(ctx, {
       name: 'ccd-page-button',

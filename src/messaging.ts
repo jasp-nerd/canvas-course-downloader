@@ -7,6 +7,12 @@ export interface StartExportRequest {
   courseIds: string[];
 }
 
+export interface PageInfo {
+  origin: string;
+  /** Set on course pages. */
+  courseId: string | null;
+}
+
 interface ProtocolMap {
   /** Content script → background: open the Export tab for these courses. */
   startExport(data: StartExportRequest): void;
@@ -14,6 +20,10 @@ interface ProtocolMap {
   downloadCurrent(): void;
   /** Content script → background: open the settings page (content scripts can't). */
   openOptions(): void;
+  /** Popup → content script: what Canvas page is this? Only Canvas pages answer. */
+  pageInfo(): PageInfo;
+  /** Popup → content script: open the course picker. */
+  openPicker(): void;
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<ProtocolMap>();
