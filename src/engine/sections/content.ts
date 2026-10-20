@@ -83,6 +83,8 @@ export async function exportAssignmentDocs(
       stem: a.name,
       folder: 'Assignments/',
       canvasUrls: [courseUrl(ctx, `assignments/${a.id}`)],
+      ...(a.due_at ? { dueAt: a.due_at } : {}),
+      ...(a.points_possible != null ? { points: a.points_possible } : {}),
     });
   }
 }
@@ -192,7 +194,7 @@ export async function exportDiscussions(ctx: CourseExport): Promise<number> {
         throw error;
     }
 
-    if (ctx.isTeacher && d.assignment_id) {
+    if (ctx.isTeacher && ctx.studentWork && d.assignment_id) {
       await attempt(
         ctx,
         `Discussion grades: ${d.title}`,

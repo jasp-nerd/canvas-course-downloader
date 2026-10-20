@@ -35,6 +35,8 @@ export interface CourseExport {
   courseId: string;
   courseName: string;
   isTeacher: boolean;
+  /** Teachers get students' grades and work, except in study packs, which never contain them. */
+  studentWork: boolean;
   options: ExportOptions;
   canvas: CanvasClient;
   entries: Entry[];
@@ -53,6 +55,8 @@ export interface CourseExport {
   mediaByRef: Map<string, RemoteEntry | null>;
   /** Modules in Canvas order, when modules were exported. */
   outline: ModuleOutline[];
+  /** Assignment groups and their weights, when grades were exported. */
+  gradingWeights: { name: string; weight: number }[];
 }
 
 export function newCourseExport(init: {
@@ -60,6 +64,7 @@ export function newCourseExport(init: {
   courseId: string;
   courseName: string;
   isTeacher: boolean;
+  studentWork: boolean;
   options: ExportOptions;
   canvas: CanvasClient;
 }): CourseExport {
@@ -83,6 +88,7 @@ export function newCourseExport(init: {
     mediaById: new Map(),
     mediaByRef: new Map(),
     outline: [],
+    gradingWeights: [],
   };
 }
 
@@ -92,7 +98,15 @@ export const courseUrl = (ctx: CourseExport, path: string) =>
 
 export function addDocument(
   ctx: CourseExport,
-  doc: { title: string; bodyHtml: string; stem: string; folder: string; canvasUrls?: string[] },
+  doc: {
+    title: string;
+    bodyHtml: string;
+    stem: string;
+    folder: string;
+    canvasUrls?: string[];
+    dueAt?: string;
+    points?: number;
+  },
 ): void {
   const entry: DocumentEntry = {
     kind: 'document',
@@ -101,6 +115,8 @@ export function addDocument(
     folder: doc.folder,
     name: `${doc.stem}.${ctx.options.format === 'markdown' ? 'md' : 'html'}`,
     canvasUrls: doc.canvasUrls ?? [],
+    ...(doc.dueAt ? { dueAt: doc.dueAt } : {}),
+    ...(doc.points != null ? { points: doc.points } : {}),
   };
   ctx.entries.push(entry);
 }

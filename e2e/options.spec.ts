@@ -76,3 +76,28 @@ test('rejects a size limit that is not a whole number', async ({
   await expect(page.getByRole('status')).toHaveText('Saved');
   expect(await stored(serviceWorker)).toMatchObject({ maxFileSizeMB: 50 });
 });
+
+test('a study pack is chosen with the AI tool it is for, and needs no format', async ({
+  page,
+  extensionId,
+  serviceWorker,
+}) => {
+  await resetExtensionStorage(serviceWorker, {});
+  await page.goto(`chrome-extension://${extensionId}/options.html`);
+  await expect(page.getByRole('radio', { name: /^A copy of the course/ })).toBeChecked();
+  await expect(page.getByRole('combobox', { name: 'For' })).toHaveCount(0);
+
+  await page.getByRole('radio', { name: /^A study pack for AI/ }).check();
+  await expect(page.getByRole('combobox', { name: 'For' })).toHaveValue('notebooklm');
+  await expect(page.getByText('A notebook in NotebookLM takes up to 50 files.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: /as$/ })).toHaveCount(0);
+  await page.getByRole('combobox', { name: 'For' }).selectOption('claude');
+  await expect(
+    page.getByText(
+      'A project in Claude takes up to 20 files. A bigger course is split into projects',
+    ),
+  ).toBeVisible();
+  expect(await stored(serviceWorker)).toMatchObject({ profile: 'study', aiTarget: 'claude' });
+
+  await page.locator('main').screenshot({ path: 'test-results/options-study-pack.png' });
+});

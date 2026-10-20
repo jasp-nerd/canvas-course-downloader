@@ -112,6 +112,10 @@ export async function exportGradingWeights(ctx: CourseExport): Promise<void> {
     `/courses/${ctx.courseId}/assignment_groups`,
   );
   if (!groups.some((g) => Number(g.group_weight) > 0)) return;
+  ctx.gradingWeights = groups.map((g) => ({
+    name: g.name ?? '',
+    weight: Number(g.group_weight) || 0,
+  }));
   let body = '<table><thead><tr><th>Group</th><th>Weight</th></tr></thead><tbody>';
   let total = 0;
   for (const g of groups) {

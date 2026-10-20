@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { browser } from 'wxt/browser';
   import { exportCourses, type CourseState } from '../../app/export-job';
+  import { AI_TARGETS } from '../../export/study-pack';
   import { supportCardAfterExport } from '../../app/support';
   import SupportCard from './SupportCard.svelte';
 
@@ -173,6 +174,21 @@
         {:else}
           <p class="result">{course.error ?? 'Nothing could be saved.'}</p>
         {/if}
+        {#if course.studyPack && course.done > 0 && (course.outcome === 'success' || course.outcome === 'partial')}
+          {@const target = AI_TARGETS[course.studyPack]}
+          {@const unzip = course.savedAs?.endsWith('.zip') ? 'Unzip it, then add' : 'Add'}
+          <p class="next">
+            {#if !target.url}
+              {unzip} the Markdown files to any AI tool or notes app.
+            {:else if (course.packParts ?? 1) > 1}
+              {unzip} each of its {course.packParts} folders to its own {target.unit} in
+              <a href={target.url} target="_blank" rel="noreferrer">{target.tool}</a>.
+            {:else}
+              {unzip} its files to a new {target.unit} in
+              <a href={target.url} target="_blank" rel="noreferrer">{target.tool}</a>.
+            {/if}
+          </p>
+        {/if}
       </li>
     {/each}
   </ul>
@@ -275,6 +291,9 @@
   }
   .result {
     margin: 0;
+  }
+  .next {
+    margin: 8px 0 0;
   }
   [data-outcome='success'] .result {
     color: var(--ok);

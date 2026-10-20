@@ -56,6 +56,9 @@ export interface DocumentEntry extends EntryBase {
   bodyHtml: string;
   /** Canvas URLs that should link to this document in other documents. */
   canvasUrls: string[];
+  /** For assignments and quizzes: the due date and points, used by study packs. */
+  dueAt?: string;
+  points?: number;
 }
 
 /** Generated text such as CSVs, captions, the stylesheet and manifest.json. */

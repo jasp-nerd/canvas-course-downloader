@@ -49,6 +49,7 @@ async function teacherSections(ctx: CourseExport, quiz: Quiz, folder: string): P
   } catch (error) {
     if (fatal(error)) throw error;
   }
+  if (!ctx.studentWork) return body;
   try {
     // A wrapped object ({ quiz_submissions, users }), not a bare list.
     const data = await ctx.canvas.get<{
@@ -171,6 +172,8 @@ export async function exportQuizzes(ctx: CourseExport): Promise<void> {
       stem: quiz.title,
       folder,
       canvasUrls: [courseUrl(ctx, `quizzes/${quiz.id}`)],
+      ...(quiz.due_at ? { dueAt: quiz.due_at } : {}),
+      ...(quiz.points_possible != null ? { points: quiz.points_possible } : {}),
     });
     ctx.counts.quizzes++;
   }

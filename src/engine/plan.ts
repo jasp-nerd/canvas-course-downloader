@@ -31,6 +31,7 @@ import {
 } from './sections/grades';
 import { exportQuizzes } from './sections/quizzes';
 import { exportAllSubmissions, exportOwnSubmissions } from './sections/submissions';
+import { planStudyPack, type AiTarget } from '../export/study-pack';
 import { fileChanged } from '../storage/inventory';
 import type { Entry, ExportOptions, ExportPlan, PlannedFile, PreviousExport } from './types';
 
@@ -51,12 +52,13 @@ export interface PlanInput {
   options: ExportOptions;
   /** Leave out files saved before that haven't changed. */
   onlyNew?: PreviousExport;
+  /** Make a study pack for this AI tool instead of a copy of the course. */
+  studyPack?: AiTarget;
   onProgress?: (message: string) => void;
 }
 
 export async function planCourseExport(input: PlanInput): Promise<ExportPlan> {
-  const { canvas, origin, courseId, options } = input;
-  const types = options.contentTypes;
+  const { canvas, origin, courseId, options, studyPack } = input;
   const progress = input.onProgress ?? (() => {});
 
   // One call for the name, the user's role and the syllabus. A course Canvas
@@ -65,19 +67,28 @@ export async function planCourseExport(input: PlanInput): Promise<ExportPlan> {
     'include[]': ['enrollments', 'syllabus_body'],
   });
   const isTeacher = (course.enrollments ?? []).some((e) => TEACHER_ROLES.has(e.type));
+  // Other students' grades and work never go into a study pack, so they aren't fetched.
+  const studentWork = !studyPack;
+  const types = { ...options.contentTypes };
+  if (isTeacher && !studentWork) types.submissions = false;
   const ctx = newCourseExport({
     origin,
     courseId,
     courseName: course.name,
     isTeacher,
+    studentWork,
     options,
     canvas,
   });
   const listed = { files: 0, assignments: 0, announcements: 0, discussions: 0, modules: 0 };
 
-  if (options.format === 'html') addText(ctx, '', 'styles.css', EXPORT_CSS);
+  if (options.format === 'html' && !studyPack) addText(ctx, '', 'styles.css', EXPORT_CSS);
 
-  if (isTeacher && (types.grades || types.quizzes || types.assignments || types.discussions)) {
+  if (
+    isTeacher &&
+    studentWork &&
+    (types.grades || types.quizzes || types.assignments || types.discussions)
+  ) {
     progress('Fetching roster…');
     await attempt(ctx, 'Roster', courseUrl(ctx, 'users'), () => loadRoster(ctx));
   }
@@ -135,9 +146,12 @@ export async function planCourseExport(input: PlanInput): Promise<ExportPlan> {
 
   if (types.grades) {
     progress('Fetching grades…');
-    await attempt(ctx, 'Grades', courseUrl(ctx, 'grades'), () =>
-      isTeacher ? exportGradebook(ctx, assignments) : exportOwnGrades(ctx),
-    );
+    // A study pack only uses the grading weights.
+    if (!studyPack) {
+      await attempt(ctx, 'Grades', courseUrl(ctx, 'grades'), () =>
+        isTeacher ? exportGradebook(ctx, assignments) : exportOwnGrades(ctx),
+      );
+    }
     await attempt(ctx, 'Grading weights', courseUrl(ctx, 'assignments'), () =>
       exportGradingWeights(ctx),
     );
@@ -147,7 +161,7 @@ export async function planCourseExport(input: PlanInput): Promise<ExportPlan> {
     await attempt(ctx, 'Quizzes', courseUrl(ctx, 'quizzes'), () => exportQuizzes(ctx));
   }
 
-  return finalize(ctx, listed, input.onlyNew);
+  return finalize(ctx, listed, input.onlyNew, studyPack);
 }
 
 /** Applies filters, writes the report and manifest, names every file and renders documents. */
@@ -155,6 +169,7 @@ function finalize(
   ctx: CourseExport,
   listed: Record<'files' | 'assignments' | 'announcements' | 'discussions' | 'modules', number>,
   onlyNew?: PreviousExport,
+  studyPack?: AiTarget,
 ): ExportPlan {
   const { options } = ctx;
   const maxBytes = options.maxFileSizeMB > 0 ? options.maxFileSizeMB * 1024 * 1024 : Infinity;
@@ -165,6 +180,29 @@ function finalize(
     return e.size <= maxBytes;
   });
   const filteredOut = ctx.entries.length - entries.length;
+
+  if (studyPack) {
+    return {
+      courseId: ctx.courseId,
+      courseName: ctx.courseName,
+      files: planStudyPack({
+        courseName: ctx.courseName,
+        sourceUrl: courseUrl(ctx, '').slice(0, -1),
+        savedAt: new Date(),
+        version: options.extensionVersion,
+        isTeacher: ctx.isTeacher,
+        outline: ctx.outline,
+        entries,
+        fileUrl: (id) => courseUrl(ctx, `files/${id}`),
+        notCaptured: ctx.notCaptured,
+        gradingWeights: ctx.gradingWeights,
+        target: studyPack,
+      }),
+      notCaptured: ctx.notCaptured,
+      filteredOut,
+      skippedUnchanged: 0,
+    };
+  }
 
   // Exporting only what's new: drop files saved before that haven't changed, and
   // flag changed ones. Generated documents are always written again.

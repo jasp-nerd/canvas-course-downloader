@@ -5,6 +5,7 @@
   import { exportOptionsFrom } from '../../engine/options';
   import { canChooseFolder, loadSaveFolder, storeSaveFolder } from '../../storage/folder';
   import { CONTENT_TYPES, type ContentType } from '../../engine/types';
+  import { AI_TARGETS, type AiTargetId } from '../../export/study-pack';
   import {
     DEFAULT_SETTINGS,
     loadSettings,
@@ -134,6 +135,64 @@
     <h1>Canvas Course Downloader settings</h1>
     <p class="saved" role="status" aria-live="polite">{status}</p>
   </header>
+
+  <section aria-labelledby="makes">
+    <h2 id="makes">Each download makes</h2>
+    <fieldset>
+      <legend class="visually-hidden">Each download makes</legend>
+      <label>
+        <input
+          type="radio"
+          name="profile"
+          checked={settings.profile !== 'study'}
+          onchange={() => save({ profile: 'copy' })}
+        />
+        <span>
+          <strong>A copy of the course</strong>
+          <small
+            >The course as it is in Canvas, in folders, with an overview page to open it offline.</small
+          >
+        </span>
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="profile"
+          checked={settings.profile === 'study'}
+          onchange={() => save({ profile: 'study' })}
+        />
+        <span>
+          <strong>A study pack for AI</strong>
+          <small
+            >A few files per module that you upload in one go, with a course guide of deadlines and
+            grading.</small
+          >
+        </span>
+      </label>
+    </fieldset>
+    {#if settings.profile === 'study'}
+      <label class="field">
+        <span>For</span>
+        <select
+          value={settings.aiTarget}
+          onchange={(e) => save({ aiTarget: e.currentTarget.value as AiTargetId })}
+        >
+          {#each Object.entries(AI_TARGETS) as [id, target] (id)}
+            <option value={id}>{target.label}</option>
+          {/each}
+        </select>
+      </label>
+      <p class="hint">
+        {#if AI_TARGETS[settings.aiTarget].maxFiles === Infinity}
+          Only Markdown text: pages, assignments, quizzes and announcements. No slides or PDFs.
+        {:else}
+          {@const target = AI_TARGETS[settings.aiTarget]}
+          A {target.unit} in {target.tool} takes up to {target.maxFiles} files. A bigger course is split
+          into {target.unit}s that each fit.
+        {/if}
+      </p>
+    {/if}
+  </section>
 
   <section aria-labelledby="what">
     <h2 id="what">What to download</h2>
@@ -280,28 +339,30 @@
     </label>
   </section>
 
-  <section aria-labelledby="format">
-    <h2 id="format">Pages, assignments and discussions as</h2>
-    <fieldset>
-      <legend class="visually-hidden">Format</legend>
-      <label
-        ><input
-          type="radio"
-          name="format"
-          checked={settings.exportFormat !== 'markdown'}
-          onchange={() => save({ exportFormat: 'html' })}
-        /> Web pages (HTML), open in any browser</label
-      >
-      <label
-        ><input
-          type="radio"
-          name="format"
-          checked={settings.exportFormat === 'markdown'}
-          onchange={() => save({ exportFormat: 'markdown' })}
-        /> Markdown, for notes apps and AI tools</label
-      >
-    </fieldset>
-  </section>
+  {#if settings.profile !== 'study'}
+    <section aria-labelledby="format">
+      <h2 id="format">Pages, assignments and discussions as</h2>
+      <fieldset>
+        <legend class="visually-hidden">Format</legend>
+        <label
+          ><input
+            type="radio"
+            name="format"
+            checked={settings.exportFormat !== 'markdown'}
+            onchange={() => save({ exportFormat: 'html' })}
+          /> Web pages (HTML), open in any browser</label
+        >
+        <label
+          ><input
+            type="radio"
+            name="format"
+            checked={settings.exportFormat === 'markdown'}
+            onchange={() => save({ exportFormat: 'markdown' })}
+          /> Markdown, for notes apps and AI tools</label
+        >
+      </fieldset>
+    </section>
+  {/if}
 
   <section aria-labelledby="skip">
     <h2 id="skip">Skip</h2>
@@ -502,6 +563,10 @@
   }
   .error {
     color: var(--bad) !important;
+  }
+  .hint {
+    color: var(--muted);
+    font-size: 14px;
   }
   .secondary {
     justify-self: start;
