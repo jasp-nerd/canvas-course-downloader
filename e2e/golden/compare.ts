@@ -29,6 +29,12 @@ export function sanitizedPath(p: string): string {
 export const unpadTables = (md: string) =>
   md.replace(/^\|.*\|$/gm, (row) => row.replace(/ {2,}\|/g, ' |'));
 
+/** Approved difference 13: v3 adds an overview page at the course root, as index.html and "Open me - <Course>.html". */
+function addedInV3(p: string): boolean {
+  const inner = p.includes('!/') ? p.split('!/')[1]! : p.slice(p.indexOf('/') + 1);
+  return inner === 'index.html' || (inner.startsWith('Open me - ') && inner.endsWith('.html'));
+}
+
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
 
 /** Every difference between `actual` and the golden scenario, as readable lines; [] means identical. */
@@ -37,7 +43,7 @@ export function diffAgainstGolden(scenario: string, actual: ComparableFile[]): s
     files: { path: string; sha256: string }[];
   };
   const expected = new Map(golden.files.map((f) => [sanitizedPath(f.path), f]));
-  const got = new Map(actual.map((f) => [f.path, f]));
+  const got = new Map(actual.filter((f) => !addedInV3(f.path)).map((f) => [f.path, f]));
   const problems: string[] = [];
   for (const p of expected.keys()) if (!got.has(p)) problems.push(`missing: ${p}`);
   for (const p of got.keys()) if (!expected.has(p)) problems.push(`unexpected: ${p}`);

@@ -57,6 +57,10 @@ test('says Partial and lists files that failed, instead of "complete"', async ({
   await expect(tab.locator('.result')).toContainText("1 file couldn't be downloaded");
   await waitForDownloads(downloadsDir);
   const zip = path.join(downloadsDir, 'Introduction to Psychology.zip');
+  // The overview inside the ZIP lists it too, as written after the downloads finished.
+  expect(execFileSync('unzip', ['-p', zip, 'index.html'], { encoding: 'utf8' })).toContain(
+    '1 item could not be saved',
+  );
   expect(
     execFileSync('unzip', ['-p', zip, '_download_errors.csv'], { encoding: 'utf8' }),
   ).toContain('HTTP 500');

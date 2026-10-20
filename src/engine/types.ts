@@ -98,7 +98,15 @@ export interface PlannedFile {
         /** Saved before, but changed on Canvas since. */
         changed?: boolean;
       }
-    | { kind: 'text'; content: string };
+    | {
+        kind: 'text';
+        content: string;
+        /**
+         * Written last, once every other file's outcome is known (the overview
+         * page lists what failed). Overrides `content`.
+         */
+        render?: (failed: { path: string; reason: string }[]) => string;
+      };
 }
 
 export interface ExportPlan {

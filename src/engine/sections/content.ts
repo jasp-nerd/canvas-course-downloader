@@ -12,6 +12,7 @@ import {
   noteNotCaptured,
   type CanvasFile,
   type CourseExport,
+  type ModuleOutline,
 } from '../context';
 import { extractLinkedFiles } from '../linked';
 import { csvRow, escapeHtml, renderRubricDefinition, type RubricCriterion } from '../render';
@@ -254,6 +255,7 @@ interface ModuleItem {
   url?: string;
   page_url?: string;
   content_id?: string | number;
+  external_url?: string;
 }
 
 /** Modules.html, module-only File items, and the slugs of pages that only appear in modules. */
@@ -273,8 +275,19 @@ export async function exportModules(ctx: CourseExport, pageSlugs: Set<string>): 
     const items = await ctx.canvas.list<ModuleItem>(
       `/courses/${ctx.courseId}/modules/${mod.id}/items`,
     );
+    const outlineItems: ModuleOutline['items'] = [];
+    ctx.outline.push({ name: mod.name, items: outlineItems });
     for (const item of items) {
       body += `<li>${item.html_url ? `<a href="${item.html_url}">${item.title}</a>` : item.title} (${item.type})</li>`;
+      const target =
+        item.type === 'Page' && item.page_url
+          ? courseUrl(ctx, `pages/${item.page_url}`)
+          : item.type === 'ExternalUrl'
+            ? item.external_url
+            : item.content_id && resourcePath[item.type]
+              ? courseUrl(ctx, `${resourcePath[item.type]}/${item.content_id}`)
+              : undefined;
+      outlineItems.push({ title: item.title, type: item.type, ...(target ? { url: target } : {}) });
 
       // A link to the module item should open what the item shows.
       if (item.id) {

@@ -18,6 +18,18 @@ export interface Student {
   email?: string;
 }
 
+/** A module as Canvas shows it, for overviews: items in order, each pointing at its Canvas URL. */
+export interface ModuleOutline {
+  name: string;
+  items: {
+    title: string;
+    /** Canvas item type: Page, Assignment, File, Discussion, Quiz, ExternalUrl, SubHeader, ... */
+    type: string;
+    /** The Canvas URL of what the item shows; matches the local link targets. */
+    url?: string;
+  }[];
+}
+
 export interface CourseExport {
   origin: string;
   courseId: string;
@@ -39,6 +51,8 @@ export interface CourseExport {
   /** Media already queued, by Canvas media id, and by every ref that resolved (or failed). */
   mediaById: Map<string, RemoteEntry>;
   mediaByRef: Map<string, RemoteEntry | null>;
+  /** Modules in Canvas order, when modules were exported. */
+  outline: ModuleOutline[];
 }
 
 export function newCourseExport(init: {
@@ -68,6 +82,7 @@ export function newCourseExport(init: {
     nameByUserId: new Map(),
     mediaById: new Map(),
     mediaByRef: new Map(),
+    outline: [],
   };
 }
 

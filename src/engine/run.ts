@@ -111,6 +111,10 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
     report();
   }
 
+  // Pages like the overview are written last, when every other file's outcome is known.
+  const late = plan.files.filter((f) => f.source.kind === 'text' && f.source.render);
+  const files = plan.files.filter((f) => !late.includes(f));
+
   const prefetchable = (f: PlannedFile) =>
     f.source.kind === 'text' || (f.source.size > 0 && f.source.size <= PREFETCH_MAX_BYTES);
 
@@ -118,16 +122,16 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
     if (sink.ordered) {
       // Keep up to `concurrency` small files downloading ahead of the one being written.
       const ahead = new Map<number, Promise<Body>>();
-      for (let i = 0; i < plan.files.length; i++) {
+      for (let i = 0; i < files.length; i++) {
         if (signal?.aborted) throw new CanvasError('aborted', '');
-        for (let j = i; j < plan.files.length && ahead.size < concurrency; j++) {
-          if (ahead.has(j) || !prefetchable(plan.files[j]!)) continue;
-          const pending = fetchBody(plan.files[j]!, true);
+        for (let j = i; j < files.length && ahead.size < concurrency; j++) {
+          if (ahead.has(j) || !prefetchable(files[j]!)) continue;
+          const pending = fetchBody(files[j]!, true);
           // Awaited when its turn comes; this only keeps a cancelled run from reporting it as unhandled.
           pending.catch(() => {});
           ahead.set(j, pending);
         }
-        const file = plan.files[i]!;
+        const file = files[i]!;
         const body = await (ahead.get(i) ?? fetchBody(file, false));
         ahead.delete(i);
         await write(file, body);
@@ -135,9 +139,9 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
     } else {
       let next = 0;
       const worker = async () => {
-        while (next < plan.files.length) {
+        while (next < files.length) {
           if (signal?.aborted) throw new CanvasError('aborted', '');
-          const file = plan.files[next++]!;
+          const file = files[next++]!;
           if (file.source.kind === 'remote' && sink.writeUrl) await passUrl(file, file.source.url);
           else await write(file, await fetchBody(file, false));
         }
@@ -148,6 +152,10 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
     if (failed.length) {
       const rows = [csvRow(['path', 'reason']), ...failed.map((f) => csvRow([f.path, f.reason]))];
       await sink.write('_download_errors.csv', encoder.encode(rows.join('\n')), {});
+    }
+    for (const file of late) {
+      if (file.source.kind !== 'text' || !file.source.render) continue;
+      await write(file, { ok: true, data: encoder.encode(file.source.render(failed)) });
     }
     for (const late of (await sink.close()) ?? []) {
       failed.push(late);

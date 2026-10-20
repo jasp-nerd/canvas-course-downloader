@@ -1,6 +1,7 @@
 // Builds the full plan for one course export: what to fetch, what to render,
 // where everything goes, and what couldn't be captured.
 import type { CanvasClient } from '../canvas/client';
+import { renderCourseIndex } from '../export/course-index';
 import { sanitizeFilename } from '../export/filenames';
 import {
   EXPORT_CSS,
@@ -265,6 +266,30 @@ function finalize(
         : renderHtmlDocument(entry.title, body, folder);
     return { path, source: { kind: 'text', content } };
   });
+
+  // The overview page, twice: index.html for tools, "Open me" so people know what to double-click.
+  const plannedPaths = files.map((f) => f.path);
+  const titles = new Map(
+    entries.flatMap((e, i) =>
+      e.kind === 'document' ? [[paths[i]!, e.title] as [string, string]] : [],
+    ),
+  );
+  const render = (failed: { path: string; reason: string }[]) =>
+    renderCourseIndex({
+      courseName: ctx.courseName,
+      sourceUrl: `${ctx.origin}/courses/${ctx.courseId}`,
+      savedAt: new Date(),
+      version: options.extensionVersion,
+      outline: ctx.outline,
+      localPaths,
+      paths: plannedPaths,
+      notCaptured: ctx.notCaptured,
+      failed,
+      titles,
+    });
+  for (const name of ['index.html', sanitizeFilename(`Open me - ${ctx.courseName}.html`)]) {
+    files.push({ path: name, source: { kind: 'text', content: '', render } });
+  }
 
   return {
     courseId: ctx.courseId,

@@ -16,3 +16,4 @@ v3 must reproduce v2's export output (the golden files) except for the differenc
 | 10 | HTML title | Page title inserted into `<title>` and `<h1>` unescaped | Escaped | Security | 2026-10-19 (plan) |
 | 11 | Sanitizer | Blocklist that kept `srcdoc`, `formaction`, `<meta refresh>`, `<base>`, `<form>` | DOMPurify with a Canvas allowlist; benign Canvas markup unchanged | Security | 2026-10-19 (plan) |
 | 12 | Markdown tables | `\| 1 \| Intro \|` | Columns padded to align (`\| 1   \| Intro \|`), from the maintained Joplin GFM plugin | Readability; v2's plugin is unmaintained since 2017 | pending |
+| 13 | Overview page | None | `index.html` and `Open me - <Course>.html` at the course root: the course by module, everything else by kind, and what couldn't be saved and why (issue #11). No scripts; a CSP blocks them | Feature | 2026-10-19 (plan) |
