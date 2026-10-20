@@ -15,6 +15,27 @@
   let courses = $state<CourseState[]>([]);
   let running = $state(true);
   let showSupport = $state(false);
+  let folderPrompt = $state<{ name: string; allow: () => void; skip: () => void } | null>(null);
+
+  /** Browsers need a click before writing to a chosen folder again; automatic exports can't ask. */
+  const allowFolder = (folder: FileSystemDirectoryHandle) =>
+    new Promise<boolean>((resolve) => {
+      if (quiet) return resolve(false);
+      folderPrompt = {
+        name: folder.name,
+        allow: () => {
+          // First in the click handler: the browser only shows its prompt for a user gesture.
+          void folder.requestPermission({ mode: 'readwrite' }).then((state) => {
+            folderPrompt = null;
+            resolve(state === 'granted');
+          });
+        },
+        skip: () => {
+          folderPrompt = null;
+          resolve(false);
+        },
+      };
+    });
   const controller = new AbortController();
 
   const percent = (c: CourseState) =>
@@ -57,6 +78,7 @@
       origin,
       courseIds,
       onlyNew,
+      allowFolder,
       signal: controller.signal,
       onChange: (next) => (courses = next),
     })
@@ -93,11 +115,22 @@
     {/if}
   </header>
 
+  {#if folderPrompt}
+    <div class="prompt" role="alert">
+      <p>Your browser needs your OK to save into “{folderPrompt.name}”.</p>
+      <button type="button" class="primary" onclick={folderPrompt.allow}>Allow access</button>
+      <button type="button" class="secondary" onclick={folderPrompt.skip}
+        >Save to Downloads instead</button
+      >
+    </div>
+  {/if}
+
   <ul class="courses">
     {#each courses as course (course.id)}
       <li class="course" data-outcome={course.outcome ?? 'running'}>
         <h2>{course.name}</h2>
 
+        {#if course.note}<p class="note">{course.note}</p>{/if}
         {#if course.phase !== 'finished'}
           <div
             class="bar"
@@ -117,12 +150,12 @@
           </p>
         {:else if course.outcome === 'success'}
           <p class="result">
-            Saved {course.done} files to Downloads/{course.savedAs}{#if course.skipped}. {course.skipped}
+            Saved {course.done} files to {course.savedAs}{#if course.skipped}. {course.skipped}
               files you already had were skipped{/if}
           </p>
         {:else if course.outcome === 'partial'}
           <p class="result">
-            Saved {course.done} of {course.done + course.failed} files to Downloads/{course.savedAs}.
+            Saved {course.done} of {course.done + course.failed} files to {course.savedAs}.
             {course.failed}
             {course.failed === 1 ? "file couldn't" : "files couldn't"} be downloaded; they're listed in
             _download_errors.csv.
@@ -255,6 +288,36 @@
   details {
     margin-top: 8px;
     font-size: 13px;
+  }
+  .prompt {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0 0;
+  }
+  .prompt p {
+    margin: 0;
+    flex-basis: 100%;
+  }
+  .note {
+    margin: 0 0 8px;
+    color: var(--warn);
+    font-size: 13px;
+  }
+  button.primary {
+    font: inherit;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 0;
+    background: var(--accent);
+    color: var(--surface);
+    font-weight: 600;
+    cursor: pointer;
   }
   button.secondary {
     font: inherit;

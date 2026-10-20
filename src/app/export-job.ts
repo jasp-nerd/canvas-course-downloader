@@ -7,6 +7,8 @@ import { planCourseExport } from '../engine/plan';
 import { runExport, type RunResult } from '../engine/run';
 import { sanitizeFilename } from '../export/filenames';
 import { downloadBlob, downloadsSink } from '../sinks/downloads';
+import { folderSink, openFile } from '../sinks/folder';
+import { loadSaveFolder } from '../storage/folder';
 import type { SinkFailure } from '../sinks/types';
 import { blobCollector, zipSink } from '../sinks/zip';
 import { loadInventory, loadLegacyRecords, saveInventory } from '../storage/inventory';
@@ -28,6 +30,8 @@ export interface CourseState {
   savedAs?: string;
   /** Files left out because they were saved before and haven't changed. */
   skipped: number;
+  /** Shown with the result, e.g. why it went to Downloads instead of the chosen folder. */
+  note?: string;
   error?: string;
 }
 
@@ -67,17 +71,38 @@ function updatedName(path: string, date: string): string {
     : `${path} (updated ${date})`;
 }
 
+/** The chosen folder, if it's still there and we may write to it. */
+export async function usableFolder(
+  allow?: (folder: FileSystemDirectoryHandle) => Promise<boolean>,
+) {
+  const folder = await loadSaveFolder().catch(() => null);
+  if (!folder) return null;
+  if ((await folder.queryPermission({ mode: 'readwrite' })) === 'granted') return folder;
+  return allow && (await allow(folder)) ? folder : null;
+}
+
 export async function exportCourses(input: {
   origin: string;
   courseIds: string[];
   /** Only files that are new or changed since the last export, whatever the setting says. */
   onlyNew?: boolean;
+  /**
+   * Asks the user to allow writing to their chosen folder again (browsers
+   * require a click for that). Resolves false when they don't, or can't
+   * because nobody is looking (automatic exports).
+   */
+  allowFolder?: (folder: FileSystemDirectoryHandle) => Promise<boolean>;
   signal: AbortSignal;
   onChange: (courses: CourseState[]) => void;
 }): Promise<CourseState[]> {
   const settings = await loadSettings();
   const options = exportOptionsFrom(settings, browser.runtime.getManifest().version);
   const prefix = folderPath(settings.folderPrefix);
+  const saveFolder = settings.saveTo === 'folder' ? await usableFolder(input.allowFolder) : null;
+  const folderNote =
+    settings.saveTo === 'folder' && !saveFolder
+      ? "Saved to Downloads instead, because the folder you chose couldn't be opened. Choose it again in Settings."
+      : undefined;
   const courses: CourseState[] = input.courseIds.map((id) => ({
     id,
     name: `Course ${id}`,
@@ -88,6 +113,7 @@ export async function exportCourses(input: {
     failed: 0,
     failures: [],
     skipped: 0,
+    ...(folderNote ? { note: folderNote } : {}),
   }));
   const update = (course: CourseState, changes: Partial<CourseState>) => {
     Object.assign(course, changes);
@@ -140,7 +166,29 @@ export async function exportCourses(input: {
       const onProgress = (p: { done: number; failed: number; current: string }) =>
         update(course, { done: p.done, failed: p.failed, message: p.current });
       let result: RunResult;
-      if (settings.zipMode) {
+      const zipName = sanitizeFilename(
+        `${plan.courseName}${onlyNew ? ` (update ${date})` : ''}.zip`,
+      );
+      const courseFolder = `${prefix}${sanitizeFilename(plan.courseName, 'folder')}/`;
+      if (saveFolder && settings.zipMode) {
+        // Streams the archive to disk as it's built: no size limit from memory.
+        const { stream, name } = await openFile(
+          saveFolder,
+          `${prefix}${zipName}`,
+          settings.conflictAction,
+        );
+        result = await runExport(plan, {
+          canvas,
+          sink: zipSink(stream),
+          signal: input.signal,
+          onProgress,
+        });
+        update(course, { savedAs: `${saveFolder.name}/${prefix}${name}` });
+      } else if (saveFolder) {
+        const sink = folderSink(saveFolder, settings.conflictAction, courseFolder);
+        result = await runExport(plan, { canvas, sink, signal: input.signal, onProgress });
+        update(course, { savedAs: `${saveFolder.name}/${courseFolder}` });
+      } else if (settings.zipMode) {
         const collector = blobCollector();
         result = await runExport(plan, {
           canvas,
@@ -149,26 +197,24 @@ export async function exportCourses(input: {
           onProgress,
         });
         if (result.outcome !== 'cancelled' && result.written > 0) {
-          const savedAs = `${prefix}${sanitizeFilename(`${plan.courseName}${onlyNew ? ` (update ${date})` : ''}.zip`)}`;
           update(course, { message: 'Saving the ZIP…' });
           const saved = await downloadBlob(
             browser.downloads,
             await collector.blob,
-            savedAs,
+            `${prefix}${zipName}`,
             settings.conflictAction,
           );
           if (!saved.ok) throw new Error(`Your browser couldn't save the ZIP (${saved.reason}).`);
-          update(course, { savedAs });
+          update(course, { savedAs: `Downloads/${prefix}${zipName}` });
         }
       } else {
-        const folder = `${prefix}${sanitizeFilename(plan.courseName, 'folder')}/`;
         const sink = downloadsSink({
-          folder,
+          folder: courseFolder,
           conflictAction: settings.conflictAction,
           downloads: browser.downloads,
         });
         result = await runExport(plan, { canvas, sink, signal: input.signal, onProgress });
-        update(course, { savedAs: folder });
+        update(course, { savedAs: `Downloads/${courseFolder}` });
       }
       // Remember what was saved, so the next export can skip it. Files that failed aren't recorded.
       if (result.outcome !== 'cancelled') {

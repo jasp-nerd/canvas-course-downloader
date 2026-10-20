@@ -3,6 +3,7 @@
   import { browser } from 'wxt/browser';
   import { LINKS, reviewUrl, tracked } from '../../app/links';
   import { exportOptionsFrom } from '../../engine/options';
+  import { canChooseFolder, loadSaveFolder, storeSaveFolder } from '../../storage/folder';
   import { CONTENT_TYPES, type ContentType } from '../../engine/types';
   import {
     DEFAULT_SETTINGS,
@@ -60,6 +61,7 @@
     types = exportOptionsFrom(settings, '').contentTypes;
     maxSizeText = settings.maxFileSizeMB ? String(settings.maxFileSizeMB) : '';
     cdnGranted = await browser.permissions.contains(CDN);
+    folderName = (await loadSaveFolder().catch(() => null))?.name ?? '';
   });
 
   let statusTimer: ReturnType<typeof setTimeout> | undefined;
@@ -99,6 +101,26 @@
   function commitMaxSize() {
     if (maxSizeError) return;
     void save({ maxFileSizeMB: Number(maxSizeText.trim() || 0) });
+  }
+
+  let folderName = $state('');
+  const folderPicker = canChooseFolder();
+
+  async function chooseFolder() {
+    try {
+      // First in the click handler: the picker needs the user's click.
+      const folder = await window.showDirectoryPicker!({
+        id: 'ccd-save',
+        mode: 'readwrite',
+        startIn: 'downloads',
+      });
+      await storeSaveFolder(folder);
+      folderName = folder.name;
+      await save({ saveTo: 'folder' });
+    } catch {
+      // Closed the picker: keep the previous choice.
+      settings.saveTo = folderName ? settings.saveTo : 'downloads';
+    }
   }
 
   async function allowCdn() {
@@ -147,6 +169,40 @@
 
   <section aria-labelledby="how">
     <h2 id="how">How to save</h2>
+    {#if folderPicker}
+      <fieldset>
+        <legend>Save to</legend>
+        <label>
+          <input
+            type="radio"
+            name="saveTo"
+            checked={settings.saveTo !== 'folder'}
+            onchange={() => save({ saveTo: 'downloads' })}
+          />
+          Your Downloads folder
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="saveTo"
+            checked={settings.saveTo === 'folder'}
+            onchange={chooseFolder}
+          />
+          <span>
+            A folder you choose{folderName && settings.saveTo === 'folder' ? `: ${folderName}` : ''}
+            <small
+              >Choose a folder inside Google Drive, OneDrive or Dropbox to back your courses up to
+              the cloud. Big courses also save more reliably this way.</small
+            >
+          </span>
+        </label>
+        {#if settings.saveTo === 'folder'}
+          <button type="button" class="secondary" onclick={chooseFolder}
+            >Choose another folder…</button
+          >
+        {/if}
+      </fieldset>
+    {/if}
     <fieldset>
       <legend class="visually-hidden">Save as</legend>
       <label
@@ -167,7 +223,10 @@
       >
     </fieldset>
     <label class="field">
-      <span>Folder inside Downloads <small>(optional, e.g. "Canvas")</small></span>
+      <span
+        >Folder inside {settings.saveTo === 'folder' ? 'that folder' : 'Downloads'}
+        <small>(optional, e.g. "Canvas")</small></span
+      >
       <input
         type="text"
         value={settings.folderPrefix}

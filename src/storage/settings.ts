@@ -6,8 +6,10 @@ import type { StoredSettings } from '../engine/options';
 export interface Settings extends Required<Omit<StoredSettings, 'contentTypes'>> {
   contentTypes: NonNullable<StoredSettings['contentTypes']>;
   zipMode: boolean;
-  /** Folder inside Downloads for individual downloads, "" for none. */
+  /** Folder inside Downloads (or the chosen folder) to save into, "" for none. */
   folderPrefix: string;
+  /** Downloads, or a folder the user chose (Chromium; the handle is in IndexedDB). */
+  saveTo: 'downloads' | 'folder';
   conflictAction: 'uniquify' | 'overwrite';
   incrementalMode: boolean;
   /** When Canvas is opened, download new files from courses saved before, without asking. */
@@ -23,6 +25,7 @@ export const DEFAULT_SETTINGS: Settings = {
   maxFileSizeMB: 0,
   zipMode: true,
   folderPrefix: '',
+  saveTo: 'downloads',
   conflictAction: 'uniquify',
   incrementalMode: false,
   autoDownloadNew: false,
