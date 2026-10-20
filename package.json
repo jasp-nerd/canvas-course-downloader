@@ -32,7 +32,8 @@
     "e2e": "wxt build && playwright test --project e2e",
     "golden:capture": "wxt build && playwright test --project golden",
     "assets": "wxt build && playwright test --project assets",
-    "prepare": "git config core.hooksPath .githooks"
+    "prepare": "git config core.hooksPath .githooks",
+    "test:firefox": "wxt build -b firefox && vitest run --config vitest.firefox.config.ts"
   },
   "dependencies": {
     "@joplin/turndown-plugin-gfm": "^1.0.68",
@@ -57,6 +58,7 @@
     "jsdom": "^30.1.2",
     "prettier": "^3.9.10",
     "prettier-plugin-svelte": "^4.1.1",
+    "puppeteer-core": "^25.13.0",
     "svelte-check": "^4.7.6",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.71.2",

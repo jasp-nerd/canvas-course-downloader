@@ -264,7 +264,8 @@ export async function startMockCanvas(port = 0): Promise<MockCanvas> {
 
   async function handle(req: IncomingMessage, res: ServerResponse) {
     const host = (req.headers.host ?? MOCK_HOSTS.instructure).replace(/:\d+$/, '');
-    const origin = `https://${host}`;
+    // Keep the port: Firefox tests reach the mock as school.instructure.com:<port>.
+    const origin = `https://${req.headers.host ?? host}`;
     const url = new URL(req.url ?? '/', origin);
     const path = url.pathname.replace(/\/$/, '') || '/';
     const target = path + url.search;
