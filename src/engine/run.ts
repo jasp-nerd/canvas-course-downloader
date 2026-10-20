@@ -98,6 +98,19 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
     report();
   }
 
+  async function passUrl(file: PlannedFile, url: string) {
+    progress.current = file.path;
+    try {
+      await sink.writeUrl!(file.path, url);
+      progress.done++;
+    } catch (error) {
+      if (signal?.aborted) throw error;
+      failed.push({ path: file.path, reason: reasonOf(error) });
+      progress.failed++;
+    }
+    report();
+  }
+
   const prefetchable = (f: PlannedFile) =>
     f.source.kind === 'text' || (f.source.size > 0 && f.source.size <= PREFETCH_MAX_BYTES);
 
@@ -125,7 +138,8 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
         while (next < plan.files.length) {
           if (signal?.aborted) throw new CanvasError('aborted', '');
           const file = plan.files[next++]!;
-          await write(file, await fetchBody(file, false));
+          if (file.source.kind === 'remote' && sink.writeUrl) await passUrl(file, file.source.url);
+          else await write(file, await fetchBody(file, false));
         }
       };
       await Promise.all(Array.from({ length: concurrency }, worker));
@@ -135,7 +149,11 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
       const rows = [csvRow(['path', 'reason']), ...failed.map((f) => csvRow([f.path, f.reason]))];
       await sink.write('_download_errors.csv', encoder.encode(rows.join('\n')), {});
     }
-    await sink.close();
+    for (const late of (await sink.close()) ?? []) {
+      failed.push(late);
+      progress.done--;
+      progress.failed++;
+    }
   } catch (error) {
     await sink.abort(error);
     if (error instanceof CanvasError && error.kind === 'aborted') {
