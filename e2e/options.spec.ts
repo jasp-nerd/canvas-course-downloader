@@ -84,7 +84,7 @@ test('a study pack is chosen with the AI tool it is for, and needs no format', a
 }) => {
   await resetExtensionStorage(serviceWorker, {});
   await page.goto(`chrome-extension://${extensionId}/options.html`);
-  await expect(page.getByRole('radio', { name: /^A copy of the course/ })).toBeChecked();
+  await expect(page.getByRole('radio', { name: /^A copy to keep/ })).toBeChecked();
   await expect(page.getByRole('combobox', { name: 'For' })).toHaveCount(0);
 
   await page.getByRole('radio', { name: /^A study pack for AI/ }).check();

@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { onboardingFor } from './onboarding';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
+import { answerProfile, markNewUser, onboardingFor, shouldAskProfile } from './onboarding';
 
 describe('onboardingFor', () => {
   it('welcomes a genuine first install', () => {
@@ -28,5 +29,37 @@ describe('onboardingFor', () => {
     { reason: 'browser_update' as const },
   ])('does nothing for %j', (facts) => {
     expect(onboardingFor({ ...facts, syncHadSettings: true })).toBe('none');
+  });
+});
+
+describe('the first-download question', () => {
+  beforeEach(() => fakeBrowser.reset());
+
+  it('is never asked of people who were not new users', async () => {
+    expect(await shouldAskProfile()).toBe(false);
+  });
+
+  it('is asked of a new user, unless they already chose in Settings', async () => {
+    await markNewUser();
+    expect(await shouldAskProfile()).toBe(true);
+    await fakeBrowser.storage.sync.set({ profile: 'agents' });
+    expect(await shouldAskProfile()).toBe(false);
+  });
+
+  it('is asked once: the answer is saved as the setting', async () => {
+    await markNewUser();
+    await answerProfile({ profile: 'study', aiTarget: 'claude' });
+    expect(await fakeBrowser.storage.sync.get(null)).toEqual({
+      profile: 'study',
+      aiTarget: 'claude',
+    });
+    await fakeBrowser.storage.sync.clear();
+    expect(await shouldAskProfile()).toBe(false);
+  });
+
+  it('saves only the profile when it is not a study pack', async () => {
+    await markNewUser();
+    await answerProfile({ profile: 'copy', aiTarget: 'notebooklm' });
+    expect(await fakeBrowser.storage.sync.get(null)).toEqual({ profile: 'copy' });
   });
 });

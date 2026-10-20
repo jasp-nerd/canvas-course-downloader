@@ -1,6 +1,6 @@
 import { defineBackground } from '#imports';
 import { browser, type Browser } from 'wxt/browser';
-import { onboardingFor } from '../app/onboarding';
+import { markNewUser, onboardingFor } from '../app/onboarding';
 import { onMessage, sendMessage } from '../messaging';
 
 export default defineBackground(() => {
@@ -16,8 +16,10 @@ export default defineBackground(() => {
         installType: self.installType,
         syncHadSettings: Object.keys(synced).length > 0,
       });
-      if (onboarding === 'welcome')
+      if (onboarding === 'welcome') {
+        await markNewUser();
         await browser.tabs.create({ url: browser.runtime.getURL('/welcome.html') });
+      }
       if (onboarding === 'whats-new') await browser.storage.local.set({ whatsNew: '3.0' });
     })();
   });

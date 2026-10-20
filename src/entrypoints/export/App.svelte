@@ -3,7 +3,10 @@
   import { browser } from 'wxt/browser';
   import { exportCourses, type CourseState } from '../../app/export-job';
   import { AI_TARGETS } from '../../export/study-pack';
+  import { answerProfile, shouldAskProfile } from '../../app/onboarding';
   import { supportCardAfterExport } from '../../app/support';
+  import type { Settings } from '../../storage/settings';
+  import ProfileQuestion from './ProfileQuestion.svelte';
   import SupportCard from './SupportCard.svelte';
 
   let {
@@ -17,6 +20,8 @@
   let running = $state(true);
   let showSupport = $state(false);
   let folderPrompt = $state<{ name: string; allow: () => void; skip: () => void } | null>(null);
+  /** Set while a new user chooses what their first download should be. */
+  let question = $state<((choice: Pick<Settings, 'profile' | 'aiTarget'>) => void) | null>(null);
 
   /** Browsers need a click before writing to a chosen folder again; automatic exports can't ask. */
   const allowFolder = (folder: FileSystemDirectoryHandle) =>
@@ -72,17 +77,27 @@
   onMount(() => {
     // Closing this tab stops the export, so ask first while it runs.
     const warn = (event: BeforeUnloadEvent) => {
-      if (running) event.preventDefault();
+      if (running && !question) event.preventDefault();
     };
     window.addEventListener('beforeunload', warn);
-    void exportCourses({
-      origin,
-      courseIds,
-      onlyNew,
-      allowFolder,
-      signal: controller.signal,
-      onChange: (next) => (courses = next),
-    })
+    void (async () => {
+      // Downloads of only what's new add to a copy, so they don't ask.
+      if (!quiet && !onlyNew && (await shouldAskProfile())) {
+        const choice = await new Promise<Pick<Settings, 'profile' | 'aiTarget'>>(
+          (resolve) => (question = resolve),
+        );
+        question = null;
+        await answerProfile(choice);
+      }
+      return exportCourses({
+        origin,
+        courseIds,
+        onlyNew,
+        allowFolder,
+        signal: controller.signal,
+        onChange: (next) => (courses = next),
+      });
+    })()
       .then(async (finished) => {
         const allSaved = finished.length > 0 && finished.every((c) => c.outcome === 'success');
         if (quiet) {
@@ -107,14 +122,20 @@
 
 <main>
   <header>
-    <h1>{running ? 'Exporting from Canvas' : 'Export finished'}</h1>
-    {#if running}
-      <p class="note">
+    <h1>
+      {question ? 'Your first download' : running ? 'Exporting from Canvas' : 'Export finished'}
+    </h1>
+    {#if running && !question}
+      <p class="lead">
         This tab is doing the work. Keep it open until it finishes; you can use Canvas and other
         tabs normally.
       </p>
     {/if}
   </header>
+
+  {#if question}
+    <ProfileQuestion onchoose={question} />
+  {/if}
 
   {#if folderPrompt}
     <div class="prompt" role="alert">
@@ -197,7 +218,7 @@
     <SupportCard />
   {/if}
 
-  {#if running}
+  {#if running && !question}
     <button type="button" class="secondary" onclick={() => controller.abort()}>Cancel</button>
   {/if}
 </main>
@@ -248,7 +269,7 @@
     font-size: 24px;
     margin: 0 0 8px;
   }
-  .note {
+  .lead {
     margin: 0;
     color: var(--muted);
   }

@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { browser } from 'wxt/browser';
   import { LINKS, reviewUrl, tracked } from '../../app/links';
+  import { PROFILES } from '../../app/profiles';
   import { exportOptionsFrom } from '../../engine/options';
   import { canChooseFolder, loadSaveFolder, storeSaveFolder } from '../../storage/folder';
   import { CONTENT_TYPES, type ContentType } from '../../engine/types';
@@ -140,50 +141,20 @@
     <h2 id="makes">Each download makes</h2>
     <fieldset>
       <legend class="visually-hidden">Each download makes</legend>
-      <label>
-        <input
-          type="radio"
-          name="profile"
-          checked={settings.profile === 'copy'}
-          onchange={() => save({ profile: 'copy' })}
-        />
-        <span>
-          <strong>A copy of the course</strong>
-          <small
-            >The course as it is in Canvas, in folders, with an overview page to open it offline.</small
-          >
-        </span>
-      </label>
-      <label>
-        <input
-          type="radio"
-          name="profile"
-          checked={settings.profile === 'study'}
-          onchange={() => save({ profile: 'study' })}
-        />
-        <span>
-          <strong>A study pack for AI</strong>
-          <small
-            >A few files per module that you upload in one go, with a course guide of deadlines and
-            grading.</small
-          >
-        </span>
-      </label>
-      <label>
-        <input
-          type="radio"
-          name="profile"
-          checked={settings.profile === 'agents'}
-          onchange={() => save({ profile: 'agents' })}
-        />
-        <span>
-          <strong>Files for coding agents</strong>
-          <small
-            >The copy in Markdown, with AGENTS.md, llms.txt and course.json for Claude Code, Codex,
-            Cursor or your own scripts.</small
-          >
-        </span>
-      </label>
+      {#each PROFILES as choice (choice.profile)}
+        <label>
+          <input
+            type="radio"
+            name="profile"
+            checked={settings.profile === choice.profile}
+            onchange={() => save({ profile: choice.profile })}
+          />
+          <span>
+            <strong>{choice.title}</strong>
+            <small>{choice.text}</small>
+          </span>
+        </label>
+      {/each}
     </fieldset>
     {#if settings.profile === 'study'}
       <label class="field">
