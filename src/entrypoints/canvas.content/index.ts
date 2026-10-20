@@ -125,8 +125,11 @@ async function showUpdates(
 async function showPicker(ctx: ContentScriptContext, startExport: StartExport) {
   const picker = await createShadowRootUi(ctx, {
     name: 'ccd-course-picker',
-    position: 'modal',
-    zIndex: 2147483647,
+    // The picker is a modal <dialog>, which the browser puts above the whole page.
+    // (WXT's 'modal' position loses to Canvas's stacking: the isolated host's
+    // `all: initial !important` resets the z-index WXT sets on it.)
+    position: 'inline',
+    anchor: 'body',
     // Keep Canvas's keyboard shortcuts from firing while typing in the search box.
     isolateEvents: true,
     onMount: (container) =>

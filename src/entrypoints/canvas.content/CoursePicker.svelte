@@ -37,7 +37,7 @@
   });
   let query = $state('');
   let summary = $state('');
-  let dialog: HTMLDivElement | undefined = $state();
+  let dialog: HTMLDialogElement | undefined = $state();
   let search: HTMLInputElement | undefined = $state();
   // Selection is kept across tabs and searches.
   const selected = new SvelteSet<string>();
@@ -57,10 +57,13 @@
   }
 
   onMount(() => {
+    // A modal dialog sits in the browser's top layer: above anything Canvas
+    // stacks (its main column has z-index 10), with the page inert behind it.
+    dialog?.showModal();
+    search?.focus();
     void load('active');
     void load('completed');
     void loadSettings().then((s) => (summary = describeExport(s)));
-    search?.focus();
   });
 
   const current = $derived(lists[tab]);
@@ -76,40 +79,19 @@
       else selected.delete(String(c.id));
     }
   }
-
-  function onkeydown(event: KeyboardEvent) {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      onclose();
-      return;
-    }
-    if (event.key !== 'Tab' || !dialog) return;
-    // Keep keyboard focus inside the dialog while it's open.
-    const focusable = [
-      ...dialog.querySelectorAll<HTMLElement>('button:not([disabled]), input, [tabindex="0"]'),
-    ];
-    const first = focusable[0];
-    const last = focusable.at(-1);
-    const active = (dialog.getRootNode() as ShadowRoot).activeElement;
-    if (event.shiftKey && active === first) {
-      event.preventDefault();
-      last?.focus();
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault();
-      first?.focus();
-    }
-  }
 </script>
 
-<div class="backdrop" onclick={onclose} aria-hidden="true"></div>
-<div
-  class="dialog"
-  role="dialog"
-  aria-modal="true"
+<!-- Escape fires "cancel"; a click on the backdrop lands on the dialog element itself. -->
+<dialog
   aria-labelledby="ccd-picker-title"
   bind:this={dialog}
-  {onkeydown}
-  tabindex="-1"
+  oncancel={(e) => {
+    e.preventDefault();
+    onclose();
+  }}
+  onclick={(e) => {
+    if (e.target === dialog) onclose();
+  }}
 >
   <header>
     <h2 id="ccd-picker-title">Download courses</h2>
@@ -218,22 +200,20 @@
         : `Download ${selected.size} ${selected.size === 1 ? 'course' : 'courses'}`}
     </button>
   </footer>
-</div>
+</dialog>
 
 <style>
   /* px throughout: rem would follow the Canvas page's root font size. */
-  .backdrop {
-    position: fixed;
-    inset: 0;
+  dialog::backdrop {
     background: rgba(16, 24, 32, 0.45);
   }
-  .dialog {
-    position: fixed;
-    inset: 0;
-    margin: auto;
+  dialog {
+    padding: 0;
+    border: 0;
+    max-width: none;
+    max-height: none;
     width: min(560px, calc(100vw - 32px));
     height: min(640px, calc(100vh - 48px));
-    display: flex;
     flex-direction: column;
     background: #ffffff;
     color: #1d2733;
@@ -246,6 +226,9 @@
       Roboto,
       sans-serif;
     overflow: hidden;
+  }
+  dialog[open] {
+    display: flex;
   }
   header {
     display: flex;

@@ -64,3 +64,18 @@ test('Escape closes the picker', async ({ page }) => {
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
 });
+
+test('a click outside closes the picker', async ({ page }) => {
+  const dialog = await openPicker(page);
+  await page.mouse.click(5, 5);
+  await expect(dialog).toBeHidden();
+});
+
+test('opens above Canvas, whose main column is its own stacking layer', async ({ page }) => {
+  await openPicker(page);
+  // A hit inside the picker's shadow root reports its host element.
+  const onTop = await page.evaluate(() =>
+    document.elementFromPoint(innerWidth / 2, innerHeight / 2)?.tagName.toLowerCase(),
+  );
+  expect(onTop).toBe('ccd-course-picker');
+});

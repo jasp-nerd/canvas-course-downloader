@@ -16,6 +16,8 @@ a{color:#0374B5;text-decoration:none}
 .avatar{width:40px;height:40px;border-radius:50%;background:#e2e8f0;color:#334155;display:grid;place-items:center;font-weight:700;font-size:14px}
 .nav-item{color:#fff;font-size:12px;padding:12px 0}
 .ic-Layout-wrapper{margin-left:84px;flex:1;padding:0 36px 40px;min-width:0}
+/* As on canvas.vu.nl: the main column is its own stacking layer, above anything at z-index auto. */
+#main.ic-Layout-columns{position:relative;z-index:10}
 .ic-Dashboard-header__layout{border-bottom:1px solid #C7CDD1;padding:20px 0 14px;margin-bottom:24px}
 .ic-Dashboard-header__title{font-size:30px;font-weight:300;margin:0}
 .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
@@ -43,7 +45,7 @@ function shell(title: string, inner: string, brand?: string): string {
 </head><body><div class="ic-app" id="application">
 <header class="ic-app-header" id="header"><div class="logo">S</div><div class="avatar">SS</div>
 <a class="nav-item" href="/">Dashboard</a><a class="nav-item" href="/courses">Courses</a></header>
-<div class="ic-Layout-wrapper" id="wrapper"><div id="content">${inner}</div></div></div></body></html>`;
+<div class="ic-Layout-wrapper" id="wrapper"><div class="ic-Layout-columns" id="main"><div id="content">${inner}</div></div></div></div></body></html>`;
 }
 
 export function dashboardPage(brand?: string): string {
