@@ -189,6 +189,9 @@ export async function attempt(
   } catch (error) {
     if (error instanceof CanvasError && (error.kind === 'session' || error.kind === 'aborted'))
       throw error;
+    // Canvas answers 404 for a part the course has turned off (its Pages or
+    // Quizzes tab, say). Nothing is missing then, so nothing is reported.
+    if (error instanceof CanvasError && error.status === 404) return;
     noteNotCaptured(ctx, { source, text: source, url, status: failureStatus(error) });
   }
 }
