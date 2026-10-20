@@ -1,14 +1,18 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { browser } from 'wxt/browser';
+  import { WHATS_NEW_3 } from '../../app/onboarding';
   import { sendMessage, type PageInfo } from '../../messaging';
 
   type Page =
     { kind: 'loading' } | { kind: 'canvas'; tabId: number; info: PageInfo } | { kind: 'other' };
   let page = $state<Page>({ kind: 'loading' });
+  let whatsNew = $state(false);
   const version = browser.runtime.getManifest().version;
 
   onMount(async () => {
+    whatsNew =
+      (await browser.storage.local.get<{ whatsNew?: string }>('whatsNew')).whatsNew === '3.0';
     const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
     try {
       // Only our content script on a Canvas page answers; elsewhere this throws.
@@ -37,6 +41,20 @@
 
 <main>
   <h1>Canvas Course Downloader</h1>
+
+  {#if whatsNew}
+    <p class="news">
+      {WHATS_NEW_3}
+      <button
+        type="button"
+        class="link"
+        onclick={() => {
+          whatsNew = false;
+          void browser.storage.local.remove('whatsNew');
+        }}>Got it</button
+      >
+    </p>
+  {/if}
 
   {#if page.kind === 'loading'}
     <p class="muted">Checking this page…</p>
@@ -112,6 +130,12 @@
   }
   p {
     margin: 0;
+  }
+  .news {
+    font-size: 13px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border-radius: 8px;
+    padding: 8px 10px;
   }
   .muted {
     color: var(--muted);

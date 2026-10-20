@@ -30,7 +30,9 @@
     "verify": "pnpm verify:fast && pnpm check:manifest && playwright test --project e2e",
     "mock:canvas": "node e2e/mock-canvas/cli.ts",
     "e2e": "wxt build && playwright test --project e2e",
-    "golden:capture": "wxt build && playwright test --project golden"
+    "golden:capture": "wxt build && playwright test --project golden",
+    "assets": "wxt build && playwright test --project assets",
+    "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
     "@joplin/turndown-plugin-gfm": "^1.0.68",

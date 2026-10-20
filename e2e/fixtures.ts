@@ -18,6 +18,9 @@ export const CANVAS = `https://${MOCK_HOSTS.instructure}`;
 export const CUSTOM_DOMAIN_CANVAS = `https://${MOCK_HOSTS.customDomain}`;
 export const NOT_CANVAS = `https://${MOCK_HOSTS.notCanvas}`;
 
+/** Tabs the extension opened by itself when the test browser started, per context. */
+const startupTabsByContext = new WeakMap<BrowserContext, string[]>();
+
 interface WorkerFixtures {
   extensionPath: string;
   /** Remote-debugging port, for attaching to targets Playwright doesn't see (the action popup). */
@@ -28,6 +31,8 @@ interface WorkerFixtures {
   extContext: BrowserContext;
   serviceWorker: Worker;
   extensionId: string;
+  /** URLs of tabs the extension opened on its own at install (the welcome page). */
+  startupTabs: string[];
 }
 
 export const test = base.extend<object, WorkerFixtures>({
@@ -113,6 +118,23 @@ export const test = base.extend<object, WorkerFixtures>({
       });
       await setup.close();
 
+      // A fresh v3 install opens the welcome tab. Record and close it, so tests
+      // waiting for a new tab (the Export tab) can't pick it up by mistake.
+      const startupTabs: string[] = [];
+      if (extensionPath === V3_BUILD) {
+        const isWelcome = (p: { url(): string }) => p.url().endsWith('/welcome.html');
+        const welcome =
+          context.pages().find(isWelcome) ??
+          (await context
+            .waitForEvent('page', { predicate: isWelcome, timeout: 10_000 })
+            .catch(() => undefined));
+        if (welcome) {
+          startupTabs.push(welcome.url());
+          await welcome.close();
+        }
+      }
+      startupTabsByContext.set(context, startupTabs);
+
       await use(context);
       await context.close();
       rmSync(userDataDir, { recursive: true, force: true });
@@ -131,6 +153,13 @@ export const test = base.extend<object, WorkerFixtures>({
   extensionId: [
     async ({ serviceWorker }, use) => {
       await use(new URL(serviceWorker.url()).host);
+    },
+    { scope: 'worker' },
+  ],
+
+  startupTabs: [
+    async ({ extContext }, use) => {
+      await use(startupTabsByContext.get(extContext) ?? []);
     },
     { scope: 'worker' },
   ],
@@ -161,7 +190,13 @@ export async function openActionPopup(sw: Worker, cdpPort: number) {
       .contexts()
       .flatMap((c) => c.pages())
       .find((p) => p.url().endsWith('/popup.html'));
-    if (popup) return { popup, close: () => cdp.close() };
+    if (popup) {
+      const close = async () => {
+        await popup.close().catch(() => {});
+        await cdp.close();
+      };
+      return { popup, close };
+    }
     await new Promise((r) => setTimeout(r, 100));
   }
   await cdp.close();
