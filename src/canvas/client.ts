@@ -107,26 +107,27 @@ export function createCanvasClient(options: CanvasClientOptions) {
 
   async function request(
     url: string,
-    expect: 'json' | 'html' = 'json',
-  ): Promise<{ data: unknown; link: string | null }> {
+    expect: 'json' | 'html' | 'body' = 'json',
+  ): Promise<{ data: unknown; link: string | null; response?: Response }> {
     let throttles = 0;
     let transients = 0;
     for (;;) {
       if (options.signal?.aborted) throw new CanvasError('aborted', url);
       await acquire();
       let remaining: number | null = null;
+      // The timeout covers waiting for headers only; a large file may stream for minutes.
+      const timeout = new AbortController();
+      const timer = setTimeout(() => timeout.abort(), TIMEOUT_MS);
       try {
-        const signals = [
-          AbortSignal.timeout(TIMEOUT_MS),
-          ...(options.signal ? [options.signal] : []),
-        ];
         const res = await doFetch(url, {
           credentials: 'include',
-          headers: { Accept: 'application/json' },
-          signal: AbortSignal.any(signals),
+          headers: { Accept: expect === 'json' ? 'application/json' : '*/*' },
+          signal: AbortSignal.any([timeout.signal, ...(options.signal ? [options.signal] : [])]),
         });
+        clearTimeout(timer);
         const header = res.headers.get('x-rate-limit-remaining');
         remaining = header === null ? null : Number(header);
+        if (expect === 'body' && res.ok) return { data: null, link: null, response: res };
         const body = await res.text();
 
         if (res.status === 429 || (res.status === 403 && /Rate Limit Exceeded/i.test(body))) {
@@ -164,6 +165,7 @@ export function createCanvasClient(options: CanvasClientOptions) {
         if (++transients > MAX_TRANSIENT_RETRIES) throw new CanvasError('transient', url);
         await sleep(random() * Math.min(30, 2 ** (transients - 1)) * 1000);
       } finally {
+        clearTimeout(timer);
         release(remaining);
       }
     }
@@ -181,6 +183,15 @@ export function createCanvasClient(options: CanvasClientOptions) {
     /** One API object, e.g. `get('/courses/101')`. */
     async get<T>(path: string, params?: Record<string, string | string[]>): Promise<T> {
       return (await request(apiUrl(path, params))).data as T;
+    },
+
+    /**
+     * A file body as a streaming Response. The request counts against Canvas's
+     * rate limit only until the headers arrive, so long downloads don't hold
+     * back API calls.
+     */
+    async download(url: string): Promise<Response> {
+      return (await request(url, 'body')).response!;
     },
 
     /** A Canvas web page (not the API) as HTML, e.g. a quiz's review page. */

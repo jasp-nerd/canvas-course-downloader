@@ -147,6 +147,28 @@ describe('Canvas client', () => {
   });
 });
 
+describe('download', () => {
+  it('returns a file body as a stream, with the same retries as API calls', async () => {
+    mock.addFault({ path: '^/files/101001/download', status: 502, times: 1 });
+    const { canvas } = client();
+    const res = await canvas.download(
+      'https://school.instructure.com/files/101001/download?download_frd=1',
+    );
+    expect(new TextDecoder().decode((await res.arrayBuffer()).slice(0, 8))).toBe('%PDF-1.4');
+    expect(apiCalls('/files/101001/download')).toBe(2);
+  });
+
+  it('fails a missing file as permanent', async () => {
+    const { canvas } = client();
+    await expect(
+      canvas.download('https://school.instructure.com/files/999999/download'),
+    ).rejects.toMatchObject({
+      kind: 'permanent',
+      status: 404,
+    });
+  });
+});
+
 describe('getHtml', () => {
   it('returns a Canvas web page as text', async () => {
     const { canvas } = client();
