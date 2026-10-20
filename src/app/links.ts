@@ -35,3 +35,23 @@ export function tracked(url: string, place: string): string {
   u.searchParams.set('utm_medium', place);
   return u.toString();
 }
+
+/**
+ * Where "Tell me what went wrong" goes: the feedback form with version and
+ * browser filled in (write {version} and {browser} into its prefill URL), or a
+ * new GitHub issue until the form exists.
+ */
+export function feedbackUrl(version: string, browserName: string): string {
+  if (LINKS.feedbackForm) {
+    return LINKS.feedbackForm
+      .replace('{version}', encodeURIComponent(version))
+      .replace('{browser}', encodeURIComponent(browserName));
+  }
+  const url = new URL(`${LINKS.github}/issues/new`);
+  url.searchParams.set('title', 'Problem: ');
+  url.searchParams.set(
+    'body',
+    `What went wrong?\n\n\nVersion: ${version}\nBrowser: ${browserName}`,
+  );
+  return url.toString();
+}

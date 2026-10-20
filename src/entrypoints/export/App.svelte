@@ -1,11 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { exportCourses, type CourseState } from '../../app/export-job';
+  import { supportCardAfterExport } from '../../app/support';
+  import SupportCard from './SupportCard.svelte';
 
   let { origin, courseIds }: { origin: string; courseIds: string[] } = $props();
 
   let courses = $state<CourseState[]>([]);
   let running = $state(true);
+  let showSupport = $state(false);
   const controller = new AbortController();
 
   const percent = (c: CourseState) =>
@@ -22,9 +25,15 @@
       courseIds,
       signal: controller.signal,
       onChange: (next) => (courses = next),
-    }).finally(() => {
-      running = false;
-    });
+    })
+      .then(async (finished) => {
+        // Only after an export where every file was saved.
+        if (finished.length && finished.every((c) => c.outcome === 'success'))
+          showSupport = await supportCardAfterExport();
+      })
+      .finally(() => {
+        running = false;
+      });
     return () => window.removeEventListener('beforeunload', warn);
   });
 
@@ -93,6 +102,10 @@
       </li>
     {/each}
   </ul>
+
+  {#if showSupport && !running}
+    <SupportCard />
+  {/if}
 
   {#if running}
     <button type="button" class="secondary" onclick={() => controller.abort()}>Cancel</button>
