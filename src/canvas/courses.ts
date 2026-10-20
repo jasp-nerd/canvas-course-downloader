@@ -23,7 +23,21 @@ export async function listCourses(
   return courses.filter((c) => c.name).sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/** Courses by term: newest term first; terms without a start date ("Default Term", "Other") last. */
+/** Roughly when a term named "Fall 2026" etc. starts, as a month index. */
+const SEASON_MONTH: Record<string, number> = {
+  winter: 0,
+  spring: 1,
+  summer: 5,
+  fall: 8,
+  autumn: 8,
+};
+
+/**
+ * Courses by term, newest first. Many schools leave term dates empty (canvas.vu.nl
+ * has none), so a term without one is placed by the year and season in its name
+ * ("2026 - P 1", "Fall 2025").
+ * Terms with neither ("Default term", "Other") go last.
+ */
 export function groupByTerm(courses: CourseSummary[]): TermGroup[] {
   const terms = new Map<string, { startAt: string | null; courses: CourseSummary[] }>();
   for (const course of courses) {
@@ -31,17 +45,24 @@ export function groupByTerm(courses: CourseSummary[]): TermGroup[] {
     if (!terms.has(name)) terms.set(name, { startAt: course.term?.start_at ?? null, courses: [] });
     terms.get(name)!.courses.push(course);
   }
-  const undated = (name: string, startAt: string | null) =>
-    !startAt || name === 'Other' || name.toLowerCase().includes('default');
+  const when = (name: string, startAt: string | null): number | null => {
+    if (name === 'Other' || name.toLowerCase().includes('default')) return null;
+    if (startAt) return Date.parse(startAt);
+    const year = /\b(20\d\d)\b/.exec(name)?.[1];
+    if (!year) return null;
+    const season = /\b(winter|spring|summer|fall|autumn)\b/i.exec(name)?.[1]?.toLowerCase();
+    return Date.UTC(Number(year), season ? SEASON_MONTH[season]! : 0, 1);
+  };
   return [...terms.entries()]
-    .sort(([nameA, a], [nameB, b]) => {
-      const lastA = undated(nameA, a.startAt);
-      const lastB = undated(nameB, b.startAt);
-      if (lastA !== lastB) return lastA ? 1 : -1;
-      if (a.startAt && b.startAt) return Date.parse(b.startAt) - Date.parse(a.startAt);
-      return nameA.localeCompare(nameB);
+    .map(([term, group]) => ({ term, at: when(term, group.startAt), courses: group.courses }))
+    .sort((a, b) => {
+      if (a.at === null || b.at === null) {
+        return a.at === b.at ? a.term.localeCompare(b.term) : a.at === null ? 1 : -1;
+      }
+      // Same year without dates: "2026 - P 2" before "2026 - P 1".
+      return b.at - a.at || b.term.localeCompare(a.term);
     })
-    .map(([term, { courses: list }]) => ({ term, courses: list }));
+    .map(({ term, courses: list }) => ({ term, courses: list }));
 }
 
 /** Search across course name, code and term, as the picker's search box does. */
