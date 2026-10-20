@@ -9,7 +9,9 @@ import { sanitizeFilename } from '../export/filenames';
 import { downloadBlob, downloadsSink } from '../sinks/downloads';
 import type { SinkFailure } from '../sinks/types';
 import { blobCollector, zipSink } from '../sinks/zip';
+import { loadInventory, loadLegacyRecords, saveInventory } from '../storage/inventory';
 import { loadSettings } from '../storage/settings';
+import type { ExportPlan } from '../engine/types';
 
 export interface CourseState {
   id: string;
@@ -23,6 +25,8 @@ export interface CourseState {
   failures: SinkFailure[];
   /** Where the export went, e.g. "Canvas/Linear Algebra.zip". */
   savedAs?: string;
+  /** Files left out because they were saved before and haven't changed. */
+  skipped: number;
   error?: string;
 }
 
@@ -47,9 +51,26 @@ function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+/** Today's date as YYYY-MM-DD in the user's timezone, for update file names. */
+function today(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** "Lecture 1.pdf" → "Lecture 1 (updated 2026-10-20).pdf": a changed file never overwrites the saved one. */
+function updatedName(path: string, date: string): string {
+  const slash = path.lastIndexOf('/') + 1;
+  const dot = path.lastIndexOf('.');
+  return dot > slash
+    ? `${path.slice(0, dot)} (updated ${date})${path.slice(dot)}`
+    : `${path} (updated ${date})`;
+}
+
 export async function exportCourses(input: {
   origin: string;
   courseIds: string[];
+  /** Only files that are new or changed since the last export, whatever the setting says. */
+  onlyNew?: boolean;
   signal: AbortSignal;
   onChange: (courses: CourseState[]) => void;
 }): Promise<CourseState[]> {
@@ -65,6 +86,7 @@ export async function exportCourses(input: {
     done: 0,
     failed: 0,
     failures: [],
+    skipped: 0,
   }));
   const update = (course: CourseState, changes: Partial<CourseState>) => {
     Object.assign(course, changes);
@@ -83,17 +105,34 @@ export async function exportCourses(input: {
     });
     try {
       update(course, { phase: 'planning', message: 'Looking at the course…' });
-      const plan = await planCourseExport({
+      const inventory = await loadInventory(input.origin, course.id);
+      const legacy = inventory ? {} : await loadLegacyRecords(course.id);
+      const hasHistory = inventory !== null || Object.keys(legacy).length > 0;
+      const onlyNew = (settings.incrementalMode || input.onlyNew) && hasHistory;
+      const date = today();
+      let plan: ExportPlan = await planCourseExport({
         canvas,
         origin: input.origin,
         courseId: course.id,
         options,
+        ...(onlyNew ? { onlyNew: { files: inventory?.files ?? {}, legacy } } : {}),
         onProgress: (message) => update(course, { message }),
       });
+      if (!settings.zipMode) {
+        plan = {
+          ...plan,
+          files: plan.files.map((f) =>
+            f.source.kind === 'remote' && f.source.changed
+              ? { ...f, path: updatedName(f.path, date) }
+              : f,
+          ),
+        };
+      }
       update(course, {
         name: plan.courseName,
         phase: 'saving',
         total: plan.files.length,
+        skipped: plan.skippedUnchanged,
         message: 'Saving files…',
       });
 
@@ -109,7 +148,7 @@ export async function exportCourses(input: {
           onProgress,
         });
         if (result.outcome !== 'cancelled' && result.written > 0) {
-          const savedAs = `${prefix}${sanitizeFilename(`${plan.courseName}.zip`)}`;
+          const savedAs = `${prefix}${sanitizeFilename(`${plan.courseName}${onlyNew ? ` (update ${date})` : ''}.zip`)}`;
           update(course, { message: 'Saving the ZIP…' });
           const saved = await downloadBlob(
             browser.downloads,
@@ -129,6 +168,24 @@ export async function exportCourses(input: {
         });
         result = await runExport(plan, { canvas, sink, signal: input.signal, onProgress });
         update(course, { savedAs: folder });
+      }
+      // Remember what was saved, so the next export can skip it. Files that failed aren't recorded.
+      if (result.outcome !== 'cancelled') {
+        const failed = new Set(result.failed.map((f) => f.path));
+        const files = { ...(inventory?.files ?? {}) };
+        for (const f of plan.files) {
+          if (f.source.kind !== 'remote' || !f.source.canvasId || failed.has(f.path)) continue;
+          files[f.source.canvasId] = {
+            path: f.path,
+            size: f.source.size,
+            modifiedAt: f.source.modifiedAt,
+          };
+        }
+        await saveInventory(input.origin, course.id, {
+          courseName: plan.courseName,
+          savedAt: Date.now(),
+          files,
+        });
       }
       update(course, {
         phase: 'finished',

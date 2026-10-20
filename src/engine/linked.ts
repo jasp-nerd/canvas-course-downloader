@@ -189,7 +189,7 @@ async function resolveMediaUncached(
     // Kaltura reports flavor sizes in KB on some instances and bytes on others; better unknown.
     size: 0,
     contentType: best.content_type || (info.media_type === 'audio' ? 'audio/mp4' : 'video/mp4'),
-    updatedAt: '',
+    modifiedAt: '',
     mediaKeys: keys,
   };
   ctx.entries.push(entry);

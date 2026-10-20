@@ -5,6 +5,8 @@ export interface StartExportRequest {
   /** The Canvas origin the request came from, e.g. "https://canvas.vu.nl". */
   origin: string;
   courseIds: string[];
+  /** Only what's new or changed since the last export. */
+  onlyNew?: boolean;
 }
 
 export interface PageInfo {

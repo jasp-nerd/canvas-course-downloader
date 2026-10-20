@@ -216,7 +216,8 @@ export function files(c: Course, origin: string): MockFile[] {
       'content-type': 'application/pdf',
       size,
       url: `${origin}/files/${id}/download?download_frd=1`,
-      updated_at: iso(list.length),
+      // Later than modified_at, as on real Canvas: updated_at also moves on renames and publishing.
+      updated_at: iso(list.length + 1),
       modified_at: iso(list.length),
       created_at: iso(list.length),
       locked_for_user: false,

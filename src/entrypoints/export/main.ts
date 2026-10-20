@@ -7,5 +7,6 @@ mount(App, {
   props: {
     origin: params.get('origin') ?? '',
     courseIds: (params.get('courses') ?? '').split(',').filter(Boolean),
+    onlyNew: params.get('new') === '1',
   },
 });

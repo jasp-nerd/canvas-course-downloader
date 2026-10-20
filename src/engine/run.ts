@@ -78,8 +78,8 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
     } else {
       try {
         const lastModified =
-          file.source.kind === 'remote' && file.source.updatedAt
-            ? new Date(file.source.updatedAt)
+          file.source.kind === 'remote' && file.source.modifiedAt
+            ? new Date(file.source.modifiedAt)
             : undefined;
         await sink.write(file.path, body.data, { lastModified });
         progress.done++;

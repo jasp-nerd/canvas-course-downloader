@@ -39,7 +39,9 @@ export interface RemoteEntry extends EntryBase {
   /** Bytes as reported by Canvas, 0 when unknown. */
   size: number;
   contentType: string;
-  updatedAt: string;
+  modifiedAt: string;
+  /** Canvas's updated_at, which v2 recorded; only for comparing with v2's records. */
+  canvasUpdatedAt?: string;
   canvasId?: string;
   /** Set when the file was linked from another course. */
   sourceCourseId?: string;
@@ -92,7 +94,9 @@ export interface PlannedFile {
         size: number;
         contentType: string;
         canvasId?: string;
-        updatedAt: string;
+        modifiedAt: string;
+        /** Saved before, but changed on Canvas since. */
+        changed?: boolean;
       }
     | { kind: 'text'; content: string };
 }
@@ -103,4 +107,14 @@ export interface ExportPlan {
   files: PlannedFile[];
   notCaptured: NotCaptured[];
   filteredOut: number;
+  /** Files left out because they were saved before and haven't changed. */
+  skippedUnchanged: number;
+}
+
+/** What earlier exports of this course saved, for exporting only what's new. */
+export interface PreviousExport {
+  /** By Canvas file id. */
+  files: Record<string, { size: number; modifiedAt: string }>;
+  /** v2's records, by "<folder><name>": { m: modified, s: size }, or a bare timestamp. */
+  legacy: Record<string, { m?: string; s?: number } | number>;
 }

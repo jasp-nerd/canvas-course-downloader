@@ -27,6 +27,7 @@ export default defineBackground(() => {
     const url = new URL(browser.runtime.getURL('/export.html'));
     url.searchParams.set('origin', data.origin);
     url.searchParams.set('courses', data.courseIds.join(','));
+    if (data.onlyNew) url.searchParams.set('new', '1');
     await browser.tabs.create({ url: url.toString() });
   });
 

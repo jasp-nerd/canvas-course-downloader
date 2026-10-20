@@ -4,7 +4,11 @@
   import { supportCardAfterExport } from '../../app/support';
   import SupportCard from './SupportCard.svelte';
 
-  let { origin, courseIds }: { origin: string; courseIds: string[] } = $props();
+  let {
+    origin,
+    courseIds,
+    onlyNew = false,
+  }: { origin: string; courseIds: string[]; onlyNew?: boolean } = $props();
 
   let courses = $state<CourseState[]>([]);
   let running = $state(true);
@@ -23,6 +27,7 @@
     void exportCourses({
       origin,
       courseIds,
+      onlyNew,
       signal: controller.signal,
       onChange: (next) => (courses = next),
     })
@@ -78,7 +83,10 @@
             <span class="current">{course.message}</span>
           </p>
         {:else if course.outcome === 'success'}
-          <p class="result">Saved {course.done} files to Downloads/{course.savedAs}</p>
+          <p class="result">
+            Saved {course.done} files to Downloads/{course.savedAs}{#if course.skipped}. {course.skipped}
+              files you already had were skipped{/if}
+          </p>
         {:else if course.outcome === 'partial'}
           <p class="result">
             Saved {course.done} of {course.done + course.failed} files to Downloads/{course.savedAs}.

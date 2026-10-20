@@ -30,7 +30,8 @@ import {
 } from './sections/grades';
 import { exportQuizzes } from './sections/quizzes';
 import { exportAllSubmissions, exportOwnSubmissions } from './sections/submissions';
-import type { Entry, ExportOptions, ExportPlan, PlannedFile } from './types';
+import { fileChanged } from '../storage/inventory';
+import type { Entry, ExportOptions, ExportPlan, PlannedFile, PreviousExport } from './types';
 
 const TEACHER_ROLES = new Set(['teacher', 'ta', 'designer']);
 const VIDEO_FILE = /\.(mp4|mov|avi|mkv|webm|wmv|flv|m4v)$/i;
@@ -47,6 +48,8 @@ export interface PlanInput {
   origin: string;
   courseId: string;
   options: ExportOptions;
+  /** Leave out files saved before that haven't changed. */
+  onlyNew?: PreviousExport;
   onProgress?: (message: string) => void;
 }
 
@@ -143,13 +146,14 @@ export async function planCourseExport(input: PlanInput): Promise<ExportPlan> {
     await attempt(ctx, 'Quizzes', courseUrl(ctx, 'quizzes'), () => exportQuizzes(ctx));
   }
 
-  return finalize(ctx, listed);
+  return finalize(ctx, listed, input.onlyNew);
 }
 
 /** Applies filters, writes the report and manifest, names every file and renders documents. */
 function finalize(
   ctx: CourseExport,
   listed: Record<'files' | 'assignments' | 'announcements' | 'discussions' | 'modules', number>,
+  onlyNew?: PreviousExport,
 ): ExportPlan {
   const { options } = ctx;
   const maxBytes = options.maxFileSizeMB > 0 ? options.maxFileSizeMB * 1024 * 1024 : Infinity;
@@ -160,6 +164,35 @@ function finalize(
     return e.size <= maxBytes;
   });
   const filteredOut = ctx.entries.length - entries.length;
+
+  // Exporting only what's new: drop files saved before that haven't changed, and
+  // flag changed ones. Generated documents are always written again.
+  const changed = new Set<Entry>();
+  let skippedUnchanged = 0;
+  if (onlyNew) {
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const e = entries[i]!;
+      if (e.kind !== 'remote') continue;
+      const fromV3 = e.canvasId ? onlyNew.files[e.canvasId] : undefined;
+      const legacy = onlyNew.legacy[e.folder + e.name];
+      // v2 recorded Canvas's updated_at, so its records are compared against that field.
+      const saved =
+        fromV3 ??
+        (typeof legacy === 'object'
+          ? { size: legacy.s ?? 0, modifiedAt: legacy.m ?? '' }
+          : legacy !== undefined
+            ? {}
+            : undefined);
+      const current = fromV3 ? e : { size: e.size, modifiedAt: e.canvasUpdatedAt || e.modifiedAt };
+      if (!saved) continue;
+      if (fileChanged(saved, current)) {
+        changed.add(e);
+      } else {
+        entries.splice(i, 1);
+        skippedUnchanged++;
+      }
+    }
+  }
 
   if (ctx.notCaptured.length) {
     const rows = ['source,link_text,url,status,linked_course_id'];
@@ -192,7 +225,7 @@ function finalize(
       modules: listed.modules,
       extractedFiles: entries.filter((e) => e.folder === 'Extracted_Files/').length,
       inaccessibleLinkedFiles: ctx.notCaptured.length,
-      skippedIncremental: 0,
+      skippedIncremental: skippedUnchanged,
       skippedFilters: filteredOut,
       total: entries.length,
     },
@@ -217,7 +250,8 @@ function finalize(
           url: entry.url,
           size: entry.size,
           contentType: entry.contentType,
-          updatedAt: entry.updatedAt,
+          modifiedAt: entry.modifiedAt,
+          ...(changed.has(entry) ? { changed: true } : {}),
           ...(entry.canvasId ? { canvasId: entry.canvasId } : {}),
         },
       };
@@ -238,6 +272,7 @@ function finalize(
     files,
     notCaptured: ctx.notCaptured,
     filteredOut,
+    skippedUnchanged,
   };
 }
 

@@ -125,7 +125,9 @@ export function addCanvasFile(
     name,
     size: file.size ?? 0,
     contentType: file['content-type'] ?? '',
-    updatedAt: file.updated_at ?? file.modified_at ?? '',
+    // modified_at moves only when the content changes; updated_at also on renames and publishing.
+    modifiedAt: file.modified_at ?? file.updated_at ?? '',
+    canvasUpdatedAt: file.updated_at ?? '',
     canvasId: id,
     ...extra,
   });
