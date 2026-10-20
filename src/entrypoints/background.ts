@@ -1,5 +1,5 @@
 import { defineBackground } from '#imports';
-import { browser } from 'wxt/browser';
+import { browser, type Browser } from 'wxt/browser';
 import { onboardingFor } from '../app/onboarding';
 import { onMessage, sendMessage } from '../messaging';
 
@@ -28,10 +28,18 @@ export default defineBackground(() => {
     url.searchParams.set('origin', data.origin);
     url.searchParams.set('courses', data.courseIds.join(','));
     if (data.onlyNew) url.searchParams.set('new', '1');
-    await browser.tabs.create({ url: url.toString() });
+    if (data.quiet) url.searchParams.set('quiet', '1');
+    await browser.tabs.create({ url: url.toString(), active: !data.quiet });
   });
 
   onMessage('openOptions', () => browser.runtime.openOptionsPage());
+  onMessage('setBadge', async (message) => {
+    // @webext-core/messaging types `sender` with @types/chrome, which WXT doesn't install.
+    const tabId = (message.sender as Browser.runtime.MessageSender).tab?.id;
+    if (tabId === undefined) return;
+    await browser.action.setBadgeText({ text: message.data, tabId });
+    await browser.action.setBadgeBackgroundColor({ color: '#0b5cad', tabId });
+  });
 
   browser.commands.onCommand.addListener((command) => {
     if (command !== 'download-current') return;

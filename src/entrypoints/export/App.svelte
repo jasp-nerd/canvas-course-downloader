@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { browser } from 'wxt/browser';
   import { exportCourses, type CourseState } from '../../app/export-job';
   import { supportCardAfterExport } from '../../app/support';
   import SupportCard from './SupportCard.svelte';
@@ -8,7 +9,8 @@
     origin,
     courseIds,
     onlyNew = false,
-  }: { origin: string; courseIds: string[]; onlyNew?: boolean } = $props();
+    quiet = false,
+  }: { origin: string; courseIds: string[]; onlyNew?: boolean; quiet?: boolean } = $props();
 
   let courses = $state<CourseState[]>([]);
   let running = $state(true);
@@ -17,6 +19,33 @@
 
   const percent = (c: CourseState) =>
     c.total ? Math.round(((c.done + c.failed) / c.total) * 100) : 0;
+
+  /** Automatic exports run in a background tab: tell the user how it went, and get out of the way if it worked. */
+  async function reportQuietly(finished: CourseState[], allSaved: boolean) {
+    const names = finished.map((c) => c.name).join(', ');
+    const saved = finished.reduce((n, c) => n + c.done, 0);
+    const self = await browser.tabs.getCurrent();
+    try {
+      await browser.notifications.create({
+        type: 'basic',
+        iconUrl: browser.runtime.getURL('/icons/icon-128.png'),
+        title: allSaved ? 'New Canvas files saved' : "Some new Canvas files couldn't be saved",
+        message: allSaved
+          ? `Saved ${saved} files from ${names}.`
+          : `Open the export tab to see what happened in ${names}.`,
+      });
+    } catch {
+      // Notifications can be turned off for the browser; the downloads are what matter.
+    }
+    const tabId = self?.id;
+    if (tabId === undefined) return;
+    // window.close() isn't reliable for a tab the extension opened; remove it through the tabs API.
+    if (allSaved) await browser.tabs.remove(tabId);
+    else
+      browser.notifications.onClicked.addListener(
+        () => void browser.tabs.update(tabId, { active: true }),
+      );
+  }
 
   onMount(() => {
     // Closing this tab stops the export, so ask first while it runs.
@@ -32,9 +61,13 @@
       onChange: (next) => (courses = next),
     })
       .then(async (finished) => {
+        const allSaved = finished.length > 0 && finished.every((c) => c.outcome === 'success');
+        if (quiet) {
+          await reportQuietly(finished, allSaved);
+          return;
+        }
         // Only after an export where every file was saved.
-        if (finished.length && finished.every((c) => c.outcome === 'success'))
-          showSupport = await supportCardAfterExport();
+        if (allSaved) showSupport = await supportCardAfterExport();
       })
       .finally(() => {
         running = false;

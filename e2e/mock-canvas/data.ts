@@ -202,7 +202,8 @@ export interface MockFile extends Json {
   url: string;
 }
 
-export function files(c: Course, origin: string): MockFile[] {
+/** `withNewFile` adds a file uploaded after the first export, for "what's new" tests. */
+export function files(c: Course, origin: string, withNewFile = false): MockFile[] {
   const base = c.id * 1000;
   const [root, lectures, readings, assignmentsFolder, exam] = folders(c).map((f) => f.id as number);
   const list: MockFile[] = [];
@@ -236,15 +237,17 @@ export function files(c: Course, origin: string): MockFile[] {
   ['Practice exam', 'Practice exam - solutions', 'Formula sheet'].forEach((t, i) =>
     add(exam, `${t}.pdf`, 380_000 + i * 41_000),
   );
+  if (withNewFile) add(lectures, 'Lecture 13 - Review session.pdf', 1_250_000);
   return list;
 }
 
 export function findFile(
   id: number,
   origin: string,
+  withNewFile = false,
 ): { course: Course; file: MockFile } | undefined {
   const course = findCourse(Math.floor(id / 1000));
-  const file = course && files(course, origin).find((f) => f.id === id);
+  const file = course && files(course, origin, withNewFile).find((f) => f.id === id);
   return course && file ? { course, file } : undefined;
 }
 

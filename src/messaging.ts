@@ -7,6 +7,8 @@ export interface StartExportRequest {
   courseIds: string[];
   /** Only what's new or changed since the last export. */
   onlyNew?: boolean;
+  /** Started automatically: run in a background tab and close it when everything worked. */
+  quiet?: boolean;
 }
 
 export interface PageInfo {
@@ -26,6 +28,8 @@ interface ProtocolMap {
   pageInfo(): PageInfo;
   /** Popup → content script: open the course picker. */
   openPicker(): void;
+  /** Content script → background: the number on the toolbar icon for this tab ("" clears it). */
+  setBadge(text: string): void;
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<ProtocolMap>();

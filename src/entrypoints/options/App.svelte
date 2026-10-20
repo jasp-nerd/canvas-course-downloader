@@ -189,6 +189,38 @@
     </label>
   </section>
 
+  <section aria-labelledby="updates">
+    <h2 id="updates">Keep courses up to date</h2>
+    <label>
+      <input
+        type="checkbox"
+        checked={settings.incrementalMode}
+        onchange={(e) => save({ incrementalMode: e.currentTarget.checked })}
+      />
+      <span>
+        <strong>Only download what's new</strong>
+        <small
+          >Skip files you already saved from a course. A file that changed is saved again with
+          "(updated date)" in its name.</small
+        >
+      </span>
+    </label>
+    <label>
+      <input
+        type="checkbox"
+        checked={settings.autoDownloadNew}
+        onchange={(e) => save({ autoDownloadNew: e.currentTarget.checked })}
+      />
+      <span>
+        <strong>Download new files automatically</strong>
+        <small
+          >When you open Canvas, courses you downloaded before are checked every few hours, and new
+          files are saved in the background.</small
+        >
+      </span>
+    </label>
+  </section>
+
   <section aria-labelledby="format">
     <h2 id="format">Pages, assignments and discussions as</h2>
     <fieldset>

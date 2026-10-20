@@ -10,6 +10,7 @@ import { downloadBlob, downloadsSink } from '../sinks/downloads';
 import type { SinkFailure } from '../sinks/types';
 import { blobCollector, zipSink } from '../sinks/zip';
 import { loadInventory, loadLegacyRecords, saveInventory } from '../storage/inventory';
+import { markExported } from './updates';
 import { loadSettings } from '../storage/settings';
 import type { ExportPlan } from '../engine/types';
 
@@ -186,6 +187,7 @@ export async function exportCourses(input: {
           savedAt: Date.now(),
           files,
         });
+        await markExported(input.origin, course.id);
       }
       update(course, {
         phase: 'finished',

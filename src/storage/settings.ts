@@ -10,6 +10,8 @@ export interface Settings extends Required<Omit<StoredSettings, 'contentTypes'>>
   folderPrefix: string;
   conflictAction: 'uniquify' | 'overwrite';
   incrementalMode: boolean;
+  /** When Canvas is opened, download new files from courses saved before, without asking. */
+  autoDownloadNew: boolean;
   /** Which preset the options page highlights. */
   preset: string;
 }
@@ -23,6 +25,7 @@ export const DEFAULT_SETTINGS: Settings = {
   folderPrefix: '',
   conflictAction: 'uniquify',
   incrementalMode: false,
+  autoDownloadNew: false,
   preset: 'full-archive',
 };
 

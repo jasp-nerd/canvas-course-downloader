@@ -41,6 +41,8 @@ export interface MockState {
   fileDelayMs: number;
   /** Rate-limit budget; X-Rate-Limit-Remaining is this minus 50 per API request in flight. */
   rateLimitBudget: number;
+  /** Courses that got a new file after their first export. */
+  newFileIn: number[];
   faults: FaultRule[];
 }
 
@@ -71,6 +73,7 @@ const initialState = (): MockState => ({
   apiDelayMs: 0,
   fileDelayMs: 0,
   rateLimitBudget: 700,
+  newFileIn: [],
   faults: [],
 });
 
@@ -101,7 +104,12 @@ function pdf(title: string, subtitle: string): Buffer {
 
 type ApiResult = unknown[] | Record<string, unknown> | undefined;
 
-function apiRoute(path: string, query: URLSearchParams, origin: string): ApiResult {
+function apiRoute(
+  path: string,
+  query: URLSearchParams,
+  origin: string,
+  state: MockState,
+): ApiResult {
   let m: RegExpMatchArray | null;
   if (path === '/api/v1/users/self') return { id: 1, name: 'Sam Student', short_name: 'Sam' };
   if (path === '/api/v1/courses') {
@@ -124,13 +132,16 @@ function apiRoute(path: string, query: URLSearchParams, origin: string): ApiResu
       }
     );
   }
-  if ((m = path.match(/^\/api\/v1\/files\/(\d+)$/))) return D.findFile(Number(m[1]), origin)?.file;
+  if ((m = path.match(/^\/api\/v1\/files\/(\d+)$/))) {
+    const id = Number(m[1]);
+    return D.findFile(id, origin, state.newFileIn.includes(Math.floor(id / 1000)))?.file;
+  }
   if (!(m = path.match(/^\/api\/v1\/courses\/(\d+)\/(.+)$/))) return undefined;
   const c = D.findCourse(m[1]!);
   if (!c) return undefined;
   const rest = m[2]!;
   if (rest === 'folders') return D.folders(c);
-  if (rest === 'files') return D.files(c, origin);
+  if (rest === 'files') return D.files(c, origin, state.newFileIn.includes(c.id));
   if (rest === 'pages') return D.pages(c).map(({ body: _b, ...p }) => p);
   if ((m = rest.match(/^pages\/(.+)$/))) return D.pages(c).find((p) => p.url === m![1]);
   if (rest === 'assignments') return D.assignments(c);
@@ -314,7 +325,12 @@ export async function startMockCanvas(port = 0): Promise<MockCanvas> {
     }
 
     if ((m = path.match(/^(?:\/courses\/\d+)?\/files\/(\d+)\/download$/))) {
-      const found = D.findFile(Number(m[1]), origin);
+      const fileId = Number(m[1]);
+      const found = D.findFile(
+        fileId,
+        origin,
+        mock.state.newFileIn.includes(Math.floor(fileId / 1000)),
+      );
       if (!found) return send(res, 404, 'text/plain', 'not found');
       if (mock.state.fileDelayMs) await sleep(mock.state.fileDelayMs);
       const name = found.file.display_name;
@@ -346,10 +362,13 @@ export async function startMockCanvas(port = 0): Promise<MockCanvas> {
           }),
         );
       }
-      const result = apiRoute(path, url.searchParams, origin);
+      const result = apiRoute(path, url.searchParams, origin, mock.state);
       if (result === undefined) {
         const known = /^\/api\/v1\/(courses|files)\/(\d+)/.exec(path);
-        if (known && !apiRoute(`/api/v1/${known[1]}/${known[2]}`, url.searchParams, origin)) {
+        if (
+          known &&
+          !apiRoute(`/api/v1/${known[1]}/${known[2]}`, url.searchParams, origin, mock.state)
+        ) {
           return send(
             res,
             404,

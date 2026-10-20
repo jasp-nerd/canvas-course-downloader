@@ -1,7 +1,12 @@
 <script lang="ts">
   import { canvasButtonColors } from '../../ui/contrast';
+  import { pageState } from './state.svelte';
 
-  let { label, onclick }: { label: string; onclick: () => void } = $props();
+  let {
+    label,
+    onclick,
+    showNew = false,
+  }: { label: string; onclick: () => void; showNew?: boolean } = $props();
   const colors = canvasButtonColors();
 </script>
 
@@ -19,7 +24,7 @@
   >
     <path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
   </svg>
-  {label}
+  {label}{#if showNew && pageState.newFiles}&nbsp;({pageState.newFiles} new){/if}
 </button>
 
 <style>

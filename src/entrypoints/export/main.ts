@@ -8,5 +8,6 @@ mount(App, {
     origin: params.get('origin') ?? '',
     courseIds: (params.get('courses') ?? '').split(',').filter(Boolean),
     onlyNew: params.get('new') === '1',
+    quiet: params.get('quiet') === '1',
   },
 });
