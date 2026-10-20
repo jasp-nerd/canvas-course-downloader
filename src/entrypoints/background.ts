@@ -11,6 +11,8 @@ export default defineBackground(() => {
     await browser.tabs.create({ url: url.toString() });
   });
 
+  onMessage('openOptions', () => browser.runtime.openOptionsPage());
+
   browser.commands.onCommand.addListener((command) => {
     if (command !== 'download-current') return;
     void browser.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {

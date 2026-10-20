@@ -1,8 +1,11 @@
 <script lang="ts">
-  let { onclick }: { onclick: () => void } = $props();
+  import { canvasButtonColors } from '../../ui/contrast';
+
+  let { label, onclick }: { label: string; onclick: () => void } = $props();
+  const colors = canvasButtonColors();
 </script>
 
-<button type="button" {onclick}>
+<button type="button" {onclick} style:--bg={colors.background} style:--fg={colors.text}>
   <svg
     aria-hidden="true"
     width="16"
@@ -16,7 +19,7 @@
   >
     <path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
   </svg>
-  Download course
+  {label}
 </button>
 
 <style>
@@ -29,9 +32,8 @@
     padding: 6px 12px;
     border: 0;
     border-radius: 6px;
-    /* Canvas exposes each school's brand colours as custom properties, which reach into the shadow root. */
-    background: var(--ic-brand-button--primary-bgd, var(--ic-brand-primary, #0b6bcb));
-    color: var(--ic-brand-button--primary-text, #ffffff);
+    background: var(--bg);
+    color: var(--fg);
     font:
       600 14px/1.2 system-ui,
       -apple-system,

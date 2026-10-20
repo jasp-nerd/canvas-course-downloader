@@ -12,6 +12,8 @@ interface ProtocolMap {
   startExport(data: StartExportRequest): void;
   /** Background → content script: the keyboard shortcut was pressed. */
   downloadCurrent(): void;
+  /** Content script → background: open the settings page (content scripts can't). */
+  openOptions(): void;
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<ProtocolMap>();

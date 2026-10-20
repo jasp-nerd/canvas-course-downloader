@@ -57,7 +57,7 @@ export function dashboardPage(brand?: string): string {
     .join('');
   return shell(
     'Dashboard',
-    `<div class="ic-Dashboard-header__layout"><h1 class="ic-Dashboard-header__title">Dashboard</h1></div><div class="cards">${cards}</div>`,
+    `<div class="ic-Dashboard-header__layout"><h1 class="ic-Dashboard-header__title">Dashboard</h1><div class="ic-Dashboard-header__actions"></div></div><div class="cards">${cards}</div>`,
     brand,
   );
 }

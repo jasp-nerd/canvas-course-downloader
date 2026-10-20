@@ -4,6 +4,7 @@
 export interface Term {
   id: number;
   name: string;
+  start_at: string;
 }
 
 export interface Course {
@@ -17,8 +18,8 @@ export interface Course {
 
 type Json = Record<string, unknown>;
 
-const ACTIVE_TERM: Term = { id: 1, name: 'Fall 2026' };
-const PAST_TERM: Term = { id: 2, name: 'Spring 2026' };
+const ACTIVE_TERM: Term = { id: 1, name: 'Fall 2026', start_at: '2026-09-01T00:00:00Z' };
+const PAST_TERM: Term = { id: 2, name: 'Spring 2026', start_at: '2026-02-01T00:00:00Z' };
 
 export const COURSES: Course[] = [
   {
