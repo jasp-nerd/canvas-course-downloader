@@ -27,7 +27,7 @@
     quizzes: ['Quizzes', 'Details and your results; questions and scores if you teach'],
     linkedFiles: [
       'Linked files and videos',
-      'Files and Canvas videos linked inside pages and assignments',
+      "Files and Canvas videos linked in pages and assignments, also when you don't save those",
     ],
   };
 

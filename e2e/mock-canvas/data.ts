@@ -251,6 +251,9 @@ export function findFile(
   return course && file ? { course, file } : undefined;
 }
 
+/** Links a file from a page, for linked-file tests. Golden scenarios use 101-104 and don't change. */
+export const LINKING_COURSE = 105;
+
 export function pages(c: Course): Json[] {
   const t = topicsFor(c);
   return [
@@ -268,7 +271,7 @@ export function pages(c: Course): Json[] {
     },
     {
       title: 'Exam information',
-      body: '<p>The final exam is closed book. A formula sheet is provided. Practice exams are in the Exam prep folder.</p>',
+      body: `<p>The final exam is closed book. A formula sheet is provided. Practice exams are in the Exam prep folder.${c.id === LINKING_COURSE ? ` Revise from <a href="/courses/${c.id}/files/${c.id * 1000 + 2}">the week 1 slides</a>.` : ''}</p>`,
     },
   ].map((p, i) => ({
     page_id: c.id * 10 + i,

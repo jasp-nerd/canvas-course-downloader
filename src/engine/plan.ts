@@ -40,9 +40,26 @@ import {
   type AgentPackInput,
 } from '../export/agent-pack';
 import { fileChanged } from '../storage/inventory';
-import type { Entry, ExportOptions, ExportPlan, PlannedFile, PreviousExport } from './types';
+import type {
+  ContentType,
+  Entry,
+  ExportOptions,
+  ExportPlan,
+  PlannedFile,
+  PreviousExport,
+} from './types';
 
 const TEACHER_ROLES = new Set(['teacher', 'ta', 'designer']);
+/** Course text that linked files are found in. */
+const LINK_SOURCES: ContentType[] = [
+  'pages',
+  'assignments',
+  'announcements',
+  'discussions',
+  'modules',
+  'syllabus',
+  'quizzes',
+];
 const VIDEO_FILE = /\.(mp4|mov|avi|mkv|webm|wmv|flv|m4v)$/i;
 
 interface Course {
@@ -105,6 +122,26 @@ export async function planCourseExport(input: PlanInput): Promise<ExportPlan> {
     await attempt(ctx, 'Roster', courseUrl(ctx, 'users'), () => loadRoster(ctx));
   }
 
+  // "Linked files" are the files linked inside course text, also when that text
+  // isn't saved: then it's read for its links only, and nothing else is kept.
+  const readForLinks = new Set(types.linkedFiles ? LINK_SOURCES.filter((t) => !types[t]) : []);
+  const read = (t: ContentType) => types[t] || readForLinks.has(t);
+  const linksOnly = async (run: () => Promise<void>) => {
+    const from = ctx.entries.length;
+    const before = { counts: { ...ctx.counts }, listed: { ...listed }, outline: ctx.outline };
+    await run();
+    for (const e of ctx.entries.splice(from)) {
+      if (e.folder === 'Extracted_Files/' || e.folder === 'Media/') ctx.entries.push(e);
+      // Pages read later may link this file: let them save it.
+      else if (e.kind === 'remote' && e.canvasId) ctx.seenFileIds.delete(e.canvasId);
+    }
+    Object.assign(ctx.counts, before.counts);
+    Object.assign(listed, before.listed);
+    ctx.outline = before.outline;
+  };
+  const section = (t: ContentType, run: () => Promise<void>) =>
+    readForLinks.has(t) ? linksOnly(run) : run();
+
   if (types.files) {
     progress('Fetching files…');
     await attempt(ctx, 'Files', courseUrl(ctx, 'files'), async () => {
@@ -113,18 +150,24 @@ export async function planCourseExport(input: PlanInput): Promise<ExportPlan> {
   }
 
   const pageSlugs = new Set<string>();
-  if (types.pages)
-    await attempt(ctx, 'Pages', courseUrl(ctx, 'pages'), () => listPageSlugs(ctx, pageSlugs));
+  /** Pages read for their links only. */
+  const linkPageSlugs = new Set<string>();
+  if (read('pages')) {
+    await attempt(ctx, 'Pages', courseUrl(ctx, 'pages'), () =>
+      listPageSlugs(ctx, types.pages ? pageSlugs : linkPageSlugs),
+    );
+  }
 
   let assignments: Assignment[] = [];
-  if (types.assignments || types.submissions || (isTeacher && types.grades)) {
+  if (read('assignments') || types.submissions || (isTeacher && types.grades)) {
     progress('Fetching assignments…');
     await attempt(ctx, 'Assignments', courseUrl(ctx, 'assignments'), async () => {
       assignments = await canvas.list<Assignment>(`/courses/${courseId}/assignments`);
       listed.assignments = assignments.length;
     });
   }
-  if (types.assignments) await exportAssignmentDocs(ctx, assignments);
+  if (read('assignments'))
+    await section('assignments', () => exportAssignmentDocs(ctx, assignments));
   if (types.submissions) {
     progress('Fetching submissions…');
     await attempt(ctx, 'Submissions', courseUrl(ctx, 'assignments'), () =>
@@ -132,29 +175,40 @@ export async function planCourseExport(input: PlanInput): Promise<ExportPlan> {
     );
   }
 
-  if (types.announcements) {
+  if (read('announcements')) {
     progress('Fetching announcements…');
-    await attempt(ctx, 'Announcements', courseUrl(ctx, 'announcements'), async () => {
-      listed.announcements = await exportAnnouncements(ctx);
-    });
+    await section('announcements', () =>
+      attempt(ctx, 'Announcements', courseUrl(ctx, 'announcements'), async () => {
+        listed.announcements = await exportAnnouncements(ctx);
+      }),
+    );
   }
-  if (types.discussions) {
+  if (read('discussions')) {
     progress('Fetching discussions…');
-    await attempt(ctx, 'Discussions', courseUrl(ctx, 'discussion_topics'), async () => {
-      listed.discussions = await exportDiscussions(ctx);
-    });
+    await section('discussions', () =>
+      attempt(ctx, 'Discussions', courseUrl(ctx, 'discussion_topics'), async () => {
+        listed.discussions = await exportDiscussions(ctx);
+      }),
+    );
   }
-  if (types.modules) {
+  if (read('modules')) {
     progress('Fetching modules…');
-    await attempt(ctx, 'Modules', courseUrl(ctx, 'modules'), async () => {
-      listed.modules = await exportModules(ctx, pageSlugs);
-    });
+    await section('modules', () =>
+      attempt(ctx, 'Modules', courseUrl(ctx, 'modules'), async () => {
+        listed.modules = await exportModules(ctx, types.modules ? pageSlugs : linkPageSlugs);
+      }),
+    );
   }
   if (pageSlugs.size) {
     progress(`Fetching ${pageSlugs.size} page${pageSlugs.size === 1 ? '' : 's'}…`);
     await exportPages(ctx, pageSlugs);
   }
-  if (types.syllabus) await exportSyllabus(ctx, course.syllabus_body);
+  const linkPages = new Set([...linkPageSlugs].filter((slug) => !pageSlugs.has(slug)));
+  if (linkPages.size) {
+    progress(`Reading ${linkPages.size} page${linkPages.size === 1 ? '' : 's'} for linked files…`);
+    await linksOnly(() => exportPages(ctx, linkPages));
+  }
+  if (read('syllabus')) await section('syllabus', () => exportSyllabus(ctx, course.syllabus_body));
 
   if (types.grades) {
     progress('Fetching grades…');
@@ -168,9 +222,11 @@ export async function planCourseExport(input: PlanInput): Promise<ExportPlan> {
       exportGradingWeights(ctx),
     );
   }
-  if (types.quizzes) {
+  if (read('quizzes')) {
     progress('Fetching quizzes…');
-    await attempt(ctx, 'Quizzes', courseUrl(ctx, 'quizzes'), () => exportQuizzes(ctx));
+    await section('quizzes', () =>
+      attempt(ctx, 'Quizzes', courseUrl(ctx, 'quizzes'), () => exportQuizzes(ctx)),
+    );
   }
 
   return finalize(ctx, listed, input.onlyNew, studyPack, input.agents);
