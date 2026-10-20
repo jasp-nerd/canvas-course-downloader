@@ -144,7 +144,7 @@
         <input
           type="radio"
           name="profile"
-          checked={settings.profile !== 'study'}
+          checked={settings.profile === 'copy'}
           onchange={() => save({ profile: 'copy' })}
         />
         <span>
@@ -166,6 +166,21 @@
           <small
             >A few files per module that you upload in one go, with a course guide of deadlines and
             grading.</small
+          >
+        </span>
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="profile"
+          checked={settings.profile === 'agents'}
+          onchange={() => save({ profile: 'agents' })}
+        />
+        <span>
+          <strong>Files for coding agents</strong>
+          <small
+            >The copy in Markdown, with AGENTS.md, llms.txt and course.json for Claude Code, Codex,
+            Cursor or your own scripts.</small
           >
         </span>
       </label>
@@ -339,7 +354,7 @@
     </label>
   </section>
 
-  {#if settings.profile !== 'study'}
+  {#if settings.profile === 'copy'}
     <section aria-labelledby="format">
       <h2 id="format">Pages, assignments and discussions as</h2>
       <fieldset>

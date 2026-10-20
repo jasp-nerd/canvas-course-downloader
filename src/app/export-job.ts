@@ -153,6 +153,7 @@ export async function exportCourses(input: {
         options,
         ...(onlyNew ? { onlyNew: { files: inventory?.files ?? {}, legacy } } : {}),
         ...(studyPack ? { studyPack } : {}),
+        ...(settings.profile === 'agents' ? { agents: true } : {}),
         onProgress: (message) => update(course, { message }),
       });
       if (!settings.zipMode) {

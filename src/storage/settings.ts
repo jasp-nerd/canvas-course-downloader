@@ -17,8 +17,8 @@ export interface Settings extends Required<Omit<StoredSettings, 'contentTypes'>>
   autoDownloadNew: boolean;
   /** Which preset the options page highlights. */
   preset: string;
-  /** What a download makes: a copy of the course, or a study pack for an AI tool. */
-  profile: 'copy' | 'study';
+  /** What a download makes: a copy of the course, a study pack for an AI tool, or a copy for agents. */
+  profile: 'copy' | 'study' | 'agents';
   aiTarget: AiTargetId;
 }
 
@@ -47,6 +47,7 @@ export async function loadSettings(): Promise<Settings> {
   }
   // Before v2.5.3 users could choose "skip", which the downloads API rejects.
   if (settings.conflictAction !== 'overwrite') settings.conflictAction = 'uniquify';
+  if (!['copy', 'study', 'agents'].includes(settings.profile)) settings.profile = 'copy';
   if (!(settings.aiTarget in AI_TARGETS)) settings.aiTarget = DEFAULT_SETTINGS.aiTarget;
   return settings;
 }

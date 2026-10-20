@@ -32,6 +32,13 @@ import {
 import { exportQuizzes } from './sections/quizzes';
 import { exportAllSubmissions, exportOwnSubmissions } from './sections/submissions';
 import { planStudyPack, type AiTarget } from '../export/study-pack';
+import {
+  documentFrontMatter,
+  renderAgentsMd,
+  renderCourseJson,
+  renderLlmsTxt,
+  type AgentPackInput,
+} from '../export/agent-pack';
 import { fileChanged } from '../storage/inventory';
 import type { Entry, ExportOptions, ExportPlan, PlannedFile, PreviousExport } from './types';
 
@@ -54,11 +61,16 @@ export interface PlanInput {
   onlyNew?: PreviousExport;
   /** Make a study pack for this AI tool instead of a copy of the course. */
   studyPack?: AiTarget;
+  /** A copy in Markdown with AGENTS.md, llms.txt and course.json, for coding agents and scripts. */
+  agents?: boolean;
   onProgress?: (message: string) => void;
 }
 
 export async function planCourseExport(input: PlanInput): Promise<ExportPlan> {
-  const { canvas, origin, courseId, options, studyPack } = input;
+  const { canvas, origin, courseId, studyPack } = input;
+  const options: ExportOptions = input.agents
+    ? { ...input.options, format: 'markdown' }
+    : input.options;
   const progress = input.onProgress ?? (() => {});
 
   // One call for the name, the user's role and the syllabus. A course Canvas
@@ -161,7 +173,7 @@ export async function planCourseExport(input: PlanInput): Promise<ExportPlan> {
     await attempt(ctx, 'Quizzes', courseUrl(ctx, 'quizzes'), () => exportQuizzes(ctx));
   }
 
-  return finalize(ctx, listed, input.onlyNew, studyPack);
+  return finalize(ctx, listed, input.onlyNew, studyPack, input.agents);
 }
 
 /** Applies filters, writes the report and manifest, names every file and renders documents. */
@@ -170,6 +182,7 @@ function finalize(
   listed: Record<'files' | 'assignments' | 'announcements' | 'discussions' | 'modules', number>,
   onlyNew?: PreviousExport,
   studyPack?: AiTarget,
+  agents?: boolean,
 ): ExportPlan {
   const { options } = ctx;
   const maxBytes = options.maxFileSizeMB > 0 ? options.maxFileSizeMB * 1024 * 1024 : Infinity;
@@ -278,6 +291,8 @@ function finalize(
 
   const paths = assignPaths(entries);
   const localPaths = linkTargets(ctx, entries, paths);
+  const agentPack = agents ? agentPackInput(ctx, entries, paths, localPaths) : undefined;
+  const agentDocs = new Map(agentPack?.documents.map((d) => [d.path, d]));
 
   const files: PlannedFile[] = entries.map((entry, i) => {
     const path = paths[i]!;
@@ -302,31 +317,53 @@ function finalize(
       options.format === 'markdown'
         ? renderMarkdownDocument(entry.title, htmlToMarkdown(body))
         : renderHtmlDocument(entry.title, body, folder);
+    const agentDoc = agentDocs.get(path);
+    if (agentPack && agentDoc) {
+      return {
+        path,
+        source: { kind: 'text', content: documentFrontMatter(agentPack, agentDoc) + content },
+      };
+    }
     return { path, source: { kind: 'text', content } };
   });
 
-  // The overview page, twice: index.html for tools, "Open me" so people know what to double-click.
-  const plannedPaths = files.map((f) => f.path);
-  const titles = new Map(
-    entries.flatMap((e, i) =>
-      e.kind === 'document' ? [[paths[i]!, e.title] as [string, string]] : [],
-    ),
-  );
-  const render = (failed: { path: string; reason: string }[]) =>
-    renderCourseIndex({
-      courseName: ctx.courseName,
-      sourceUrl: `${ctx.origin}/courses/${ctx.courseId}`,
-      savedAt: new Date(),
-      version: options.extensionVersion,
-      outline: ctx.outline,
-      localPaths,
-      paths: plannedPaths,
-      notCaptured: ctx.notCaptured,
-      failed,
-      titles,
-    });
-  for (const name of ['index.html', sanitizeFilename(`Open me - ${ctx.courseName}.html`)]) {
-    files.push({ path: name, source: { kind: 'text', content: '', render } });
+  if (agentPack) {
+    files.push(
+      { path: 'AGENTS.md', source: { kind: 'text', content: renderAgentsMd(agentPack) } },
+      { path: 'llms.txt', source: { kind: 'text', content: renderLlmsTxt(agentPack) } },
+      {
+        path: 'course.json',
+        source: {
+          kind: 'text',
+          content: '',
+          render: (failed) => renderCourseJson(agentPack, failed),
+        },
+      },
+    );
+  } else {
+    // The overview page, twice: index.html for tools, "Open me" so people know what to double-click.
+    const plannedPaths = files.map((f) => f.path);
+    const titles = new Map(
+      entries.flatMap((e, i) =>
+        e.kind === 'document' ? [[paths[i]!, e.title] as [string, string]] : [],
+      ),
+    );
+    const render = (failed: { path: string; reason: string }[]) =>
+      renderCourseIndex({
+        courseName: ctx.courseName,
+        sourceUrl: `${ctx.origin}/courses/${ctx.courseId}`,
+        savedAt: new Date(),
+        version: options.extensionVersion,
+        outline: ctx.outline,
+        localPaths,
+        paths: plannedPaths,
+        notCaptured: ctx.notCaptured,
+        failed,
+        titles,
+      });
+    for (const name of ['index.html', sanitizeFilename(`Open me - ${ctx.courseName}.html`)]) {
+      files.push({ path: name, source: { kind: 'text', content: '', render } });
+    }
   }
 
   return {
@@ -382,4 +419,53 @@ function linkTargets(ctx: CourseExport, entries: Entry[], paths: string[]): Map<
     if (target) map.set(alias, target);
   }
   return map;
+}
+
+/** What AGENTS.md, llms.txt, course.json and the front matter are made from. */
+function agentPackInput(
+  ctx: CourseExport,
+  entries: Entry[],
+  paths: string[],
+  localPaths: Map<string, string>,
+): AgentPackInput {
+  // Each saved item belongs to the first module that lists it.
+  const moduleOf = new Map<string, { position: number; name: string }>();
+  ctx.outline.forEach((mod, i) => {
+    for (const item of mod.items) {
+      const path = item.url ? localPaths.get(item.url) : undefined;
+      if (path && !moduleOf.has(path)) moduleOf.set(path, { position: i + 1, name: mod.name });
+    }
+  });
+  return {
+    courseName: ctx.courseName,
+    courseId: ctx.courseId,
+    sourceUrl: courseUrl(ctx, '').slice(0, -1),
+    savedAt: new Date(),
+    version: ctx.options.extensionVersion,
+    isTeacher: ctx.isTeacher,
+    // The roster is loaded when a teacher's export includes grades, scores or submissions.
+    studentData: ctx.isTeacher && ctx.students.length > 0,
+    outline: ctx.outline,
+    localPaths,
+    documents: entries.flatMap((e, i) => {
+      if (e.kind !== 'document') return [];
+      const module = moduleOf.get(paths[i]!);
+      return [{ path: paths[i]!, doc: e, ...(module ? { module } : {}) }];
+    }),
+    files: entries.flatMap((e, i) =>
+      e.kind === 'remote'
+        ? [
+            {
+              path: paths[i]!,
+              name: e.name,
+              size: e.size,
+              contentType: e.contentType,
+              ...(e.canvasId ? { canvasId: e.canvasId } : {}),
+            },
+          ]
+        : [],
+    ),
+    gradingWeights: ctx.gradingWeights,
+    notCaptured: ctx.notCaptured,
+  };
 }

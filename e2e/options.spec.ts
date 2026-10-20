@@ -24,7 +24,7 @@ test('shows settings v2 stored, and saves changes under the same keys', async ({
   await page.goto(`chrome-extension://${extensionId}/options.html`);
   await expect(page.getByLabel('Folders, one file at a time')).toBeChecked();
   await expect(page.getByLabel('Folder inside Downloads')).toHaveValue('Canvas');
-  await expect(page.getByLabel(/Markdown/)).toBeChecked();
+  await expect(page.getByRole('radio', { name: /^Markdown/ })).toBeChecked();
   await expect(page.getByRole('checkbox', { name: /^Pages/ })).not.toBeChecked();
 
   await page.getByLabel('One ZIP file per course').check();
@@ -98,6 +98,12 @@ test('a study pack is chosen with the AI tool it is for, and needs no format', a
     ),
   ).toBeVisible();
   expect(await stored(serviceWorker)).toMatchObject({ profile: 'study', aiTarget: 'claude' });
+
+  await page.getByRole('radio', { name: /^Files for coding agents/ }).check();
+  await expect(page.getByRole('combobox', { name: 'For' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: /as$/ })).toHaveCount(0);
+  await expect.poll(() => stored(serviceWorker)).toMatchObject({ profile: 'agents' });
+  await page.getByRole('radio', { name: /^A study pack for AI/ }).check();
 
   await page.locator('main').screenshot({ path: 'test-results/options-study-pack.png' });
 });
