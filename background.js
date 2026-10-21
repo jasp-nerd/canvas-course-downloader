@@ -186,7 +186,15 @@ async function processQueue() {
   if (fullPath.startsWith("/")) fullPath = fullPath.substring(1);
 
   try {
-    const downloadId = await chrome.downloads.download({ url: nextJob.url, filename: fullPath, conflictAction: downloadSettings.conflictAction });
+    let downloadUrl = nextJob.url;
+    // Firefox's downloads API rejects data: URLs; convert to a blob URL there.
+    // (Chrome's service worker has no URL.createObjectURL, so this only runs in Firefox.)
+    if (downloadUrl.startsWith("data:") && typeof URL.createObjectURL === "function") {
+      const blob = await (await fetch(downloadUrl)).blob();
+      downloadUrl = URL.createObjectURL(blob);
+      setTimeout(() => URL.revokeObjectURL(downloadUrl), 60000);
+    }
+    const downloadId = await chrome.downloads.download({ url: downloadUrl, filename: fullPath, conflictAction: downloadSettings.conflictAction });
     if (cancelled) {
       // User cancelled while this job was mid-handshake with chrome.downloads.
       // Cancel the started download immediately so the file isn't saved.
