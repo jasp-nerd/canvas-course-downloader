@@ -45,6 +45,21 @@ beforeAll(async () => {
   await firefox.browser.installExtension(BUILD);
 }, 60_000);
 
+/** Clicks "Download course" on a Canvas page and answers the first-download question, as a new user would. */
+async function download(url: string, firstDownload: boolean) {
+  const page = await firefox.browser.newPage();
+  await page.goto(url);
+  // Real clicks on the buttons inside our shadow roots.
+  const click = async (selector: string) => {
+    const element = await page.waitForSelector(selector, { timeout: 15_000 });
+    const box = await element!.boundingBox();
+    await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  };
+  await click('ccd-page-button');
+  // A fresh install is a new user, who is asked once what downloads should be.
+  if (firstDownload) await click('ccd-profile-question >>> button[type="submit"]');
+}
+
 afterAll(async () => {
   firefox?.close();
   await mock?.close();
@@ -52,12 +67,7 @@ afterAll(async () => {
 });
 
 it('exports a course as a ZIP that matches v2', async () => {
-  const page = await firefox.browser.newPage();
-  await page.goto(`https://school.instructure.com:${mock.port}/courses/101`);
-  // A real click on the button inside our shadow root.
-  const host = await page.waitForSelector('ccd-page-button', { timeout: 15_000 });
-  const box = await host!.boundingBox();
-  await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await download(`https://school.instructure.com:${mock.port}/courses/101`, true);
 
   for (let i = 0; i < 120 && !readdirSync(downloads).some((f) => f.endsWith('.zip')); i++) {
     await new Promise((r) => setTimeout(r, 500));
@@ -70,4 +80,17 @@ it('exports a course as a ZIP that matches v2', async () => {
   );
   expect(diffAgainstGolden('student-zip-default', files)).toEqual([]);
   expect(mock.unexpected).toEqual([]);
+}, 120_000);
+
+it('exports from Canvas on a school domain, which has no host permission', async () => {
+  for (const entry of readdirSync(downloads))
+    rmSync(path.join(downloads, entry), { recursive: true });
+  await download(`https://canvas.example.edu:${mock.port}/courses/104`, false);
+
+  for (let i = 0; i < 120 && !readdirSync(downloads).some((f) => f.endsWith('.zip')); i++) {
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  await waitForDownloads(downloads);
+  expect(readdirSync(downloads)).toEqual(['Academic Writing.zip']);
+  expect(collectExport(downloads).filter((f) => f.path.endsWith('.pdf'))).toHaveLength(24);
 }, 120_000);

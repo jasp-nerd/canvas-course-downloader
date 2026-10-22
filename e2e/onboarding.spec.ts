@@ -59,29 +59,39 @@ test("a new user's first download asks what downloads should be, once", async ({
       globalThis as unknown as { chrome: { storage: { local: { set(v: object): Promise<void> } } } }
     ).chrome.storage.local.set({ askProfile: true }),
   );
-  const download = async () => {
-    await page.goto(`${CANVAS}/courses/104`);
-    const next = page.context().waitForEvent('page');
-    await page.getByRole('button', { name: 'Download course' }).click();
-    return next;
-  };
+  // Other tests' Export tabs may still be open in this browser.
+  const exportTabs = () =>
+    page
+      .context()
+      .pages()
+      .filter((p) => p.url().includes('/export.html')).length;
+  const tabsBefore = exportTabs();
+  await page.goto(`${CANVAS}/courses/104`);
+  await page.getByRole('button', { name: 'Download course' }).click();
+  const question = page.getByRole('dialog', { name: 'What should your downloads be?' });
+  await expect(question.getByRole('radio', { name: /^A copy to keep/ })).toBeChecked();
+  // Closing it starts nothing, and asks again next time.
+  await question.getByRole('button', { name: 'Close' }).click();
+  await expect(question).toBeHidden();
+  expect(exportTabs()).toBe(tabsBefore);
 
-  const tab = await download();
-  await expect(tab.getByRole('heading', { name: 'Your first download' })).toBeVisible();
-  await expect(tab.getByRole('radio', { name: /^A copy to keep/ })).toBeChecked();
-  await expect(tab.getByRole('button', { name: 'Cancel' })).toHaveCount(0);
-  await tab.getByRole('radio', { name: /^A study pack for AI/ }).check();
-  await expect(tab.getByRole('combobox', { name: 'For' })).toHaveValue('notebooklm');
-  await tab.locator('main').screenshot({ path: 'test-results/first-download-question.png' });
-  await tab.getByRole('button', { name: 'Start download' }).click();
+  await page.getByRole('button', { name: 'Download course' }).click();
+  await question.getByRole('radio', { name: /^A study pack for AI/ }).check();
+  await expect(question.getByRole('combobox', { name: 'For' })).toHaveValue('notebooklm');
+  await page.screenshot({ path: 'test-results/first-download-question.png' });
+  const exportTab = page.context().waitForEvent('page');
+  await question.getByRole('button', { name: 'Start download' }).click();
+  const tab = await exportTab;
   await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
     timeout: 60_000,
   });
   await expect(tab.locator('.result')).toContainText('Academic Writing - AI study pack.zip');
 
-  const again = await download();
-  await expect(again.getByRole('heading', { name: 'Export finished' })).toBeVisible({
+  // Asked once: the next download starts straight away.
+  const next = page.context().waitForEvent('page');
+  await page.getByRole('button', { name: 'Download course' }).click();
+  await expect(question).toBeHidden();
+  await expect((await next).getByRole('heading', { name: 'Export finished' })).toBeVisible({
     timeout: 60_000,
   });
-  await expect(again.getByRole('heading', { name: 'Your first download' })).toHaveCount(0);
 });

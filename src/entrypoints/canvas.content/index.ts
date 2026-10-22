@@ -1,5 +1,6 @@
 import { createShadowRootUi, defineContentScript, type ContentScriptContext } from '#imports';
 import { mount, unmount } from 'svelte';
+import { answerProfile, shouldAskProfile } from '../../app/onboarding';
 import {
   checkForUpdates,
   pendingUpdates,
@@ -9,9 +10,10 @@ import {
 import { createCanvasClient } from '../../canvas/client';
 import { courseIdFromPath, isCanvasPage } from '../../canvas/detect';
 import { onMessage, sendMessage } from '../../messaging';
-import { loadSettings } from '../../storage/settings';
+import { loadSettings, type Settings } from '../../storage/settings';
 import CoursePicker from './CoursePicker.svelte';
 import PageButton from './PageButton.svelte';
+import ProfileQuestion from './ProfileQuestion.svelte';
 import { pageState } from './state.svelte';
 import UpdatesNote from './UpdatesNote.svelte';
 
@@ -27,7 +29,16 @@ export default defineContentScript({
     if (!isCanvasPage(document, location.hostname)) return;
 
     const startExport: StartExport = (courseIds, options = {}) =>
-      void sendMessage('startExport', { origin: location.origin, courseIds, ...options });
+      void (async () => {
+        // A new user chooses what downloads should be, once, before the first one.
+        // Downloads of only what's new add to a copy, so they don't ask.
+        if (!options.quiet && !options.onlyNew && (await shouldAskProfile())) {
+          const choice = await askProfile(ctx);
+          if (!choice) return;
+          await answerProfile(choice);
+        }
+        await sendMessage('startExport', { origin: location.origin, courseIds, ...options });
+      })();
     const openPicker = () => void showPicker(ctx, startExport);
     const courseId = courseIdFromPath(location.pathname);
     const onDashboard = !courseId && location.pathname === '/';
@@ -150,4 +161,39 @@ async function showPicker(ctx: ContentScriptContext, startExport: StartExport) {
     },
   });
   picker.mount();
+}
+
+/** The first-download question, over the Canvas page. Resolves null when it's closed. */
+async function askProfile(
+  ctx: ContentScriptContext,
+): Promise<Pick<Settings, 'profile' | 'aiTarget'> | null> {
+  let answer!: (choice: Pick<Settings, 'profile' | 'aiTarget'> | null) => void;
+  const answered = new Promise<Pick<Settings, 'profile' | 'aiTarget'> | null>(
+    (resolve) => (answer = resolve),
+  );
+  const ui = await createShadowRootUi(ctx, {
+    name: 'ccd-profile-question',
+    position: 'inline',
+    anchor: 'body',
+    isolateEvents: true,
+    onMount: (container) =>
+      mount(ProfileQuestion, {
+        target: container,
+        props: {
+          onchoose: (choice: Pick<Settings, 'profile' | 'aiTarget'>) => {
+            ui.remove();
+            answer(choice);
+          },
+          oncancel: () => {
+            ui.remove();
+            answer(null);
+          },
+        },
+      }),
+    onRemove: (app) => {
+      if (app) void unmount(app);
+    },
+  });
+  ui.mount();
+  return answered;
 }
