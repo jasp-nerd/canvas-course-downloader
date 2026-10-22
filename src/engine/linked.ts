@@ -177,7 +177,7 @@ async function resolveMediaUncached(
 
   const existing = mediaId ? ctx.mediaById.get(mediaId) : undefined;
   if (existing) {
-    for (const k of keys) if (!existing.mediaKeys!.includes(k)) existing.mediaKeys!.push(k);
+    existing.mediaKeys = [...new Set([...(existing.mediaKeys ?? []), ...keys])];
     return existing;
   }
 

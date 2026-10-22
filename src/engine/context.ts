@@ -136,6 +136,8 @@ export interface CanvasFile {
   modified_at?: string;
   locked_for_user?: boolean;
   folder_id?: string | number;
+  /** The Canvas media object made from this file, when it's a video or audio. */
+  media_entry_id?: string;
 }
 
 /** Queues a Canvas file once per file id. Returns false if it was already queued. */
@@ -149,7 +151,7 @@ export function addCanvasFile(
   const id = String(file.id);
   if (!file.url || ctx.seenFileIds.has(id)) return false;
   ctx.seenFileIds.add(id);
-  ctx.entries.push({
+  const entry: RemoteEntry = {
     kind: 'remote',
     url: file.url,
     folder,
@@ -161,7 +163,14 @@ export function addCanvasFile(
     canvasUpdatedAt: file.updated_at ?? '',
     canvasId: id,
     ...extra,
-  });
+  };
+  ctx.entries.push(entry);
+  // Pages play an uploaded video through the media object Canvas made from it:
+  // embeds of that object then link to this file instead of a second copy.
+  if (file.media_entry_id && !ctx.mediaById.has(file.media_entry_id)) {
+    entry.mediaKeys ??= [];
+    ctx.mediaById.set(file.media_entry_id, entry);
+  }
   return true;
 }
 
