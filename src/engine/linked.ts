@@ -21,6 +21,20 @@ import type { RemoteEntry } from './types';
 const FILE_LINKS =
   'a[href*="/files/"], img[src*="/files/"], iframe[src*="/files/"], source[src*="/files/"], video[src*="/files/"], audio[src*="/files/"], embed[src*="/files/"]';
 
+/**
+ * Whether a link points into this Canvas: relative, the same origin, or the
+ * school's instructure.com name. "https://images.example.com/files/123/x.jpg"
+ * isn't Canvas file 123.
+ */
+function isCanvasLink(ref: string, origin: string): boolean {
+  try {
+    const url = new URL(ref, origin);
+    return url.origin === origin || url.hostname.endsWith('.instructure.com');
+  } catch {
+    return false; // Not a URL at all.
+  }
+}
+
 function rethrowFatal(error: unknown) {
   if (error instanceof CanvasError && (error.kind === 'session' || error.kind === 'aborted'))
     throw error;
@@ -35,6 +49,7 @@ export async function extractLinkedFiles(
   const doc = new DOMParser().parseFromString(html, 'text/html');
   for (const link of doc.querySelectorAll(FILE_LINKS)) {
     const ref = link.getAttribute('href') || link.getAttribute('src') || '';
+    if (!isCanvasLink(ref, ctx.origin)) continue;
     const id = /\/files\/(\d+)/.exec(ref)?.[1];
     if (!id || ctx.seenFileIds.has(id) || ctx.inaccessibleFileIds.has(id)) continue;
 

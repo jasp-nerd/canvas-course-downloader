@@ -58,3 +58,32 @@ describe('linked files', () => {
     expect(paths.filter((p) => p.startsWith('Extracted_Files/'))).toEqual([]);
   });
 });
+
+describe('links that only look like Canvas files', () => {
+  it('are left alone when they point to another site', async () => {
+    const { extractLinkedFiles } = await import('./linked');
+    const { newCourseExport } = await import('./context');
+    const ctx = newCourseExport({
+      origin: ORIGIN,
+      courseId: String(LINKING_COURSE),
+      courseName: 'Machine Learning',
+      isTeacher: false,
+      studentWork: true,
+      options: exportOptionsFrom({}, 'test'),
+      canvas: createCanvasClient({
+        origin: ORIGIN,
+        fetch: mockFetch(mock),
+        sleep: () => Promise.resolve(),
+      }),
+    });
+    const id = LINKING_COURSE * 1000 + 2;
+    await extractLinkedFiles(
+      ctx,
+      // An unrelated file of this course has id + 1; nothing has 999999999.
+      `<img src="https://images.example.com/files/${id + 1}/590x332.jpg"><img src="https://cdn.example.com/files/999999999/x.png"><a href="/courses/${LINKING_COURSE}/files/${id}">slides</a>`,
+      'Page: Exam information',
+    );
+    expect(ctx.notCaptured).toEqual([]);
+    expect(ctx.entries.map((e) => e.name)).toEqual(['Lecture 01 - Machine Learning week 1.pdf']);
+  });
+});
