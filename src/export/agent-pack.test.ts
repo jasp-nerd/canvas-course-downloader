@@ -133,6 +133,27 @@ describe('renderLlmsTxt', () => {
     expect(txt).toContain('## Optional\n- [Welcome](<Announcements/Welcome.md>): announcement\n');
     expect(txt).not.toContain('Locked quiz');
   });
+
+  it('lists files no module links to, so agents find them too', () => {
+    const txt = renderLlmsTxt(
+      input({
+        files: [
+          ...input().files,
+          {
+            path: 'Extracted_Files/Slides week 2.pdf',
+            name: 'Slides week 2.pdf',
+            size: 2_100_000,
+            contentType: 'application/pdf',
+          },
+        ],
+      }),
+    );
+    expect(txt).toContain(
+      '## Files\n- [Slides week 2.pdf](<Extracted_Files/Slides week 2.pdf>): file, 2.1 MB\n',
+    );
+    // Listed once: under its module.
+    expect(txt.match(/Lecture %231\.pdf/g)).toHaveLength(1);
+  });
 });
 
 describe('renderAgentsMd', () => {

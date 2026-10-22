@@ -150,6 +150,16 @@ export function renderLlmsTxt(input: AgentPackInput): string {
   if (main.length) {
     txt += `\n## ${input.outline.length ? 'Not in a module' : 'Course content'}\n${main.map(describe).join('\n')}\n`;
   }
+  const files = input.files.filter((f) => !listed.has(f.path));
+  if (files.length) {
+    const size = (bytes: number) =>
+      bytes >= 1e6
+        ? `, ${(bytes / 1e6).toFixed(1)} MB`
+        : bytes
+          ? `, ${Math.ceil(bytes / 1e3)} KB`
+          : '';
+    txt += `\n## Files\n${files.map((f) => `- ${mdLink(f.name, f.path)}: file${size(f.size)}`).join('\n')}\n`;
+  }
   const optional = rest.filter((d) => documentType(d.doc) === 'announcement');
   if (optional.length) txt += `\n## Optional\n${optional.map(describe).join('\n')}\n`;
   return txt;
