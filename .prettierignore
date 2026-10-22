@@ -8,3 +8,4 @@ pnpm-lock.yaml
 manifest.snapshot.json
 tests/golden/
 .claude/skills/design-taste-frontend/
+.claude/worktrees/

@@ -96,8 +96,9 @@ export async function planCourseExport(input: PlanInput): Promise<ExportPlan> {
     'include[]': ['enrollments', 'syllabus_body'],
   });
   const isTeacher = (course.enrollments ?? []).some((e) => TEACHER_ROLES.has(e.type));
-  // Other students' grades and work never go into a study pack, so they aren't fetched.
-  const studentWork = !studyPack;
+  // Other students' grades and work never go into a study pack, so they aren't fetched;
+  // a teacher's copy holds them only when the teacher asks for it.
+  const studentWork = !studyPack && (!isTeacher || options.includeStudentWork);
   const types = { ...options.contentTypes };
   if (isTeacher && !studentWork) types.submissions = false;
   const ctx = newCourseExport({
@@ -212,8 +213,8 @@ export async function planCourseExport(input: PlanInput): Promise<ExportPlan> {
 
   if (types.grades) {
     progress('Fetching grades…');
-    // A study pack only uses the grading weights.
-    if (!studyPack) {
+    // A study pack only uses the grading weights, and a teacher's copy without students has no gradebook.
+    if (studentWork) {
       await attempt(ctx, 'Grades', courseUrl(ctx, 'grades'), () =>
         isTeacher ? exportGradebook(ctx, assignments) : exportOwnGrades(ctx),
       );
@@ -270,6 +271,7 @@ function finalize(
       notCaptured: ctx.notCaptured,
       filteredOut,
       skippedUnchanged: 0,
+      studentWork: studentWorkOf(ctx),
     };
   }
 
@@ -429,8 +431,14 @@ function finalize(
     notCaptured: ctx.notCaptured,
     filteredOut,
     skippedUnchanged,
+    studentWork: studentWorkOf(ctx),
   };
 }
+
+const studentWorkOf = (ctx: CourseExport): ExportPlan['studentWork'] => ({
+  teacher: ctx.isTeacher,
+  included: !ctx.isTeacher || ctx.studentWork,
+});
 
 /**
  * Safe, unique paths in entry order. Names that collide (case-insensitively, as

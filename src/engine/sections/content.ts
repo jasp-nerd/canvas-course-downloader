@@ -178,20 +178,23 @@ export async function exportDiscussions(ctx: CourseExport): Promise<number> {
       await linked(ctx, d.message, `Discussion: ${d.title}`);
     }
 
+    // Replies are students' words and names: a teacher's copy without students keeps the prompt only.
     // The reply thread fails soft (e.g. "post before seeing replies"): the opening post is still exported.
-    try {
-      const view = await ctx.canvas.get<{
-        participants?: { id: string | number; display_name?: string; name?: string }[];
-        view?: ThreadEntry[];
-      }>(`/courses/${ctx.courseId}/discussion_topics/${d.id}/view`);
-      const names = new Map(
-        (view.participants ?? []).map((p) => [String(p.id), p.display_name || p.name || '']),
-      );
-      const replies = await renderEntries(view.view, names, d.title, `Discussions/${d.title}/`);
-      if (replies) body += `<hr><h3>Replies</h3>${replies}`;
-    } catch (error) {
-      if (error instanceof CanvasError && (error.kind === 'session' || error.kind === 'aborted'))
-        throw error;
+    if (!ctx.isTeacher || ctx.studentWork) {
+      try {
+        const view = await ctx.canvas.get<{
+          participants?: { id: string | number; display_name?: string; name?: string }[];
+          view?: ThreadEntry[];
+        }>(`/courses/${ctx.courseId}/discussion_topics/${d.id}/view`);
+        const names = new Map(
+          (view.participants ?? []).map((p) => [String(p.id), p.display_name || p.name || '']),
+        );
+        const replies = await renderEntries(view.view, names, d.title, `Discussions/${d.title}/`);
+        if (replies) body += `<hr><h3>Replies</h3>${replies}`;
+      } catch (error) {
+        if (error instanceof CanvasError && (error.kind === 'session' || error.kind === 'aborted'))
+          throw error;
+      }
     }
 
     if (ctx.isTeacher && ctx.studentWork && d.assignment_id) {

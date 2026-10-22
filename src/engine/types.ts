@@ -22,6 +22,8 @@ export interface ExportOptions {
   excludeVideos: boolean;
   /** 0 means no limit. */
   maxFileSizeMB: number;
+  /** In courses the user teaches: also save students' submissions, grades and names. */
+  includeStudentWork: boolean;
   extensionVersion: string;
 }
 
@@ -120,6 +122,12 @@ export interface ExportPlan {
   filteredOut: number;
   /** Files left out because they were saved before and haven't changed. */
   skippedUnchanged: number;
+  /**
+   * Whether the user teaches the course, and whether students' work (the roster,
+   * their submissions, grades, quiz attempts and discussion replies) was saved.
+   * A student's own work counts as included.
+   */
+  studentWork: { teacher: boolean; included: boolean };
 }
 
 /** What earlier exports of this course saved, for exporting only what's new. */

@@ -6,6 +6,8 @@ export interface StoredSettings {
   exportFormat?: string;
   excludeVideos?: boolean;
   maxFileSizeMB?: number;
+  /** Added in 3.0: whether teachers' copies include students' work. */
+  includeStudentWork?: boolean;
 }
 
 /**
@@ -25,6 +27,7 @@ export function exportOptionsFrom(stored: StoredSettings, extensionVersion: stri
     format: stored.exportFormat === 'markdown' ? 'markdown' : 'html',
     excludeVideos: stored.excludeVideos === true,
     maxFileSizeMB: Number(stored.maxFileSizeMB) > 0 ? Number(stored.maxFileSizeMB) : 0,
+    includeStudentWork: stored.includeStudentWork === true,
     extensionVersion,
   };
 }
