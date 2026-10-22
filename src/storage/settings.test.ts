@@ -50,3 +50,21 @@ describe('settings from earlier versions', () => {
     expect(await fakeBrowser.storage.sync.get('zipMode')).toEqual({ zipMode: false });
   });
 });
+
+describe('settings added in 3.0', () => {
+  it("leave student work out of teachers' copies and treat people as students, by default", async () => {
+    const s = await loadSettings();
+    expect(s.includeStudentWork).toBe(false);
+    expect(s.role).toBe('student');
+  });
+
+  it('reads back a teacher who includes student work', async () => {
+    await saveSettings({ role: 'teacher', includeStudentWork: true });
+    expect(await loadSettings()).toMatchObject({ role: 'teacher', includeStudentWork: true });
+  });
+
+  it('falls back to student for a role it does not know', async () => {
+    await fakeBrowser.storage.sync.set({ role: 'admin' });
+    expect((await loadSettings()).role).toBe('student');
+  });
+});

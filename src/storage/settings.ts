@@ -20,6 +20,10 @@ export interface Settings extends Required<Omit<StoredSettings, 'contentTypes'>>
   /** What a download makes: a copy of the course, a study pack for an AI tool, or a copy for agents. */
   profile: 'copy' | 'study' | 'agents';
   aiTarget: AiTargetId;
+  /** Who the interface talks to; teachers see the student-work option. */
+  role: 'student' | 'teacher';
+  /** In courses the user teaches: also save students' submissions, grades and names. */
+  includeStudentWork: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -36,6 +40,8 @@ export const DEFAULT_SETTINGS: Settings = {
   preset: 'full-archive',
   profile: 'copy',
   aiTarget: 'notebooklm',
+  role: 'student',
+  includeStudentWork: false,
 };
 
 export async function loadSettings(): Promise<Settings> {
@@ -49,6 +55,7 @@ export async function loadSettings(): Promise<Settings> {
   if (settings.conflictAction !== 'overwrite') settings.conflictAction = 'uniquify';
   if (!['copy', 'study', 'agents'].includes(settings.profile)) settings.profile = 'copy';
   if (!(settings.aiTarget in AI_TARGETS)) settings.aiTarget = DEFAULT_SETTINGS.aiTarget;
+  if (settings.role !== 'teacher') settings.role = 'student';
   return settings;
 }
 
