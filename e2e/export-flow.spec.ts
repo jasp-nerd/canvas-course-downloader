@@ -65,3 +65,22 @@ test('says Partial and lists files that failed, instead of "complete"', async ({
     execFileSync('unzip', ['-p', zip, '_download_errors.csv'], { encoding: 'utf8' }),
   ).toContain('HTTP 500');
 });
+
+test('names the file the browser actually saved when one with that name was there', async ({
+  page,
+  serviceWorker,
+  downloadsDir,
+}) => {
+  await resetExtensionStorage(serviceWorker, {});
+  await exportFromCoursePage(page, 104);
+  await waitForDownloads(downloadsDir);
+  const tab = await exportFromCoursePage(page, 104);
+  await expect(tab.locator('.result')).toHaveText(
+    /^Saved \d+ files to Downloads\/Academic Writing \(1\)\.zip$/,
+  );
+  await waitForDownloads(downloadsDir);
+  expect(readdirSync(downloadsDir).sort()).toEqual([
+    'Academic Writing (1).zip',
+    'Academic Writing.zip',
+  ]);
+});

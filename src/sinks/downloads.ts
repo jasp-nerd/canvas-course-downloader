@@ -93,11 +93,11 @@ export function downloadsSink(options: Options): FileSink {
  * once the file is complete, or with the browser's error when it failed.
  */
 export async function downloadBlob(
-  downloads: DownloadsApi,
+  downloads: DownloadsApi & Pick<typeof browser.downloads, 'search'>,
   blob: Blob,
   filename: string,
   conflictAction: 'uniquify' | 'overwrite',
-): Promise<{ ok: true } | { ok: false; reason: string }> {
+): Promise<{ ok: true; savedName: string } | { ok: false; reason: string }> {
   const url = URL.createObjectURL(blob);
   try {
     const started = { id: -1 };
@@ -116,7 +116,12 @@ export async function downloadBlob(
       downloads.onChanged.addListener(listener);
     });
     started.id = await downloads.download({ url, filename, conflictAction, saveAs: false });
-    return await outcome;
+    const result = await outcome;
+    if (!result.ok) return result;
+    // "uniquify" may have saved it as "Course (1).zip"; report the name it really got.
+    const [item] = await downloads.search({ id: started.id });
+    const saved = item?.filename.split(/[/\\]/).pop();
+    return { ok: true, savedName: saved || filename.split('/').pop()! };
   } finally {
     URL.revokeObjectURL(url);
   }

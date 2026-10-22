@@ -220,7 +220,7 @@ export async function exportCourses(input: {
             settings.conflictAction,
           );
           if (!saved.ok) throw new Error(`Your browser couldn't save the ZIP (${saved.reason}).`);
-          update(course, { savedAs: `Downloads/${prefix}${zipName}` });
+          update(course, { savedAs: `Downloads/${prefix}${saved.savedName}` });
         }
       } else {
         const sink = downloadsSink({
