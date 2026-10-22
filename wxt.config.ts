@@ -56,6 +56,7 @@ export default defineConfig({
       'pnpm-workspace.yaml',
       'tsconfig.json',
       'wxt.config.ts',
+      'svelte.config.js',
       'SOURCE_CODE_REVIEW.md',
       'LICENSE',
     ],
