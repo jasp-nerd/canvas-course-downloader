@@ -2,6 +2,7 @@
 // where everything goes, and what couldn't be captured.
 import type { CanvasClient } from '../canvas/client';
 import { renderCourseIndex } from '../export/course-index';
+import { renderIcs, type CalendarEvent } from '../export/calendar';
 import { sanitizeFilename } from '../export/filenames';
 import {
   EXPORT_CSS,
@@ -385,6 +386,21 @@ function finalize(
     return { path, source: { kind: 'text', content } };
   });
 
+  const deadlines = deadlineEvents(ctx, entries);
+  if (deadlines.length) {
+    files.push({
+      path: 'Deadlines.ics',
+      source: {
+        kind: 'text',
+        content: renderIcs({
+          name: `${ctx.courseName} deadlines`,
+          now: new Date(),
+          events: deadlines,
+        }),
+      },
+    });
+  }
+
   if (agentPack) {
     files.push(
       { path: 'AGENTS.md', source: { kind: 'text', content: renderAgentsMd(agentPack) } },
@@ -433,6 +449,34 @@ function finalize(
     skippedUnchanged,
     studentWork: studentWorkOf(ctx),
   };
+}
+
+/**
+ * Every due date in the export, for the calendar file. A graded discussion is
+ * also an assignment with the same date: it becomes one event.
+ */
+function deadlineEvents(ctx: CourseExport, entries: Entry[]): CalendarEvent[] {
+  const host = new URL(ctx.origin).host;
+  const seen = new Set<string>();
+  const events: CalendarEvent[] = [];
+  for (const e of entries) {
+    if (e.kind !== 'document' || !e.dueAt) continue;
+    const key = `${e.title}\u0000${e.dueAt}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const url = e.canvasUrls[0];
+    const id = (url ? new URL(url).pathname : `${e.dueAt} ${e.title}`)
+      .replace(/^\/+/, '')
+      .replace(/[^\w.-]+/g, '-');
+    events.push({
+      uid: `${id}@${host}`,
+      title: e.title,
+      start: e.dueAt,
+      ...(url ? { url } : {}),
+      ...(e.points != null ? { description: `${e.points} points` } : {}),
+    });
+  }
+  return events;
 }
 
 const studentWorkOf = (ctx: CourseExport): ExportPlan['studentWork'] => ({

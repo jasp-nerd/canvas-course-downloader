@@ -29,10 +29,17 @@ export function sanitizedPath(p: string): string {
 export const unpadTables = (md: string) =>
   md.replace(/^\|.*\|$/gm, (row) => row.replace(/ {2,}\|/g, ' |'));
 
-/** Approved difference 13: v3 adds an overview page at the course root, as index.html and "Open me - <Course>.html". */
+/**
+ * Approved difference 13: v3 adds an overview page at the course root, as index.html and
+ * "Open me - <Course>.html". Approved difference 19: and Deadlines.ics, the course's due dates.
+ */
 function addedInV3(p: string): boolean {
   const inner = p.includes('!/') ? p.split('!/')[1]! : p.slice(p.indexOf('/') + 1);
-  return inner === 'index.html' || (inner.startsWith('Open me - ') && inner.endsWith('.html'));
+  return (
+    inner === 'index.html' ||
+    inner === 'Deadlines.ics' ||
+    (inner.startsWith('Open me - ') && inner.endsWith('.html'))
+  );
 }
 
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
