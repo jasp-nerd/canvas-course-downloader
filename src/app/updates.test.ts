@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
-import type { CanvasClient } from '../canvas/client';
+import { CanvasError, type CanvasClient } from '../canvas/client';
 import { saveInventory } from '../storage/inventory';
 import {
   checkForUpdates,
@@ -22,9 +22,18 @@ const inventory = {
   files: { '1': { path: 'Files/a.pdf', size: 100, modifiedAt: '2026-09-01T00:00:00Z' } },
 };
 
-const fakeCanvas = (files: object[]) => {
+/** A Canvas with these files; `calls` counts file listings, one per course per check. */
+const fakeCanvas = (files: object[], other: Record<string, object[] | Error> = {}) => {
   let calls = 0;
-  const canvas = { list: () => (calls++, Promise.resolve(files)) } as unknown as CanvasClient;
+  const answer = (path: string) => {
+    if (path.endsWith('/files')) {
+      calls++;
+      return Promise.resolve(files);
+    }
+    const found = Object.entries(other).find(([end]) => path.endsWith(end))?.[1] ?? [];
+    return found instanceof Error ? Promise.reject(found) : Promise.resolve(found);
+  };
+  const canvas = { list: answer, get: answer } as unknown as CanvasClient;
   return { canvas, calls: () => calls };
 };
 
@@ -81,5 +90,46 @@ describe('checkForUpdates', () => {
         courses: [{ courseId: '1', courseName: 'Y', newFiles: 1 }],
       }),
     ).toEqual([]);
+  });
+});
+
+describe('what else changed since the last save', () => {
+  const saved = { ...inventory, savedAt: Date.UTC(2026, 9, 10) };
+  const after = '2026-10-15T09:00:00Z';
+  const before = '2026-10-01T09:00:00Z';
+
+  it('counts announcements posted, and pages and assignments added or edited, since then', async () => {
+    await saveInventory(ORIGIN, '103', saved);
+    const { canvas } = fakeCanvas([], {
+      '/discussion_topics': [{ posted_at: after }, { posted_at: before }],
+      '/pages': [{ updated_at: after }, { updated_at: after }, { updated_at: before }],
+      '/assignments': [{ updated_at: after }, { updated_at: before }],
+    });
+    expect(pendingUpdates(await checkForUpdates(canvas, ORIGIN, NOW))).toEqual([
+      {
+        courseId: '103',
+        courseName: 'Linear Algebra',
+        newFiles: 0,
+        newAnnouncements: 1,
+        changedDocuments: 3,
+      },
+    ]);
+  });
+
+  it('still reports files when Canvas hides pages or announcements', async () => {
+    await saveInventory(ORIGIN, '103', saved);
+    const { canvas } = fakeCanvas([{ id: 2, url: 'u', size: 5 }], {
+      '/pages': new CanvasError('permanent', '/pages', 404),
+      '/discussion_topics': new CanvasError('permanent', '/discussion_topics', 403),
+    });
+    expect(pendingUpdates(await checkForUpdates(canvas, ORIGIN, NOW))).toEqual([
+      { courseId: '103', courseName: 'Linear Algebra', newFiles: 1 },
+    ]);
+  });
+
+  it('counts only files for courses saved by v2, which kept no date', async () => {
+    await saveInventory(ORIGIN, '103', { ...saved, savedAt: 0 });
+    const { canvas } = fakeCanvas([], { '/discussion_topics': [{ posted_at: after }] });
+    expect(pendingUpdates(await checkForUpdates(canvas, ORIGIN, NOW))).toEqual([]);
   });
 });
