@@ -184,6 +184,9 @@ export async function exportCourses(input: {
         ? `${plan.courseName} - AI study pack`
         : `${plan.courseName}${onlyNew ? ` (update ${date})` : ''}`;
       const zipName = sanitizeFilename(`${exportName}.zip`);
+      // Updating folders: pages and the overview are written again and replace their old
+      // versions. New files can't collide, and changed ones get an "(updated ...)" name.
+      const folderConflicts = onlyNew ? 'overwrite' : settings.conflictAction;
       const courseFolder = `${prefix}${sanitizeFilename(studyPack ? exportName : plan.courseName, 'folder')}/`;
       if (saveFolder && settings.zipMode) {
         // Streams the archive to disk as it's built: no size limit from memory.
@@ -200,7 +203,7 @@ export async function exportCourses(input: {
         });
         update(course, { savedAs: `${saveFolder.name}/${prefix}${name}` });
       } else if (saveFolder) {
-        const sink = folderSink(saveFolder, settings.conflictAction, courseFolder);
+        const sink = folderSink(saveFolder, folderConflicts, courseFolder);
         result = await runExport(plan, { canvas, sink, signal: input.signal, onProgress });
         update(course, { savedAs: `${saveFolder.name}/${courseFolder}` });
       } else if (settings.zipMode) {
@@ -225,7 +228,7 @@ export async function exportCourses(input: {
       } else {
         const sink = downloadsSink({
           folder: courseFolder,
-          conflictAction: settings.conflictAction,
+          conflictAction: folderConflicts,
           downloads: browser.downloads,
         });
         result = await runExport(plan, { canvas, sink, signal: input.signal, onProgress });

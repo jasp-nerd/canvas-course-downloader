@@ -85,3 +85,24 @@ test("files v2 recorded aren't downloaded again after updating to v3", async ({
   await waitForDownloads(downloadsDir);
   expect(readdirSync(downloadsDir)).toEqual([`Academic Writing (update ${today}).zip`]);
 });
+
+test('updating a course saved as folders replaces its pages instead of adding "(1)" copies', async ({
+  page,
+  serviceWorker,
+  downloadsDir,
+}) => {
+  await resetExtensionStorage(serviceWorker, { incrementalMode: true, zipMode: false });
+  await exportCourse(page, 104);
+  await waitForDownloads(downloadsDir);
+  const tab = await exportCourse(page, 104);
+  await expect(tab.locator('.result')).toContainText('24 files you already had were skipped');
+  await waitForDownloads(downloadsDir);
+
+  const saved = execFileSync('find', [path.join(downloadsDir, 'Academic Writing'), '-type', 'f'], {
+    encoding: 'utf8',
+  })
+    .trim()
+    .split('\n');
+  expect(saved.filter((f) => / \(\d+\)\.[a-z]+$/.test(f))).toEqual([]);
+  expect(saved.some((f) => f.endsWith('Pages/course-schedule.html'))).toBe(true);
+});
