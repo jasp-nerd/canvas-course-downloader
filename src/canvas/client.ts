@@ -111,6 +111,8 @@ export function createCanvasClient(options: CanvasClientOptions) {
   ): Promise<{ data: unknown; link: string | null; response?: Response }> {
     let throttles = 0;
     let transients = 0;
+    // A server error says more than a dropped connection on a later retry.
+    let lastStatus: number | undefined;
     for (;;) {
       if (options.signal?.aborted) throw new CanvasError('aborted', url);
       await acquire();
@@ -143,6 +145,7 @@ export function createCanvasClient(options: CanvasClientOptions) {
           throw new CanvasError(/unauthenticated/.test(body) ? 'session' : 'permanent', url, 401);
         }
         if (res.status >= 500) {
+          lastStatus = res.status;
           if (++transients > MAX_TRANSIENT_RETRIES)
             throw new CanvasError('transient', url, res.status);
           await sleep(random() * Math.min(30, 2 ** (transients - 1)) * 1000);
@@ -162,7 +165,8 @@ export function createCanvasClient(options: CanvasClientOptions) {
         if (error instanceof CanvasError) throw error;
         if (options.signal?.aborted) throw new CanvasError('aborted', url);
         // Network failure or timeout.
-        if (++transients > MAX_TRANSIENT_RETRIES) throw new CanvasError('transient', url);
+        if (++transients > MAX_TRANSIENT_RETRIES)
+          throw new CanvasError('transient', url, lastStatus);
         await sleep(random() * Math.min(30, 2 ** (transients - 1)) * 1000);
       } finally {
         clearTimeout(timer);

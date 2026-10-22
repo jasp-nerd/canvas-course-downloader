@@ -87,6 +87,16 @@ describe('Canvas client', () => {
     expect(apiCalls('/api/v1/courses/101')).toBe(5);
   });
 
+  it('reports the server error Canvas gave when the last retry lost the connection', async () => {
+    mock.addFault({ path: '^/api/v1/courses/101$', status: 500, times: 4 });
+    mock.addFault({ path: '^/api/v1/courses/101$', drop: true, times: 1 });
+    const { canvas } = client();
+    await expect(canvas.get('/courses/101')).rejects.toMatchObject({
+      kind: 'transient',
+      status: 500,
+    });
+  });
+
   it('reports a lost session at once on 401, without retrying', async () => {
     mock.state.signedIn = false;
     const { canvas } = client();
