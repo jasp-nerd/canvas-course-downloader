@@ -1,6 +1,6 @@
 # Canvas Course Downloader
 
-A browser extension that bulk-downloads and archives your Canvas LMS courses into organized folders — including teacher-side data like student submissions, gradebooks, and quiz results.
+A browser extension that downloads your Canvas LMS courses: files, pages, assignments, grades and more, in organized folders you can open offline. If you teach, it also archives submissions, the gradebook and quiz results.
 
 <p align="center">
   <img src="screenshots/banner.png" alt="Canvas Course Downloader — one click, every file, organized">
@@ -17,248 +17,216 @@ A browser extension that bulk-downloads and archives your Canvas LMS courses int
 
 ## Why?
 
-Canvas courses can disappear after a semester ends. Downloading files one at a time is tedious when you have hundreds across multiple courses, and existing tools all need API tokens or Python scripts. This extension uses your existing session cookies, so there's nothing to configure.
+Canvas courses can disappear after a semester ends. Downloading files one at a time is tedious when you have hundreds across many courses, and other tools need API tokens or Python scripts. This extension uses the session you're already logged in with, so there's nothing to set up.
 
-Having a local copy of your course materials also means you can feed them into AI tools — load everything into NotebookLM for study sessions, use an AI agent to help you review or summarize readings, or build a searchable knowledge base from an entire semester's worth of content.
+A local copy is also useful for studying with AI: the extension can make a study pack sized for NotebookLM, ChatGPT or Claude, or a Markdown copy with an index for coding agents.
 
-If you teach, it doubles as an end-of-term archiving tool: it detects your instructor role and pulls in everything students can't see — every submission, the full gradebook, quiz results, and threaded discussions.
+If you teach, it doubles as an end-of-term archiving tool: it detects your instructor role and also saves what students can't see, such as every submission, the gradebook and quiz results.
 
 ## Features
 
-- Download everything from a single course, or select multiple courses from your dashboard
-- Pick between active and past courses, grouped by term, with search filtering
-- Bundle each course into a single `.zip` file instead of loose folders
-- Incremental mode skips files you've already downloaded on previous runs
-- Export your grades (and class averages!) as a CSV with assignment names, due dates, points, scores, and letter grades
-- Export pages, assignments, announcements, and discussions as either HTML or Markdown
-- Automatically detects whether you're a **student or teacher/TA** in each course and exports accordingly — no extra setup
-- **Teacher mode:** download every student's submission (all attempts, in per-student folders), with a per-assignment grades CSV
-- **Teacher mode:** full gradebook and student roster CSVs, complete threaded discussions, and rubric scores plus comments
-- **Quizzes:** answer keys with per-student scores for teachers; your own score and answers as a student
-- Filter out video files or cap the maximum file size to keep archives lean
-- Cross-reference rewriting: links between exported pages, assignments, and files become relative paths so you can browse the course offline without dead Canvas links
-- Pulls in pages that only appear inside Modules, plus their embedded slides / PDFs
-- Finds files embedded in assignments, pages, announcements, and discussions that don't appear in the file browser
-- Downloads videos and audio uploaded through the Canvas editor (the built-in media player), with captions, and plays them offline in the exported pages
-- Saves into organized subfolders per course with your original Canvas folder structure preserved
-- Four built-in presets (Full Archive, Files Only, Text Only, Linked Only) plus custom configuration
-- Configurable download throttling, file conflict handling, and folder prefix
-- Keyboard shortcut: <kbd>Ctrl+Shift+D</kbd> (Mac: <kbd>Cmd+Shift+D</kbd>)
-- Works with any Canvas instance, including self-hosted installations on custom domains
-- No API tokens needed. Runs entirely in your browser with nothing sent to external servers
+- Download one course from its page, or pick several from your dashboard (current and past, grouped by term, with search)
+- Exports keep running in their own tab, so you can keep using Canvas or close it
+- Each course becomes one ZIP, or folders, in Downloads or in **a folder you choose**, such as one inside Google Drive, OneDrive or Dropbox (Chrome and Edge)
+- An overview page in every export (`Open me - <Course>.html`): the course by module, everything else by kind, and anything that couldn't be saved, with the reason
+- **Only what's new:** later downloads skip files you already have; a changed file is saved again with "(updated date)" in its name
+- **New files on your dashboard:** courses you downloaded before show how many files are new, and can download them automatically when you open Canvas (off by default)
+- Three kinds of download:
+  - **A copy to keep:** the course as it is in Canvas, in HTML or Markdown
+  - **A study pack for AI:** a few files per module plus a course guide with deadlines and grading, sized for NotebookLM, ChatGPT or Claude, and split into several notebooks or projects when a course has too many files
+  - **Files for coding agents:** the copy in Markdown with front matter, plus `AGENTS.md`, `llms.txt` and `course.json`
+- Grades as a CSV, including class statistics when Canvas shows them
+- Detects whether you're a **student or a teacher/TA** in each course:
+  - **Teacher:** every student's submission (all attempts), a gradebook and roster, quiz answer keys with scores, full discussion threads, rubric scores and comments
+  - **Student:** your own submissions, feedback and quiz results
+- Finds files and Canvas videos embedded in pages, assignments, announcements, discussions and the syllabus, including files linked from another course
+- Links between saved pages, assignments and files are rewritten so the export works offline
+- Downloads quickly by sending several requests at once, and slows down when Canvas asks; failed files are retried and then listed
+- Keyboard shortcut: <kbd>Ctrl+Shift+D</kbd> (Mac: <kbd>Cmd+Shift+D</kbd>; Firefox: <kbd>Alt+Shift+D</kbd>)
+- Works with any Canvas, including schools that run it on their own domain
+- No API tokens, and nothing is sent anywhere but your Canvas
 
 ## Screenshots
 
-### Demo
+The button on every course page:
 
-Selecting courses and downloading them, start to finish:
+![The "Download course" button next to the course name](public/welcome/course-button.png)
 
-![Animated walkthrough: opening the course selector, picking courses, and downloading them](screenshots/workflow.gif)
+Picking courses from the dashboard:
 
-### Course selector
-
-Pick which courses to download from your Canvas dashboard:
-
-![Course selector overlay showing courses grouped by term](screenshots/course-selector.png)
-
-### Download progress
-
-![Download in progress with file count and progress panel](screenshots/download-progress-detail.png)
-
-### Settings
-
-![Settings page with presets and configuration options](screenshots/settings-horizontal.png)
+![The course picker with courses grouped by term](public/welcome/picker.png)
 
 ## Installation
 
 ### Chrome Web Store
 
-Install directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/mmnmcnffbkcnhcjiidmdnaclpfeekiol). Also works on Edge and Brave.
+Install it from the [Chrome Web Store](https://chromewebstore.google.com/detail/mmnmcnffbkcnhcjiidmdnaclpfeekiol). This also works on Edge and Brave.
 
-### Manual install (Chrome / Edge / Brave)
+### From source
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/jasp-nerd/canvas-course-downloader.git
-   ```
-2. Open your browser's extension page:
-   - Chrome: `chrome://extensions`
-   - Edge: `edge://extensions`
-   - Brave: `brave://extensions`
-3. Enable **Developer mode** (toggle in the top-right corner)
-4. Click **Load unpacked** and select the cloned folder
-5. Navigate to your Canvas site
+You need [Node.js](https://nodejs.org/) 22 or later and [pnpm](https://pnpm.io/).
 
-### Firefox
+```bash
+git clone https://github.com/jasp-nerd/canvas-course-downloader.git
+cd canvas-course-downloader
+pnpm install
+pnpm build            # Chrome, Edge, Brave → .output/chrome-mv3
+pnpm build:firefox    # Firefox → .output/firefox-mv3
+```
 
-1. Clone this repository
-2. Open `about:debugging#/runtime/this-firefox`
-3. Click **Load Temporary Add-on** and select the `manifest.json` file
-4. Navigate to your Canvas site
-
-> Firefox temporary add-ons expire when the browser restarts. You'll need to reload from `about:debugging` each session.
+- **Chrome, Edge, Brave:** open `chrome://extensions` (or `edge://extensions`, `brave://extensions`), turn on **Developer mode**, click **Load unpacked** and choose `.output/chrome-mv3`.
+- **Firefox (140 or later):** open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on** and choose `.output/firefox-mv3/manifest.json`. Temporary add-ons are removed when Firefox restarts.
 
 ## Usage
 
-### Single course
+### One course
 
-1. Go to any Canvas course page
-2. Click the **"Download course content"** button that appears in the breadcrumb bar
-3. Files download into organized folders named after the course
+1. Open any page of a course in Canvas.
+2. Click **Download course** next to the course name.
+3. A new tab shows the progress. Keep it open until it says **Export finished**.
 
-### Multiple courses
+The first time, the extension asks what your downloads should be (a copy, a study pack or files for agents). You can change this later in the settings.
 
-1. Go to your Canvas dashboard
-2. Click **"Download courses"** in the header area
-3. Use the **Active** and **Past Courses** tabs to find your courses
-4. Search by course name, code, or term to narrow the list
-5. Check the courses you want (or use "Select All" per term group)
-6. Click **"Download selected"** and watch the progress bar
+### Several courses
 
-You can also trigger downloads from the extension popup icon or with the keyboard shortcut.
+1. Go to your Canvas dashboard and click **Download courses**.
+2. Use the **Current** and **Past** tabs, and the search box, to find your courses.
+3. Tick the courses (or a whole term) and click **Download**.
+
+You can also start a download from the toolbar button or with the keyboard shortcut.
 
 ### Settings
 
-Open settings from the extension popup or your browser's extension options page. Settings are organized into four tabs: **Content**, **Downloads**, **Format**, and **Filters**.
+Open the settings from the toolbar button, or from **Change** in the course picker.
 
 | Setting | What it does |
 | --- | --- |
-| Content types | Toggle what to export, split into two groups — *Course content*: files, pages, assignments, syllabus, modules, announcements, linked/extracted files; *Student data & grades*: student submissions, discussions, grades, quizzes |
-| Presets | Quick-select common combos: Full Archive, Files Only, Text Content Only, Linked Files Only |
-| File conflict handling | Choose Rename (add a number suffix) or Overwrite when a file already exists |
-| Download throttle | Delay between downloads in milliseconds (default 250, range 50–5000) |
-| Folder prefix | Custom string prepended to all download paths |
-| ZIP bundling | Bundle each course into a single `.zip` file (on by default; falls back to loose files above ~1.5 GB) |
-| Incremental mode | Track what's been downloaded per course and skip those files next time |
-| Export format | HTML (default) or Markdown — Markdown is best for Obsidian, Notion, or LLM ingestion |
-| Filters | Exclude video files (`.mp4`, `.mov`, `.mkv`, …) and/or cap the maximum file size in MB |
+| Each download makes | A copy to keep, a study pack for AI (and for which tool), or files for coding agents |
+| What to download | Presets (Everything, Files only, Pages and text) or any mix of files, pages, assignments, submissions, discussions, announcements, modules, syllabus, grades, quizzes and linked files |
+| Save to | Your Downloads folder, or a folder you choose (Chrome and Edge) |
+| Save as | One ZIP per course, or folders |
+| Folder inside | An optional folder to save into, such as "Canvas" |
+| If a file is already there | Keep both, or replace it |
+| Only download what's new | Skip files you already saved from a course |
+| Download new files automatically | When you open Canvas, save new files from courses you downloaded before |
+| Pages, assignments and discussions as | Web pages (HTML) or Markdown |
+| Skip | Videos, and files larger than a size you set |
 
 ## Supported content
 
-| Content type | What gets downloaded |
+| Content type | What gets saved |
 | --- | --- |
-| Files | All files from the course file browser, preserving the original folder hierarchy |
-| Pages | Every wiki page saved as an HTML (or Markdown) file |
-| Assignments | Each assignment with its description, due date, and rubric definition |
-| Announcements | Course announcements with dates |
-| Discussions | Discussion topics. Teachers/TAs get the full threaded replies and reply attachments; students get the opening post |
-| Modules | Module structure overview plus any files referenced within modules |
-| Syllabus | The course syllabus |
-| Grades | Students get a personal `Grades.csv` (your scores plus class Low/Lower-quartile/Median/Mean/Upper-quartile/High stats). Teachers/TAs get a full `Gradebook.csv` (every student × assignment) and a `Students.csv` roster |
-| Student submissions | *Teacher/TA:* every student's work for each assignment — all attempts, organized as `Submissions/<Assignment>/<Student>/`, with a per-assignment `_grades.csv` and rubric feedback. *Student:* your own submissions and attempt history |
-| Quizzes | Quiz metadata and description for everyone. *Teacher/TA:* the question bank with answer key plus a per-student score table and `_grades.csv`. *Student:* your score and (when the instructor left responses visible) your answered questions |
-| Linked files | Files embedded in page/assignment/announcement/discussion/syllabus HTML that don't appear in the file browser, including inline images and files linked from another course (when Canvas grants access through the linking page). Links that can't be fetched are listed in `_inaccessible_links.csv` |
-| Canvas media | Videos and audio uploaded or recorded through the Canvas editor (the built-in media player, not the Files tab) are saved to `Media/` at their highest quality, with captions as `.srt`. Exported pages play them offline. Media-recording submissions and audio/video feedback comments land in the submission folder. Media still being processed by Canvas is listed in `_inaccessible_links.csv` |
+| Files | Everything in the Files tab, in its folders |
+| Pages | Every page, including pages only reachable from modules |
+| Assignments | Each assignment with its description, due date, points and rubric |
+| Announcements | Announcements with their dates |
+| Discussions | Topics with their replies and attachments. Teachers also get per-student grades for graded discussions |
+| Modules | An overview of every module, plus files that only appear in modules |
+| Syllabus | The syllabus page |
+| Grades | Students: `Grades.csv` with your scores and the class statistics Canvas shows. Teachers/TAs: `Gradebook.csv` (every student × assignment) and a `Students.csv` roster |
+| Submissions | Teachers/TAs: every student's work, all attempts, in per-student folders, with a `_grades.csv` per assignment and rubric feedback. Students: your own submissions and feedback |
+| Quizzes | Quiz details for everyone. Teachers/TAs: the questions with the answer key, and every student's score. Students: your score and, when the teacher allows it, your answers |
+| Linked files | Files and Canvas videos embedded in pages, assignments, announcements, discussions and the syllabus that aren't in the Files tab, including files linked from another course when Canvas allows it. They're saved even when you don't save the pages they're in |
+| Canvas media | Videos and audio uploaded or recorded in the Canvas editor, at the best quality Canvas offers, with captions as `.srt`. Saved pages play them offline |
 
-Each export also includes a `manifest.json` with metadata: export date, file counts per type, source URL, and extension version.
+Anything that couldn't be saved is listed, with the reason, on the overview page and in `_inaccessible_links.csv` (links) or `_download_errors.csv` (downloads).
 
-## Exported folder structure
+## What a copy looks like
 
 ```
 Course Name/
+├── Open me - Course Name.html     # start here: the course by module, and what's missing
+├── index.html                     # the same overview, for tools
 ├── Files/
-│   ├── Lecture Slides/
-│   │   ├── week1.pdf
-│   │   └── week2.pdf
-│   └── Readings/
-│       └── chapter1.pdf
+│   └── Lecture Slides/
+│       ├── week1.pdf
+│       └── week2.pdf
 ├── Pages/
-│   ├── course-overview.html
-│   └── resources.html
 ├── Assignments/
-│   ├── Homework-1.html
-│   └── Final-Project.html
 ├── Announcements/
-│   └── Welcome-to-class.html
 ├── Discussions/
-│   └── Introduce-yourself.html
 ├── Quizzes/
 │   └── Midterm/
 │       ├── Midterm.html
-│       └── _grades.csv               # teacher only
-├── Submissions/                      # teacher only
-│   └── Homework 1/
-│       ├── Alice Smith/
-│       │   ├── Attempt 1 - essay.pdf
-│       │   └── submission.html       # grade, rubric, comments
-│       └── _grades.csv
-├── Modules/
-│   └── Week 1/
-│       └── handout.pdf
-├── Extracted_Files/
-│   └── embedded-image.png
+│       └── _grades.csv            # teacher only
+├── Submissions/
+│   └── Homework 1/                # your own work, or every student's if you teach
+├── Modules/                       # files only found in modules
+├── Extracted_Files/               # files linked inside pages
+├── Media/                         # Canvas videos and audio, with captions
 ├── Modules.html
 ├── Syllabus.html
-├── Grades.csv                        # personal grades (student)
-├── Gradebook.csv                     # teacher only — every student × assignment
-├── Students.csv                      # teacher only — roster
-├── Grading Weights.html              # when the course uses weighted groups
-├── styles.css                        # Built-in stylesheet linked from every exported HTML
+├── Grades.csv                     # student
+├── Gradebook.csv                  # teacher only
+├── Students.csv                   # teacher only
+├── Grading Weights.html           # when the course uses weighted groups
+├── styles.css
 └── manifest.json
 ```
 
-The teacher-only entries (`Submissions/`, `Gradebook.csv`, `Students.csv`, the quiz answer keys, full discussion threads) only appear when you have an instructor, TA, or designer role in the course. Student exports omit them.
+In ZIP mode the same structure is inside `Course Name.zip`. In Markdown mode, pages end in `.md` and there's no `styles.css`.
 
-In ZIP mode, the same structure is bundled into a single `Course Name.zip`. In Markdown export mode, all generated documents end in `.md` instead of `.html` and the `styles.css` file is omitted.
+**A study pack for AI** is one flat folder (`Course Name - AI study pack`): `00 Course guide.md`, one Markdown file per module (`01 Week 1.md`, …), the slides and PDFs named by module (`M01 Lecture 1.pdf`), and `_extras/` with web links and the files the tool doesn't accept. It never contains other students' work, grades or scores.
+
+**Files for coding agents** is the copy in Markdown, where every page starts with front matter (type, title, module, due date, points, Canvas link), plus `AGENTS.md` (how to read the folder), `llms.txt` (an index by module) and `course.json` (modules, documents, files, grading weights and what's missing, as data).
 
 ## How it works
 
-The content script runs on every HTTPS page but immediately exits if it doesn't detect Canvas (it checks for Instructure domains and Canvas-specific DOM elements like `#application`, `.ic-app`, and the CSRF meta tag). On Canvas pages, it calls the Canvas REST API using your session cookies and follows pagination via RFC 5988 Link headers.
+On a Canvas page the extension adds its buttons and does nothing else. On every other site the content script stops right away. A download opens an export tab, which reads the course through the Canvas REST API with your session, the same way Canvas's own pages do.
 
-It also checks your enrollment in the course. When you have a teacher, TA, or designer role, it unlocks the instructor-only endpoints (student submissions, full discussion threads, the gradebook, quiz answer keys) — these are skipped entirely for students, so a student export only ever contains your own data.
+The extension checks your role in each course. Instructor-only data (all submissions, the gradebook, quiz answer keys) is only requested when you are a teacher, TA or designer.
 
-Beyond the normal file list, it parses HTML content from pages, assignments, announcements, and discussions to extract linked files and inline images that aren't in the file browser, saving them under `Extracted_Files/`. Files get queued in the background service worker, which downloads them sequentially with configurable throttling. Failed downloads are retried with exponential backoff (up to 3 attempts) and can be retried manually from the progress panel.
+Requests run in parallel. Canvas reports how much of its rate limit is left, and the extension speeds up or slows down to match, pausing when Canvas asks it to. Failed requests are retried. A file that still fails is listed instead of being skipped silently, and the export ends as complete, partial or failed.
 
-## Folder structure
+## Development
+
+```bash
+pnpm install
+pnpm dev              # Chrome with the extension loaded, rebuilt on save
+pnpm dev:firefox
+pnpm verify           # what must pass before a change is done
+```
+
+`pnpm verify` runs type checks, lint, unit tests, builds for Chrome, Edge and Firefox, a check that the permissions haven't changed, and end-to-end tests in Chrome against a mock Canvas. The code is TypeScript and Svelte, built with [WXT](https://wxt.dev):
 
 ```
-canvas-course-downloader/
-├── manifest.json        # Extension manifest (MV3)
-├── background.js        # Service worker: sequential download queue
-├── content.js           # Entry point, SPA navigation handling, message routing
-├── downloader.js        # Download orchestration, ZIP bundling, settings
-├── ui.js                # UI components: buttons, progress panel, course selector, toasts
-├── canvas-api.js        # Canvas REST API: fetch with retry, pagination, timeouts
-├── detector.js          # Canvas page and course detection
-├── helpers.js           # Pure utilities: sanitization, parsing, color math
-├── client-zip.min.js    # client-zip library (streaming ZIP generator)
-├── turndown.min.js      # turndown (HTML → Markdown) for the Markdown export mode
-├── turndown-plugin-gfm.min.js  # GFM tables / strikethrough plugin for turndown
-├── popup.html / js      # Extension popup
-├── options.html / js    # Settings page
-├── icons/               # Extension icons (SVG + PNG at 16, 48, 128)
-├── screenshots/         # Store and documentation images
-└── tests/
-    └── test-helpers.html  # Browser-based unit tests for helper functions
+src/
+├── entrypoints/   # background, the Canvas content script, popup, settings, export tab, welcome page
+├── canvas/        # Canvas API client, page detection, course lists
+├── engine/        # what to export: one module per part of a course
+├── export/        # HTML, Markdown, file names, the overview page, study packs, agent files
+├── sinks/         # where files go: ZIP, Downloads, a chosen folder
+├── storage/       # settings, the list of saved files, the chosen folder
+└── app/           # export jobs, update checks, onboarding, links
+e2e/               # Playwright tests and the mock Canvas server
+legacy/v2/         # version 2.11, kept as the reference for v3's output
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more.
 
 ## Permissions
 
-The content script is injected on every HTTPS page (`https://*/*`) because Canvas can be hosted on any domain — universities often run it on their own URLs like `canvas.university.edu`. The script needs to load everywhere to detect Canvas instances, but it exits immediately on non-Canvas pages and makes no network requests outside the Canvas site you're on. Elevated host permissions are scoped narrowly to `*://*.instructure.com/*`; on self-hosted instances the extension works through same-origin requests from the page itself.
+The content script loads on every HTTPS page (`https://*/*`) because schools run Canvas on their own domains, like `canvas.university.edu`. It stops immediately on pages that aren't Canvas. Host access is limited to `*://*.instructure.com/*`, and access to Canvas's file server (`canvas-user-content.com`) is only requested when you click "Allow access" in the settings.
 
 For the full privacy policy, see [PRIVACY.md](PRIVACY.md).
 
 ## Known limitations
 
-- Content hosted by third-party video tools (Canvas Studio, Panopto, Kaltura, YuJa, Echo360, Vimeo, Zoom, Microsoft Stream) lives outside Canvas behind that tool's own login and download permissions, so it can't be downloaded; only media uploaded through Canvas's own editor is fetched. YouTube embeds become clickable thumbnails
+- Videos in third-party tools (Canvas Studio, Panopto, Kaltura, YuJa, Echo360, Vimeo, Zoom, Microsoft Stream) live behind that tool's own login, so they can't be downloaded. Only media uploaded through Canvas's own editor is saved. YouTube links are kept as links
 - You must be logged into Canvas. There's no API-token or headless mode
-- Pages, assignments, announcements, and discussions are saved as HTML summaries, not pixel-perfect copies of the Canvas layout
-- Heavily customized Canvas themes may affect button placement or page detection
-- Courses with hundreds of files will take a few minutes. The throttle setting helps balance speed against browser download limits
-- Teacher exports that include every student's submission can be large and slow; above ~1.5 GB, ZIP bundling automatically falls back to individual file downloads
-- Windows paths are truncated to stay under the 260-character limit, which can shorten long filenames
+- Saved pages are clean copies of the content, not pixel-perfect copies of the Canvas layout
+- Choosing a folder to save into needs Chrome or Edge; Firefox and Brave save to Downloads
+- Very long paths are shortened to stay under Windows' 260-character limit
 
 ## Troubleshooting
 
-**"Not on a Canvas page"** — The extension didn't detect Canvas on the current page. Make sure you're on a page with Canvas navigation elements. On self-hosted instances with heavy theme customizations, detection can fail. File an issue with details about your Canvas URL.
+**No Download button** — If Canvas was already open when you installed or updated the extension, reload the page once. On heavily customized Canvas themes detection can fail; please open an issue with your Canvas address.
 
-**Course selector is empty** — No courses came back from the API. Try the **Past Courses** tab for completed semesters. Some institutions restrict API access for certain enrollment roles.
+**The course picker is empty** — Try the **Past** tab. Some schools keep old courses under Current, newest term first.
 
-**Downloads blocked by browser** — Browsers may block bulk downloads the first time. Click **Allow** when prompted. If downloads are timing out, lower the throttle value in settings.
+**Some files are missing** — Open the export's overview page (`Open me - <Course>.html`): the list at the bottom says what couldn't be saved and why. Files hidden from students, locked files and files in external tools can't be downloaded.
 
-**Some files are missing** — Files in restricted areas or behind additional permission checks may not be accessible through the API. Files hosted by external LTI tools won't be captured. Check the browser console for specific errors.
-
-**Firefox add-on expired** — Firefox temporary add-ons only last until browser restart. Reload from `about:debugging#/runtime/this-firefox`.
+**"Your browser couldn't save the ZIP"** — For very large courses, choose a folder in the settings (Chrome, Edge), or save as folders instead of a ZIP.
 
 ## Support
 
