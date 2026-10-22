@@ -123,10 +123,11 @@ const YOUTUBE =
   /https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch|embed)[^"'\s<]*|youtu\.be\/[^"'\s<]+)/g;
 
 interface Part {
+  /** Position in the pack, which file names use: M01, M02, ... */
   number: number;
   name: string;
-  /** Canvas module, or the course content outside modules. */
-  inModule: boolean;
+  /** Position of the Canvas module, or null for the course content outside modules. */
+  module: number | null;
   docs: DocumentEntry[];
   files: RemoteEntry[];
   transcripts: TextEntry[];
@@ -172,9 +173,9 @@ export function planStudyPack(input: StudyPackInput): PlannedFile[] {
   const placed = new Set<DocumentEntry | RemoteEntry>();
   const parts: Part[] = input.outline.map((mod, i) => {
     const part: Part = {
-      number: i + 1,
+      number: 0,
       name: mod.name,
-      inModule: true,
+      module: i + 1,
       docs: [],
       files: [],
       transcripts: [],
@@ -194,9 +195,9 @@ export function planStudyPack(input: StudyPackInput): PlannedFile[] {
     return part;
   });
   parts.push({
-    number: parts.length + 1,
-    name: parts.length ? 'Other course content' : 'Course content',
-    inModule: false,
+    number: 0,
+    name: 'Other course content',
+    module: null,
     docs: docs.filter((d) => !placed.has(d)).sort((a, b) => kindIndex(a) - kindIndex(b)),
     files: files.filter((f) => !placed.has(f)),
     transcripts,
@@ -212,6 +213,10 @@ export function planStudyPack(input: StudyPackInput): PlannedFile[] {
     });
   }
   const pack = parts.filter((p) => hasText(p) || p.files.length);
+  // Numbered in pack order: modules with nothing in the pack leave no gaps.
+  pack.forEach((part, i) => (part.number = i + 1));
+  const rest = pack.at(-1);
+  if (rest?.module === null && pack.length === 1) rest.name = 'Course content';
 
   // Split into notebooks when one would hold more files than the tool takes,
   // keeping a module together unless it doesn't fit in a notebook of its own.
@@ -336,11 +341,12 @@ const demoteHeadings = (html: string) =>
 function partMarkdown(input: StudyPackInput, part: Part, names: Names): string {
   const total = input.outline.length;
   let md = `# ${pad(part.number)} ${part.name} — ${input.courseName}\n\n`;
-  md += part.inModule
-    ? `> Canvas module ${part.number} of ${total}.`
-    : `> Course content that isn't in a module.`;
+  md +=
+    part.module !== null
+      ? `> Canvas module ${part.module} of ${total}.`
+      : `> Course content that isn't in a module.`;
   if (part.files.length) {
-    md += `\n> ${part.inModule ? "This module's files" : "Files that aren't in a module"} are separate in this pack: ${part.files.map((f) => `"${baseName(names.at.get(f)!.path)}"`).join(', ')}.`;
+    md += `\n> ${part.module !== null ? "This module's files" : "Files that aren't in a module"} are separate in this pack: ${part.files.map((f) => `"${baseName(names.at.get(f)!.path)}"`).join(', ')}.`;
   }
   md += '\n';
   for (const doc of part.docs) {

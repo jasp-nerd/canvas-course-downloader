@@ -226,6 +226,34 @@ describe('planStudyPack', () => {
     expect(paths(pack)).toEqual(['00 Course guide.md', 'M01 Notes.pdf', 'M01 notes (2).pdf']);
   });
 
+  it('numbers parts in pack order, so empty modules leave no gaps', () => {
+    const pack = planStudyPack(
+      input({
+        outline: [
+          { name: 'Manual', items: [] },
+          { name: 'Week 1', items: [fileItem('1', 'Lecture 1')] },
+        ],
+      }),
+    );
+    expect(paths(pack)).toContain('M01 Lecture 1.pdf');
+    expect(paths(pack)).toContain('02 Other course content.md');
+    expect(paths(pack)).toContain('M02 Formula sheet.pdf');
+    expect(text(pack, '02 Other course content.md')).toContain('# 02 Other course content');
+  });
+
+  it('calls it all "Course content" when no module has anything in the pack', () => {
+    const pack = planStudyPack(
+      input({
+        outline: [
+          { name: 'Manual', items: [] },
+          { name: 'Week 1', items: [] },
+        ],
+      }),
+    );
+    expect(paths(pack)).toContain('01 Course content.md');
+    expect(paths(pack)).toContain('M01 Lecture 1.pdf');
+  });
+
   it('names the content "Course content" when the course has no modules', () => {
     const pack = planStudyPack(input({ outline: [] }));
     expect(text(pack, '01 Course content.md')).toContain(
