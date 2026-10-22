@@ -14,9 +14,6 @@ importers:
       '@webext-core/messaging':
         specifier: ^4.0.0
         version: 4.0.0
-      '@wxt-dev/storage':
-        specifier: ^1.3.0
-        version: 1.3.0
       client-zip:
         specifier: ^2.5.1
         version: 2.5.1
@@ -29,9 +26,6 @@ importers:
       turndown:
         specifier: ^7.2.4
         version: 7.2.4
-      valibot:
-        specifier: ^1.5.0
-        version: 1.5.0(typescript@6.0.3)
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.0
@@ -1612,14 +1606,6 @@ packages:
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
-
-  valibot@1.5.0:
-    resolution: {integrity: sha512-nil6AkP2TChWL43Z5uJ6GTxX01CUA+g8LWUM+N/rB9NBbkUMaUsi9PUNzlUPgoKASgmx9f7eGOYpJ04/fSa6FQ==}
-    peerDependencies:
-      typescript: '>=5'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
 
   vite@8.3.4:
     resolution: {integrity: sha512-IftLE8phJhdNRIGNEV4JCCvfNScoZQVfcXaN8TQropWGJtOHcu+iAB9pHcuGvmEb/kddw0LBe/jS8ztdC6xdiQ==}
@@ -3226,10 +3212,6 @@ snapshots:
       punycode: 2.3.1
 
   util-deprecate@1.0.2: {}
-
-  valibot@1.5.0(typescript@6.0.3):
-    optionalDependencies:
-      typescript: 6.0.3
 
   vite@8.3.4(@types/node@24.19.2)(jiti@2.7.0):
     dependencies:
