@@ -181,33 +181,45 @@ async function resolveMediaUncached(
     return existing;
   }
 
-  const best = pickMediaSource(info.media_sources);
-  // No sources: Canvas is still transcoding, or the media server won't list them.
-  if (!best) {
-    report(info.title || label, 'no-media-sources');
-    return null;
+  // Canvas plays its own re-encoded copy of an uploaded video in pages. When the
+  // original is in the Files tab too, the embed links there instead of saving it twice.
+  const inFiles =
+    attachmentId && ctx.seenFileIds.has(attachmentId)
+      ? ctx.entries.find(
+          (e): e is RemoteEntry => e.kind === 'remote' && e.canvasId === attachmentId,
+        )
+      : undefined;
+  let entry: RemoteEntry;
+  if (inFiles) {
+    inFiles.mediaKeys = [...new Set([...(inFiles.mediaKeys ?? []), ...keys])];
+    entry = inFiles;
+  } else {
+    const best = pickMediaSource(info.media_sources);
+    // No sources: Canvas is still transcoding, or the media server won't list them.
+    if (!best) {
+      report(info.title || label, 'no-media-sources');
+      return null;
+    }
+    let url: string;
+    try {
+      url = new URL(best.url || best.src || '', ctx.origin).href;
+    } catch {
+      report(info.title || label, 'bad-media-url');
+      return null;
+    }
+    entry = {
+      kind: 'remote',
+      url,
+      folder,
+      name: `${prefix}${mediaFilename(info, best, ref.title || `media_${ref.id}`)}`,
+      // Kaltura reports flavor sizes in KB on some instances and bytes on others; better unknown.
+      size: 0,
+      contentType: best.content_type || (info.media_type === 'audio' ? 'audio/mp4' : 'video/mp4'),
+      modifiedAt: '',
+      mediaKeys: keys,
+    };
+    ctx.entries.push(entry);
   }
-  let url: string;
-  try {
-    url = new URL(best.url || best.src || '', ctx.origin).href;
-  } catch {
-    report(info.title || label, 'bad-media-url');
-    return null;
-  }
-
-  const name = `${prefix}${mediaFilename(info, best, ref.title || `media_${ref.id}`)}`;
-  const entry: RemoteEntry = {
-    kind: 'remote',
-    url,
-    folder,
-    name,
-    // Kaltura reports flavor sizes in KB on some instances and bytes on others; better unknown.
-    size: 0,
-    contentType: best.content_type || (info.media_type === 'audio' ? 'audio/mp4' : 'video/mp4'),
-    modifiedAt: '',
-    mediaKeys: keys,
-  };
-  ctx.entries.push(entry);
   if (mediaId) ctx.mediaById.set(mediaId, entry);
 
   if (Array.isArray(info.media_tracks) && info.media_tracks.length && mediaId) {
@@ -221,13 +233,13 @@ async function resolveMediaUncached(
           'include[]': 'content',
         },
       );
-      const stem = name.replace(/\.[a-z0-9]+$/i, '');
+      const stem = entry.name.replace(/\.[a-z0-9]+$/i, '');
       for (const t of Array.isArray(tracks) ? tracks : []) {
         if (!t.content) continue;
         const tag = [t.locale, t.kind && t.kind !== 'subtitles' ? t.kind : '']
           .filter(Boolean)
           .join('.');
-        addText(ctx, folder, `${stem}${tag ? `.${tag}` : ''}.srt`, t.content);
+        addText(ctx, entry.folder, `${stem}${tag ? `.${tag}` : ''}.srt`, t.content);
       }
     } catch (error) {
       rethrowFatal(error);
