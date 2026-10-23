@@ -11,7 +11,12 @@ import {
 import { createCanvasClient } from '../../canvas/client';
 import { courseIdFromPath, isCanvasPage } from '../../canvas/detect';
 import { onMessage, sendMessage } from '../../messaging';
+import { loadInventory } from '../../storage/inventory';
 import { loadSettings, type Settings } from '../../storage/settings';
+// With cssInjectionMode 'ui', WXT puts these (and the components' styles) in
+// each of our shadow roots, never in the Canvas page itself.
+import '../../ui/theme.css';
+import './base.css';
 import CoursePicker from './CoursePicker.svelte';
 import { loadCanvasFonts } from './fonts';
 import PageButton from './PageButton.svelte';
@@ -63,8 +68,17 @@ export default defineContentScript({
         return mount(PageButton, {
           target: container,
           props: courseId
-            ? { label: 'Download course', onclick: () => startExport([courseId]), showNew: true }
-            : { label: 'Download courses', onclick: openPicker },
+            ? {
+                label: 'Download course',
+                hint: 'Course Downloader: save this course to your computer',
+                onclick: () => startExport([courseId]),
+                showNew: true,
+              }
+            : {
+                label: 'Download courses',
+                hint: 'Course Downloader: save courses to your computer',
+                onclick: openPicker,
+              },
         });
       },
       onRemove: (app) => {
@@ -78,7 +92,7 @@ export default defineContentScript({
   },
 });
 
-/** The "what's new" check for courses saved before: badge, button label, dashboard note, auto-download. */
+/** The "what's new" check for courses saved before: badge, "N new" chip, dashboard note, auto-download. */
 async function showUpdates(
   ctx: ContentScriptContext,
   page: { courseId: string | null; onDashboard: boolean; startExport: StartExport },
@@ -92,7 +106,11 @@ async function showUpdates(
   const pending = pendingUpdates(check);
   const total = pending.reduce((n, c) => n + c.newFiles, 0);
   void sendMessage('setBadge', total ? String(total) : '');
-  pageState.newFiles = pending.find((c) => c.courseId === page.courseId)?.newFiles ?? 0;
+  const here = pending.find((c) => c.courseId === page.courseId);
+  if (here) {
+    pageState.savedAt = (await loadInventory(location.origin, here.courseId))?.savedAt ?? 0;
+    pageState.newFiles = here.newFiles;
+  }
   if (!check || pending.length === 0) return;
 
   const settings = await loadSettings();

@@ -1,0 +1,21 @@
+/* Base for our parts of Canvas pages. Each lives in a shadow root whose host
+   WXT resets (all: initial), so nothing is inherited from Canvas: text starts
+   here. The tokens and component classes come from theme.css. */
+
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
+.cd {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+.cd h2,
+.cd p {
+  margin: 0;
+}
