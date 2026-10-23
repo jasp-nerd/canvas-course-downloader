@@ -299,10 +299,16 @@
   line-height: 1.4;
   margin-top: 2px;
 }
-.choice input {
+/* The real input covers its whole label, so a click (or a test's check()) lands on it. */
+.choice input,
+.seg input {
   position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   opacity: 0;
-  pointer-events: none;
+  cursor: pointer;
 }
 .tick {
   width: 22px;
@@ -595,11 +601,6 @@ input.toggle:disabled {
   color: var(--ink-2);
   cursor: pointer;
   white-space: nowrap;
-}
-.seg input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
 }
 .seg label:has(input:checked) {
   background: #fff;
