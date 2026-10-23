@@ -4,7 +4,7 @@ import { readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import type { Worker } from '@playwright/test';
 import { waitForDownloads } from './golden/collect';
-import { CANVAS, expect, resetExtensionStorage, test } from './fixtures';
+import { CANVAS, expect, resetExtensionStorage, test, waitForExport } from './fixtures';
 import { files, findCourse, folders } from './mock-canvas/data';
 
 const today = new Date().toISOString().slice(0, 10); // the test browser runs in UTC
@@ -21,9 +21,7 @@ async function exportCourse(page: import('@playwright/test').Page, courseId: num
   const next = page.context().waitForEvent('page');
   await page.getByRole('button', { name: 'Download course' }).click();
   const tab = await next;
-  await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
-    timeout: 60_000,
-  });
+  await waitForExport(tab);
   return tab;
 }
 
@@ -46,7 +44,7 @@ test('a second export with "only new" saves an update ZIP without the files save
   await resetExtensionStorage(serviceWorker, { incrementalMode: true });
   await exportCourse(page, 104);
   const tab = await exportCourse(page, 104);
-  await expect(tab.locator('.result')).toContainText('24 files you already had were skipped');
+  await expect(tab.getByText('24 files you already had were skipped')).toBeVisible();
   await waitForDownloads(downloadsDir);
 
   const update = path.join(downloadsDir, `Academic Writing (update ${today}).zip`);
@@ -81,7 +79,7 @@ test("files v2 recorded aren't downloaded again after updating to v3", async ({
   await setLocal(serviceWorker, { incremental_104: v2Records });
 
   const tab = await exportCourse(page, 104);
-  await expect(tab.locator('.result')).toContainText('24 files you already had were skipped');
+  await expect(tab.getByText('24 files you already had were skipped')).toBeVisible();
   await waitForDownloads(downloadsDir);
   expect(readdirSync(downloadsDir)).toEqual([`Academic Writing (update ${today}).zip`]);
 });
@@ -95,7 +93,7 @@ test('updating a course saved as folders replaces its pages instead of adding "(
   await exportCourse(page, 104);
   await waitForDownloads(downloadsDir);
   const tab = await exportCourse(page, 104);
-  await expect(tab.locator('.result')).toContainText('24 files you already had were skipped');
+  await expect(tab.getByText('24 files you already had were skipped')).toBeVisible();
   await waitForDownloads(downloadsDir);
 
   const saved = execFileSync('find', [path.join(downloadsDir, 'Academic Writing'), '-type', 'f'], {

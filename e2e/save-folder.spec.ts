@@ -9,7 +9,7 @@ import path from 'node:path';
 import type { Page } from '@playwright/test';
 import { normalize } from './golden/collect';
 import { diffAgainstGolden } from './golden/compare';
-import { CANVAS, expect, resetExtensionStorage, test } from './fixtures';
+import { CANVAS, expect, resetExtensionStorage, test, waitForExport } from './fixtures';
 
 /** Makes OPFS the "chosen folder" and empties it. Runs in an extension page. */
 async function useOpfsAsFolder(extPage: Page) {
@@ -60,9 +60,7 @@ async function exportCourse(page: Page, courseId: number) {
   const next = page.context().waitForEvent('page');
   await page.getByRole('button', { name: /^Download course/ }).click();
   const tab = await next;
-  await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
-    timeout: 60_000,
-  });
+  await waitForExport(tab);
   return tab;
 }
 
@@ -84,7 +82,10 @@ test('streams the ZIP into the chosen folder, never into Downloads, and never ov
   await useOpfsAsFolder(ext);
 
   const tab = await exportCourse(page, 104);
-  await expect(tab.locator('.result')).toContainText('Academic Writing.zip');
+  // A chosen folder has no "Show in folder"; the receipt says where instead.
+  await expect(tab.getByText(/\/Academic Writing\.zip$/)).toBeVisible();
+  await expect(tab.getByText(/^Saved in /)).toBeVisible();
+  await expect(tab.getByRole('button', { name: 'Show in folder' })).toHaveCount(0);
   await exportCourse(page, 104);
 
   const files = await readOpfs(ext);

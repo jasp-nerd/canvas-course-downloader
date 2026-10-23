@@ -3,7 +3,13 @@
 import { readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { waitForDownloads } from './golden/collect';
-import { CUSTOM_DOMAIN_CANVAS, expect, resetExtensionStorage, test } from './fixtures';
+import {
+  CUSTOM_DOMAIN_CANVAS,
+  expect,
+  resetExtensionStorage,
+  test,
+  waitForExport,
+} from './fixtures';
 
 test.beforeEach(({ downloadsDir }) => {
   for (const entry of readdirSync(downloadsDir))
@@ -20,12 +26,11 @@ test('exports a course from Canvas on a school domain', async ({
   const next = page.context().waitForEvent('page');
   await page.getByRole('button', { name: 'Download course' }).click();
   const tab = await next;
-  await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
-    timeout: 60_000,
-  });
-  await expect(tab.locator('.result')).toHaveText(
-    /^Saved \d+ files to Downloads\/Academic Writing\.zip$/,
-  );
+  await waitForExport(tab);
+  await expect(
+    tab.getByRole('heading', { level: 1, name: 'Academic Writing is saved' }),
+  ).toBeVisible();
+  await expect(tab.getByText(`${path.basename(downloadsDir)}/Academic Writing.zip`)).toBeVisible();
   await waitForDownloads(downloadsDir);
   expect(readdirSync(downloadsDir)).toEqual(['Academic Writing.zip']);
 });

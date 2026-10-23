@@ -1,10 +1,24 @@
 <script lang="ts">
+  // The Download tab: runs the courses the user asked for, shows progress (also
+  // in this tab's title and icon, and on the toolbar icon), then the receipts.
   import { onMount } from 'svelte';
   import { browser } from 'wxt/browser';
   import { exportCourses, type CourseState } from '../../app/export-job';
-  import { AI_TARGETS } from '../../export/study-pack';
   import { supportCardAfterExport } from '../../app/support';
-  import SupportCard from './SupportCard.svelte';
+  import { TimeLeft } from '../../app/time-left';
+  import { AI_TARGETS } from '../../export/study-pack';
+  import { PRODUCT_NAME } from '../../ui/brand';
+  import Icon from '../../ui/Icon.svelte';
+  import Logo from '../../ui/Logo.svelte';
+  import { dotsFor } from '../../ui/logo';
+  import { openSettings } from './actions';
+  import NotSaved from './NotSaved.svelte';
+  import Progress from './Progress.svelte';
+  import Receipt from './Receipt.svelte';
+  import Several from './Several.svelte';
+  import StudyReceipt from './StudyReceipt.svelte';
+  import TeacherReceipt from './TeacherReceipt.svelte';
+  import { resetToolbarIcon, setFavicon, setToolbarIcon } from './tab-icon';
 
   let {
     origin,
@@ -13,10 +27,16 @@
     quiet = false,
   }: { origin: string; courseIds: string[]; onlyNew?: boolean; quiet?: boolean } = $props();
 
-  let courses = $state<CourseState[]>([]);
+  // Replaced as a whole on every change, so it needn't be deeply reactive.
+  let courses = $state.raw<CourseState[]>([]);
   let running = $state(true);
+  let stopping = $state(false);
   let showSupport = $state(false);
+  let isWindows = $state(false);
+  let secondsLeft = $state<number | null>(null);
   let folderPrompt = $state<{ name: string; allow: () => void; skip: () => void } | null>(null);
+  /** Courses save one after another; each gets its own measure of the time left. */
+  let timer: { courseId: string; left: TimeLeft } | undefined;
 
   /** Browsers need a click before writing to a chosen folder again; automatic exports can't ask. */
   const allowFolder = (folder: FileSystemDirectoryHandle) =>
@@ -26,10 +46,12 @@
         name: folder.name,
         allow: () => {
           // First in the click handler: the browser only shows its prompt for a user gesture.
-          void folder.requestPermission({ mode: 'readwrite' }).then((state) => {
-            folderPrompt = null;
-            resolve(state === 'granted');
-          });
+          folder
+            .requestPermission({ mode: 'readwrite' })
+            .then((state) => resolve(state === 'granted'))
+            // It throws without a gesture or when the folder is gone: save to Downloads instead.
+            .catch(() => resolve(false))
+            .finally(() => (folderPrompt = null));
         },
         skip: () => {
           folderPrompt = null;
@@ -39,13 +61,30 @@
     });
   const controller = new AbortController();
 
-  const percent = (c: CourseState) =>
-    c.total ? Math.round(((c.done + c.failed) / c.total) * 100) : 0;
+  const fraction = (c: CourseState) => (c.total ? (c.done + c.failed) / c.total : 0);
+  const active = $derived(courses.find((c) => c.phase === 'planning' || c.phase === 'saving'));
+  /** All courses together, for the tab's icon and the toolbar. */
+  const overall = $derived.by(() => {
+    if (!courses.length) return 0;
+    const finished = courses.filter((c) => c.phase === 'finished').length;
+    const now = active?.phase === 'saving' ? fraction(active) : 0;
+    return (finished + now) / courses.length;
+  });
+  const saved = $derived(courses.filter((c) => c.outcome === 'success' || c.outcome === 'partial'));
+  const how = $derived(courses[0]?.how);
+
+  function track(next: CourseState[]) {
+    courses = next;
+    const c = next.find((x) => x.phase === 'saving');
+    if (!c) return;
+    if (timer?.courseId !== c.id) timer = { courseId: c.id, left: new TimeLeft() };
+    secondsLeft = timer.left.update(Date.now(), c.done + c.failed, c.total);
+  }
 
   /** Automatic exports run in a background tab: tell the user how it went, and get out of the way if it worked. */
   async function reportQuietly(finished: CourseState[], allSaved: boolean) {
     const names = finished.map((c) => c.name).join(', ');
-    const saved = finished.reduce((n, c) => n + c.done, 0);
+    const savedFiles = finished.reduce((n, c) => n + c.done, 0);
     const self = await browser.tabs.getCurrent();
     try {
       await browser.notifications.create({
@@ -53,7 +92,7 @@
         iconUrl: browser.runtime.getURL('/icons/icon-128.png'),
         title: allSaved ? 'New Canvas files saved' : "Some new Canvas files couldn't be saved",
         message: allSaved
-          ? `Saved ${saved} files from ${names}.`
+          ? `Saved ${savedFiles} files from ${names}.`
           : `Open the export tab to see what happened in ${names}.`,
       });
     } catch {
@@ -69,19 +108,28 @@
       );
   }
 
+  function stop() {
+    stopping = true;
+    controller.abort();
+  }
+
   onMount(() => {
     // Closing this tab stops the export, so ask first while it runs.
     const warn = (event: BeforeUnloadEvent) => {
       if (running) event.preventDefault();
     };
+    // A tab closed halfway shouldn't leave the toolbar icon half full.
+    const leave = () => void resetToolbarIcon();
     window.addEventListener('beforeunload', warn);
+    window.addEventListener('pagehide', leave);
+    void browser.runtime.getPlatformInfo().then((info) => (isWindows = info.os === 'win'));
     void exportCourses({
       origin,
       courseIds,
       onlyNew,
       allowFolder,
       signal: controller.signal,
-      onChange: (next) => (courses = next),
+      onChange: track,
     })
       .then(async (finished) => {
         const allSaved = finished.length > 0 && finished.every((c) => c.outcome === 'success');
@@ -94,263 +142,135 @@
       })
       .finally(() => {
         running = false;
+        void resetToolbarIcon();
       });
-    return () => window.removeEventListener('beforeunload', warn);
+    return () => {
+      window.removeEventListener('beforeunload', warn);
+      window.removeEventListener('pagehide', leave);
+    };
   });
 
+  // The logo on this tab and on the toolbar fills dot by dot (32 dots, about 3% each).
+  const filled = $derived(running ? dotsFor(overall) : dotsFor(1));
+  $effect(() => setFavicon(filled));
   $effect(() => {
-    document.title = running
-      ? 'Exporting… · Canvas Course Downloader'
-      : 'Export finished · Canvas Course Downloader';
+    if (running && courses.length) void setToolbarIcon(filled);
   });
+
+  const title = $derived.by(() => {
+    const several = courses.length > 1;
+    if (running) {
+      if (active?.phase !== 'saving') return `Getting ready · ${PRODUCT_NAME}`;
+      const pct = Math.floor((several ? overall : fraction(active)) * 100);
+      return `${pct}% · ${several ? `${courses.length} courses` : active.name}`;
+    }
+    if (several)
+      return saved.length === courses.length
+        ? `${courses.length} courses saved`
+        : `${saved.length} of ${courses.length} courses saved`;
+    const only = courses[0];
+    if (!only || only.outcome === 'cancelled') return `Stopped · ${PRODUCT_NAME}`;
+    return saved.length ? `${only.name} saved` : `${only.named ? only.name : 'Course'} not saved`;
+  });
+  $effect(() => {
+    document.title = title;
+  });
+
+  /** Read out by screen readers; "Finished" is what tests wait for, too. */
+  const status = $derived.by(() => {
+    if (running) return active?.named ? `Saving ${active.name}` : '';
+    if (courses.length > 1) return `Finished. ${saved.length} of ${courses.length} courses saved.`;
+    const only = courses[0];
+    if (!only) return 'Finished.';
+    if (only.outcome === 'cancelled') return 'Finished. You stopped the download.';
+    // The reason and the missing files are on the page, right after this.
+    if (only.outcome === 'failed')
+      return `Finished. ${only.named ? only.name : 'The course'} wasn't saved.`;
+    if (only.outcome === 'partial') return `Finished. ${only.name} is saved, with files missing.`;
+    return `Finished. ${only.name} is saved.`;
+  });
+
+  const chip = $derived.by(() => {
+    if (!how) return undefined;
+    if (how.profile === 'study') {
+      const tool = AI_TARGETS[how.aiTarget].url ? AI_TARGETS[how.aiTarget].tool : 'Markdown';
+      return { tone: 'chip-sun', icon: 'ai', text: `Study pack · ${tool}` } as const;
+    }
+    if (how.profile === 'agents')
+      return { tone: 'chip-navy', icon: 'code', text: 'Files for code' } as const;
+    if (how.role === 'teacher')
+      return { tone: 'chip-navy', icon: 'teacher', text: 'Course archive' } as const;
+    return { tone: 'chip-red', icon: 'folder', text: 'A copy to keep' } as const;
+  });
+  const only = $derived(courses.length === 1 ? courses[0] : undefined);
 </script>
 
-<main>
-  <header>
-    <h1>
-      {running ? 'Exporting from Canvas' : 'Export finished'}
-    </h1>
-    {#if running}
-      <p class="lead">
-        This tab is doing the work. Keep it open until it finishes; you can use Canvas and other
-        tabs normally.
-      </p>
-    {/if}
+<div class="page">
+  <header class="topbar">
+    <span class="brand"><Logo size={36} /><span class="brand-name">{PRODUCT_NAME}</span></span>
+    <div class="row">
+      {#if chip}<span class="chip {chip.tone}"><Icon name={chip.icon} />{chip.text}</span>{/if}
+      <button type="button" class="btn btn-text btn-sm" onclick={openSettings}>Settings</button>
+    </div>
   </header>
 
-  {#if folderPrompt}
-    <div class="prompt" role="alert">
-      <p>Your browser needs your OK to save into “{folderPrompt.name}”.</p>
-      <button type="button" class="primary" onclick={folderPrompt.allow}>Allow access</button>
-      <button type="button" class="secondary" onclick={folderPrompt.skip}
-        >Save to Downloads instead</button
-      >
-    </div>
-  {/if}
+  <div>
+    <p class="sr-only" role="status">{status}</p>
 
-  <ul class="courses">
-    {#each courses as course (course.id)}
-      <li class="course" data-outcome={course.outcome ?? 'running'}>
-        <h2>{course.name}</h2>
-
-        {#if course.note}<p class="note">{course.note}</p>{/if}
-        {#if course.phase !== 'finished'}
-          <div
-            class="bar"
-            role="progressbar"
-            aria-label={`Progress for ${course.name}`}
-            aria-valuemin="0"
-            aria-valuemax="100"
-            aria-valuenow={percent(course)}
-          >
-            <span style:width={`${percent(course)}%`}></span>
+    {#if folderPrompt}
+      <div class="notice notice-sun folder-prompt" role="alert">
+        <Icon name="folder" />
+        <div class="prompt-body">
+          <p>
+            Your browser will ask to let us save into ‘{folderPrompt.name}’. Choose ‘Allow on every
+            visit’ so it stops asking.
+          </p>
+          <div class="row">
+            <button type="button" class="btn btn-primary btn-sm" onclick={folderPrompt.allow}
+              >Allow access</button
+            >
+            <button type="button" class="btn btn-light btn-sm" onclick={folderPrompt.skip}
+              >Save to Downloads instead</button
+            >
           </div>
-          <p class="status">
-            {#if course.phase === 'saving'}
-              {course.done + course.failed} of {course.total} files ·
-            {/if}
-            <span class="current">{course.message}</span>
-          </p>
-        {:else if course.outcome === 'success'}
-          <p class="result">
-            Saved {course.done} files to {course.savedAs}{#if course.skipped}. {course.skipped}
-              files you already had were skipped{/if}
-          </p>
-        {:else if course.outcome === 'partial'}
-          <p class="result">
-            Saved {course.done} of {course.done + course.failed} files to {course.savedAs}.
-            {course.failed}
-            {course.failed === 1 ? "file couldn't" : "files couldn't"} be downloaded; they're listed in
-            _download_errors.csv.
-          </p>
-          <details>
-            <summary>Show which files</summary>
-            <ul>
-              {#each course.failures as failure (failure.path)}
-                <li><code>{failure.path}</code>: {failure.reason}</li>
-              {/each}
-            </ul>
-          </details>
-        {:else if course.outcome === 'cancelled'}
-          <p class="result">Cancelled.</p>
-        {:else}
-          <p class="result">{course.error ?? 'Nothing could be saved.'}</p>
-        {/if}
-        {#if course.studyPack && course.done > 0 && (course.outcome === 'success' || course.outcome === 'partial')}
-          {@const target = AI_TARGETS[course.studyPack]}
-          {@const unzip = course.savedAs?.endsWith('.zip') ? 'Unzip it, then add' : 'Add'}
-          <p class="next">
-            {#if !target.url}
-              {unzip} the Markdown files to any AI tool or notes app.
-            {:else if (course.packParts ?? 1) > 1}
-              {unzip} each of its {course.packParts} folders to its own {target.unit} in
-              <a href={target.url} target="_blank" rel="noreferrer">{target.tool}</a>.
-            {:else}
-              {unzip} its files to a new {target.unit} in
-              <a href={target.url} target="_blank" rel="noreferrer">{target.tool}</a>.
-            {/if}
-          </p>
-        {/if}
-      </li>
-    {/each}
-  </ul>
+        </div>
+      </div>
+    {/if}
 
-  {#if showSupport && !running}
-    <SupportCard />
-  {/if}
-
-  {#if running}
-    <button type="button" class="secondary" onclick={() => controller.abort()}>Cancel</button>
-  {/if}
-</main>
+    {#if running}
+      <Progress {courses} {active} {secondsLeft} {stopping} onStop={stop} />
+    {:else if only && (only.outcome === 'failed' || only.outcome === 'cancelled')}
+      <NotSaved course={only} />
+    {:else if only?.how.profile === 'study'}
+      <StudyReceipt course={only} {showSupport} />
+    {:else if only?.studentWork?.teacher && only.how.profile === 'copy'}
+      <TeacherReceipt course={only} {isWindows} {showSupport} />
+    {:else if only}
+      <Receipt course={only} {isWindows} {showSupport} />
+    {:else if courses.length}
+      <Several {courses} {showSupport} />
+    {/if}
+  </div>
+</div>
 
 <style>
-  :global(:root) {
-    --bg: #f6f7f9;
-    --surface: #ffffff;
-    --text: #1d2733;
-    --muted: #556270;
-    --border: #d9dee4;
-    --accent: #0b6bcb;
-    --ok: #1d7a43;
-    --warn: #9a5b00;
-    --bad: #b42318;
-    color-scheme: light dark;
+  .row {
+    gap: 14px;
   }
-  @media (prefers-color-scheme: dark) {
-    :global(:root) {
-      --bg: #12161b;
-      --surface: #1b2128;
-      --text: #e6eaef;
-      --muted: #a3adb8;
-      --border: #303943;
-      --accent: #5aa7f0;
-      --ok: #5cc68a;
-      --warn: #e6a64a;
-      --bad: #f2867c;
-    }
+  .folder-prompt {
+    margin: 8px 40px 12px;
   }
-  :global(body) {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font:
-      15px/1.5 system-ui,
-      -apple-system,
-      'Segoe UI',
-      Roboto,
-      sans-serif;
-  }
-  main {
-    max-width: 640px;
-    margin: 48px auto;
-    padding: 0 16px;
-  }
-  h1 {
-    font-size: 24px;
-    margin: 0 0 8px;
-  }
-  .lead {
-    margin: 0;
-    color: var(--muted);
-  }
-  .courses {
-    list-style: none;
-    padding: 0;
-    margin: 24px 0;
+  .prompt-body {
     display: grid;
-    gap: 12px;
-  }
-  .course {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 18px;
-  }
-  .course h2 {
-    font-size: 16px;
-    margin: 0 0 10px;
-  }
-  .bar {
-    height: 8px;
-    border-radius: 4px;
-    background: var(--border);
-    overflow: hidden;
-  }
-  .bar span {
-    display: block;
-    height: 100%;
-    background: var(--accent);
-    transition: width 0.2s;
-  }
-  .status {
-    margin: 8px 0 0;
-    color: var(--muted);
-    font-size: 13px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .result {
-    margin: 0;
-  }
-  .next {
-    margin: 8px 0 0;
-  }
-  [data-outcome='success'] .result {
-    color: var(--ok);
-  }
-  [data-outcome='partial'] .result {
-    color: var(--warn);
-  }
-  [data-outcome='failed'] .result {
-    color: var(--bad);
-  }
-  details {
-    margin-top: 8px;
-    font-size: 13px;
-  }
-  .prompt {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
     gap: 10px;
-    background: var(--surface);
-    border: 1px solid var(--accent);
-    border-radius: 10px;
-    padding: 14px 18px;
-    margin: 16px 0 0;
   }
-  .prompt p {
-    margin: 0;
-    flex-basis: 100%;
+  .prompt-body .row {
+    gap: 10px;
+    flex-wrap: wrap;
   }
-  .note {
-    margin: 0 0 8px;
-    color: var(--warn);
-    font-size: 13px;
-  }
-  button.primary {
-    font: inherit;
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 0;
-    background: var(--accent);
-    color: var(--surface);
-    font-weight: 600;
-    cursor: pointer;
-  }
-  button.secondary {
-    font: inherit;
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-    cursor: pointer;
-  }
-  button:focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 2px;
+  @media (max-width: 1040px) {
+    .folder-prompt {
+      margin: 8px 16px 12px;
+    }
   }
 </style>
