@@ -12,6 +12,7 @@ import { courseIdFromPath, isCanvasPage } from '../../canvas/detect';
 import { onMessage, sendMessage } from '../../messaging';
 import { loadSettings, type Settings } from '../../storage/settings';
 import CoursePicker from './CoursePicker.svelte';
+import { loadCanvasFonts } from './fonts';
 import PageButton from './PageButton.svelte';
 import ProfileQuestion from './ProfileQuestion.svelte';
 import { pageState } from './state.svelte';
@@ -53,13 +54,15 @@ export default defineContentScript({
       // Course pages: next to the breadcrumbs. Dashboard: in its header actions.
       anchor: onDashboard ? '.ic-Dashboard-header__actions' : '.ic-app-nav-toggle-and-crumbs',
       append: 'last',
-      onMount: (container) =>
-        mount(PageButton, {
+      onMount: (container) => {
+        void loadCanvasFonts();
+        return mount(PageButton, {
           target: container,
           props: courseId
             ? { label: 'Download course', onclick: () => startExport([courseId]), showNew: true }
             : { label: 'Download courses', onclick: openPicker },
-        }),
+        });
+      },
       onRemove: (app) => {
         if (app) void unmount(app);
       },
@@ -108,8 +111,9 @@ async function showUpdates(
     position: 'inline',
     anchor: '#dashboard_header_container, .ic-Dashboard-header__layout',
     append: 'after',
-    onMount: (container) =>
-      mount(UpdatesNote, {
+    onMount: (container) => {
+      void loadCanvasFonts();
+      return mount(UpdatesNote, {
         target: container,
         props: {
           updates: pending,
@@ -125,7 +129,8 @@ async function showUpdates(
             void saveUpdateCheck(location.origin, { ...latest, dismissedAt: Date.now() });
           },
         },
-      }),
+      });
+    },
     onRemove: (app) => {
       if (app) void unmount(app);
     },
@@ -143,8 +148,9 @@ async function showPicker(ctx: ContentScriptContext, startExport: StartExport) {
     anchor: 'body',
     // Keep Canvas's keyboard shortcuts from firing while typing in the search box.
     isolateEvents: true,
-    onMount: (container) =>
-      mount(CoursePicker, {
+    onMount: (container) => {
+      void loadCanvasFonts();
+      return mount(CoursePicker, {
         target: container,
         props: {
           origin: location.origin,
@@ -155,7 +161,8 @@ async function showPicker(ctx: ContentScriptContext, startExport: StartExport) {
           },
           onsettings: () => void sendMessage('openOptions'),
         },
-      }),
+      });
+    },
     onRemove: (app) => {
       if (app) void unmount(app);
     },
@@ -176,8 +183,9 @@ async function askProfile(
     position: 'inline',
     anchor: 'body',
     isolateEvents: true,
-    onMount: (container) =>
-      mount(ProfileQuestion, {
+    onMount: (container) => {
+      void loadCanvasFonts();
+      return mount(ProfileQuestion, {
         target: container,
         props: {
           onchoose: (choice: Pick<Settings, 'profile' | 'aiTarget'>) => {
@@ -189,7 +197,8 @@ async function askProfile(
             answer(null);
           },
         },
-      }),
+      });
+    },
     onRemove: (app) => {
       if (app) void unmount(app);
     },
