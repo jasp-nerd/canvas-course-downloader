@@ -29,6 +29,19 @@ describe('TimeLeft', () => {
     expect(left!).toBeLessThan(95);
   });
 
+  it('settles when files come in steady bursts, as a ZIP fetches them four at a time', () => {
+    const estimator = new TimeLeft();
+    estimator.update(0, 0, 54);
+    let left: number | null = null;
+    let done = 0;
+    for (let burst = 1; burst <= 5; burst++)
+      for (let i = 0; i < 4; i++) left = estimator.update(burst * 2500 + i, ++done, 54);
+    // 20 files in 12.5 s: 34 left at 1.6 a second.
+    expect(left).not.toBeNull();
+    expect(left!).toBeGreaterThan(15);
+    expect(left!).toBeLessThan(30);
+  });
+
   it('says nothing while the rate jumps around', () => {
     const estimator = new TimeLeft();
     // A burst, a stall, then a much faster stretch.

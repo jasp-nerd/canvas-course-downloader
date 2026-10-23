@@ -7,38 +7,61 @@ const WINDOW_MS = 20_000;
 const MIN_SPAN_MS = 5_000;
 /** Files that must be saved within the window before the rate counts. */
 const MIN_FILES = 5;
-/** Recent estimates must agree within this factor before one is shown. */
-const STEADY = 1.25;
+/**
+ * The predicted finish times of the last three seconds must lie this close
+ * together, as a share of the time left (or within 3 s), before one is shown.
+ */
+const STEADY = 0.15;
+
+/**
+ * When the line that best fits the samples reaches `total`. A fit, not the
+ * last two points, because files finish in bursts (a ZIP fetches four at once).
+ */
+function fittedFinish(samples: { t: number; done: number }[], total: number): number | null {
+  const mt = samples.reduce((n, s) => n + s.t, 0) / samples.length;
+  const md = samples.reduce((n, s) => n + s.done, 0) / samples.length;
+  let num = 0;
+  let den = 0;
+  for (const s of samples) {
+    num += (s.t - mt) * (s.done - md);
+    den += (s.t - mt) ** 2;
+  }
+  if (den === 0 || num <= 0) return null;
+  return mt + (total - md) / (num / den);
+}
 
 export class TimeLeft {
   private samples: { t: number; done: number }[] = [];
-  private estimates: number[] = [];
-  private shown: number | null = null;
-  private estimatedAt = -Infinity;
+  /** One predicted finish time per second. */
+  private finishes: { t: number; at: number }[] = [];
+  private finishAt: number | null = null;
 
   /** Seconds left, or null while the rate isn't known well enough. */
   update(now: number, done: number, total: number): number | null {
     if (done >= total) return 0;
-    this.samples.push({ t: now, done });
-    while (this.samples.length > 2 && now - this.samples[1]!.t >= WINDOW_MS) this.samples.shift();
-    const first = this.samples[0]!;
-    const span = now - first.t;
-    if (span < MIN_SPAN_MS || done - first.done < MIN_FILES) return this.shown;
-    // Files often finish in bursts: one estimate a second at most.
-    if (now - this.estimatedAt < 1000) return this.shown;
-    this.estimatedAt = now;
-    const estimate = (total - done) / ((done - first.done) / span) / 1000;
-    this.estimates = [...this.estimates.slice(-2), estimate];
-    const steady =
-      this.estimates.length === 3 &&
-      Math.max(...this.estimates) <= STEADY * Math.min(...this.estimates);
-    if (this.shown === null) {
-      if (steady) this.shown = estimate;
-    } else {
-      // Smoothed, so the number doesn't jump with every file.
-      this.shown = this.shown * 0.7 + estimate * 0.3;
+    // The wait for the first file is getting started, not the rate: measure from there.
+    if (done === 0) return null;
+    const last = this.samples.at(-1);
+    if (!last || done > last.done) this.samples.push({ t: now, done });
+    while (this.samples.length > 2 && now - this.samples[0]!.t > WINDOW_MS) this.samples.shift();
+    const enough = this.samples.length >= MIN_FILES && now - this.samples[0]!.t >= MIN_SPAN_MS;
+    const finish = enough ? fittedFinish(this.samples, total) : null;
+    if (finish !== null) {
+      const latest = this.finishes.at(-1);
+      if (latest && now - latest.t < 1000) {
+        latest.at = finish;
+      } else {
+        this.finishes = [...this.finishes.slice(-2), { t: now, at: finish }];
+        // Smoothed, so the number doesn't jump with every file.
+        if (this.finishAt !== null) this.finishAt = this.finishAt * 0.7 + finish * 0.3;
+      }
+      if (this.finishAt === null && this.finishes.length === 3) {
+        const times = this.finishes.map((f) => f.at);
+        const spread = Math.max(...times) - Math.min(...times);
+        if (spread <= Math.max(STEADY * (finish - now), 3000)) this.finishAt = finish;
+      }
     }
-    return this.shown;
+    return this.finishAt === null ? null : Math.max(0, (this.finishAt - now) / 1000);
   }
 }
 
