@@ -19,7 +19,9 @@ A rewrite of the whole extension. Your settings and the list of files you alread
 - **Canvas's own course package for teachers.** Optionally, a teacher's copy also brings the `.imscc` file Canvas builds for re-importing a course, next to the readable copy. Off by default.
 - **More than new files.** The check for courses you saved before also counts new announcements and pages and assignments that changed since.
 - **A short setup** for new users: what downloads should be and how to save them. Whoever skips it gets one question at the first download instead. People updating from 2.x aren't asked anything.
-- A refreshed course picker and settings page. The settings, popup and export tab follow your system's dark mode.
+- **A new look** with its own colours, typefaces and a mascot (Pip, a red squirrel) on the extension's own pages. The button on Canvas keeps your school's colour and now carries our logo. The setup, course picker, popup and settings are redesigned.
+- **A Download tab you can watch.** The logo's dots fill as files save, also on the browser tab and the toolbar button. It ends in a receipt: what's inside, what's missing and why, Show in folder, and the next step for a study pack or files for code.
+- **Fewer surprises when saving.** If your browser asks where to save every file, a closed window stops the download instead of opening hundreds more, and you're told how to turn that off. Files the browser holds back as possibly harmful are listed with how to keep them.
 
 ### Fixed
 
