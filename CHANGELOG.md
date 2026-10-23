@@ -14,7 +14,7 @@ A rewrite of the whole extension. Your settings and the list of files you alread
 - **New files on your dashboard.** Courses you downloaded before show how many files are new, with a button to download only those. Optionally, they download automatically when you open Canvas.
 - **Study packs for AI.** A download can be a pack for NotebookLM, ChatGPT or Claude: a course guide with deadlines and grading, one Markdown file per module, and the slides and PDFs, split into several notebooks or projects when a course has too many files. It never contains other students' work.
 - **Files for coding agents.** A Markdown copy with front matter on every page, plus `AGENTS.md`, `llms.txt` and `course.json`.
-- **A welcome page** for new users, and one question at the first download about what downloads should be. People updating from 2.x aren't asked anything.
+- **A short setup** for new users: what downloads should be and how to save them. Whoever skips it gets one question at the first download instead. People updating from 2.x aren't asked anything.
 - A refreshed course picker and settings page. The settings, popup and export tab follow your system's dark mode.
 
 ### Fixed
