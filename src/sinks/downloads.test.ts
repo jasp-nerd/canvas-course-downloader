@@ -4,7 +4,12 @@ import { downloadBlob, downloadsSink, mimeTypeFor } from './downloads';
 /** A downloads API that finishes each download when the test says so. */
 function fakeDownloads() {
   const listeners = new Set<
-    (d: { id: number; state?: { current?: string }; error?: { current?: string } }) => void
+    (d: {
+      id: number;
+      state?: { current?: string };
+      error?: { current?: string };
+      danger?: { current?: string };
+    }) => void
   >();
   const started: { id: number; url: string; filename?: string; saveAs?: boolean }[] = [];
   let nextId = 1;
@@ -23,7 +28,11 @@ function fakeDownloads() {
     for (const l of [...listeners])
       l({ id, state: { current: state }, ...(error ? { error: { current: error } } : {}) });
   };
-  return { api, started, finish };
+  /** Chrome holds a file it thinks may be dangerous until the user presses Keep. */
+  const hold = (id: number) => {
+    for (const l of [...listeners]) l({ id, danger: { current: 'file' } });
+  };
+  return { api, started, finish, hold };
 }
 
 describe('downloadsSink', () => {
@@ -109,6 +118,45 @@ describe('downloadsSink', () => {
     fake.finish(1, 'complete');
     fake.finish(2, 'complete');
     await sink.close();
+  });
+});
+
+describe('downloadsSink and the browser asking questions', () => {
+  it('stops after a save window is closed, instead of opening one for every file', async () => {
+    const fake = fakeDownloads();
+    const sink = downloadsSink({
+      folder: '',
+      conflictAction: 'uniquify',
+      downloads: fake.api as never,
+      concurrency: 1,
+    });
+    const first = sink.writeUrl!('a.pdf', 'https://x/a');
+    const rest = [sink.writeUrl!('b.pdf', 'https://x/b'), sink.writeUrl!('c.pdf', 'https://x/c')];
+    await first;
+    fake.finish(1, 'interrupted', 'USER_CANCELED');
+    await Promise.all(rest);
+    expect(fake.started).toHaveLength(1);
+    await expect(sink.close()).resolves.toEqual([
+      { path: 'a.pdf', reason: 'USER_CANCELED' },
+      { path: 'b.pdf', reason: 'SKIPPED_AFTER_CANCEL' },
+      { path: 'c.pdf', reason: 'SKIPPED_AFTER_CANCEL' },
+    ]);
+  });
+
+  it("doesn't wait for a file the browser holds until the user allows it", async () => {
+    const fake = fakeDownloads();
+    const sink = downloadsSink({
+      folder: '',
+      conflictAction: 'uniquify',
+      downloads: fake.api as never,
+      concurrency: 1,
+    });
+    await sink.writeUrl!('script.py', 'https://x/py');
+    fake.hold(1);
+    await sink.writeUrl!('notes.pdf', 'https://x/pdf');
+    expect(fake.started).toHaveLength(2);
+    fake.finish(2, 'complete');
+    await expect(sink.close()).resolves.toEqual([{ path: 'script.py', reason: 'HELD_BY_BROWSER' }]);
   });
 });
 

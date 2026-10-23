@@ -8,7 +8,30 @@
 
   const failed = $derived(course.failures.length);
   const skipped = $derived(course.skipped);
+  const asked = $derived(course.failures.some((f) => f.reason === 'USER_CANCELED'));
+  const held = $derived(course.failures.filter((f) => f.reason === 'HELD_BY_BROWSER').length);
 </script>
+
+{#if asked && !course.how.zip}
+  <div class="notice notice-sun">
+    <Icon name="info" />
+    <span
+      >Your browser asked where to save a file and the window was closed, so the rest weren't saved.
+      If it asks for every file, turn off "Ask where to save each file" in its download settings, or
+      choose "One ZIP per course" in Settings, which asks at most once.</span
+    >
+  </div>
+{/if}
+{#if held}
+  <div class="notice notice-sun">
+    <Icon name="info" />
+    <span
+      >Your browser is holding {held === 1 ? '1 file' : `${held} files`} it thinks could be harmful, such
+      as code files. Open its downloads list (Ctrl+J, or Cmd+Shift+J on a Mac) and choose Keep, or save
+      the course as one ZIP.</span
+    >
+  </div>
+{/if}
 
 {#if failed}
   <div class="notice notice-sun">

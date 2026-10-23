@@ -18,6 +18,9 @@ export const mimeTypeFor = (path: string) =>
 
 type DownloadsApi = Pick<typeof browser.downloads, 'download' | 'onChanged'>;
 
+/** Danger states that let a download go on by itself. */
+const SAFE = new Set(['safe', 'accepted', 'allowlistedByPolicy', 'deepScannedSafe']);
+
 interface Options {
   /** Folder inside Downloads, ending in "/", e.g. "Canvas/Linear Algebra/". */
   folder: string;
@@ -39,22 +42,46 @@ export function downloadsSink(options: Options): FileSink {
   let active = 0;
   const finished: Promise<void>[] = [];
 
-  const listener = (delta: Browser.downloads.DownloadDelta) => {
-    const job = running.get(delta.id);
-    const state = delta.state?.current;
-    if (!job || (state !== 'complete' && state !== 'interrupted')) return;
-    if (state === 'interrupted')
-      failures.push({ path: job.path, reason: delta.error?.current ?? 'interrupted' });
+  // A closed save window: with "Ask where to save each file" on, Chromium asks for every
+  // file even with saveAs: false. One "no" stops the rest instead of opening hundreds more.
+  let cancelled = false;
+  const release = (id: number, job: { path: string; done: () => void; blobUrl?: string }) => {
     if (job.blobUrl) URL.revokeObjectURL(job.blobUrl);
-    running.delete(delta.id);
+    running.delete(id);
     active--;
     job.done();
     waiting.shift()?.();
+  };
+  const listener = (delta: Browser.downloads.DownloadDelta) => {
+    const job = running.get(delta.id);
+    if (!job) return;
+    // Chromium holds files it thinks may be harmful (.py, .jar, ...) until the user presses
+    // Keep. Don't wait on them: they'd take up every download slot and stall the export.
+    const danger = delta.danger?.current;
+    if (danger && !SAFE.has(danger)) {
+      failures.push({ path: job.path, reason: 'HELD_BY_BROWSER' });
+      release(delta.id, job);
+      return;
+    }
+    const state = delta.state?.current;
+    if (state !== 'complete' && state !== 'interrupted') return;
+    if (state === 'interrupted') {
+      const reason = delta.error?.current ?? 'interrupted';
+      if (reason === 'USER_CANCELED') cancelled = true;
+      failures.push({ path: job.path, reason });
+    }
+    release(delta.id, job);
   };
   downloads.onChanged.addListener(listener);
 
   async function start(path: string, url: string, blobUrl?: string) {
     while (active >= limit) await new Promise<void>((r) => waiting.push(r));
+    if (cancelled) {
+      failures.push({ path, reason: 'SKIPPED_AFTER_CANCEL' });
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+      waiting.shift()?.();
+      return;
+    }
     active++;
     let done!: () => void;
     finished.push(new Promise<void>((r) => (done = r)));

@@ -36,6 +36,9 @@ export function reasonText(reason: string): string {
     'no-media-sources': 'The video is still processing, or Canvas offers no download',
     transient: 'Connection problem',
     throttled: 'Canvas kept asking us to slow down',
+    USER_CANCELED: 'The save window was closed',
+    SKIPPED_AFTER_CANCEL: 'Not saved after a save window was closed',
+    HELD_BY_BROWSER: 'Held by your browser until you allow it',
   };
   const code = /\d{3}/.exec(reason)?.[0];
   const plain = (code ? words[code] : undefined) ?? words[reason];
