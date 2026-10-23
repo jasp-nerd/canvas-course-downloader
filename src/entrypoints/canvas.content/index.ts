@@ -8,6 +8,7 @@ import {
   type UpdateCheck,
 } from '../../app/updates';
 import { createCanvasClient } from '../../canvas/client';
+import type { CourseSummary } from '../../canvas/courses';
 import { courseIdFromPath, isCanvasPage } from '../../canvas/detect';
 import { onMessage, sendMessage } from '../../messaging';
 import { loadSettings, type Settings } from '../../storage/settings';
@@ -45,6 +46,19 @@ export default defineContentScript({
 
     onMessage('downloadCurrent', () => (courseId ? startExport([courseId]) : openPicker()));
     onMessage('pageInfo', () => ({ origin: location.origin, courseId }));
+    onMessage('courseInfo', async () => {
+      if (!courseId) return null;
+      const course = await createCanvasClient({ origin: location.origin }).get<CourseSummary>(
+        `/courses/${courseId}`,
+        { 'include[]': 'term' },
+      );
+      const term = course.term?.name ?? '';
+      return {
+        name: course.name,
+        code: course.course_code ?? '',
+        term: /^default term$/i.test(term) ? '' : term,
+      };
+    });
     onMessage('openPicker', openPicker);
 
     const button = await createShadowRootUi(ctx, {

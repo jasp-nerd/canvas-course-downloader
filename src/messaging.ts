@@ -11,6 +11,15 @@ export interface StartExportRequest {
   quiet?: boolean;
 }
 
+/** A course as the toolbar popup shows it. */
+export interface CourseInfo {
+  name: string;
+  /** e.g. "MATH 221"; "" when Canvas has none. */
+  code: string;
+  /** e.g. "Fall 2026"; "" for Canvas's catch-all "Default Term". */
+  term: string;
+}
+
 export interface PageInfo {
   origin: string;
   /** Set on course pages. */
@@ -26,6 +35,8 @@ interface ProtocolMap {
   openOptions(): void;
   /** Popup → content script: what Canvas page is this? Only Canvas pages answer. */
   pageInfo(): PageInfo;
+  /** Popup → content script: name, code and term of the course this page is in. */
+  courseInfo(): CourseInfo | null;
   /** Popup → content script: open the course picker. */
   openPicker(): void;
   /** Content script → background: the number on the toolbar icon for this tab ("" clears it). */
