@@ -149,6 +149,14 @@ export function shortPath(full: string, depth: number): string {
   return parts.slice(-(depth + 2)).join(separator);
 }
 
+/** "Saved today at 14:05", in the user's own way of writing times. */
+export function savedWhen(at: Date, now: Date, locale?: string): string {
+  const time = at.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
+  if (at.toDateString() === now.toDateString()) return `Saved today at ${time}`;
+  const day = at.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+  return `Saved on ${day} at ${time}`;
+}
+
 /** The folder a file was saved under, from its full path and its path inside that folder. */
 export function folderOf(full: string, relative: string): string {
   const separator = full.includes('\\') ? '\\' : '/';

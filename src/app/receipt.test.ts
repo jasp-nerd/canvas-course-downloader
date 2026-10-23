@@ -6,9 +6,22 @@ import {
   formatDuration,
   folderOf,
   kindOf,
+  savedWhen,
   settleKinds,
   shortPath,
 } from './receipt';
+
+describe('savedWhen', () => {
+  const at = new Date(2026, 9, 23, 14, 5);
+  it('says today, with the time', () => {
+    expect(savedWhen(at, new Date(2026, 9, 23, 18, 0), 'en-GB')).toBe('Saved today at 14:05');
+    expect(savedWhen(at, new Date(2026, 9, 23, 18, 0), 'en-US')).toBe('Saved today at 2:05 PM');
+  });
+
+  it('gives the date when the page is still open on a later day', () => {
+    expect(savedWhen(at, new Date(2026, 9, 24, 9, 0), 'en-GB')).toBe('Saved on 23 Oct at 14:05');
+  });
+});
 
 describe('kindOf', () => {
   it('groups a copy by its top-level folder', () => {
