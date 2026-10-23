@@ -40,11 +40,11 @@ test('the dashboard says when a saved course has new files, and downloads just t
 
   await page.goto(`${CANVAS}/`);
   const note = page.getByRole('status').filter({ hasText: 'since your last download' });
-  await expect(note).toContainText('1 new file');
+  await expect(note).toContainText('1 new file since your last download');
   await expect(note).toContainText('Academic Writing (1)');
 
   const next = page.context().waitForEvent('page');
-  await note.getByRole('button', { name: 'Download new files' }).click();
+  await note.getByRole('button', { name: 'Download 1 new file' }).click();
   const tab = await next;
   await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
     timeout: 60_000,
@@ -55,6 +55,23 @@ test('the dashboard says when a saved course has new files, and downloads just t
   ]);
   await tab.close();
 
+  await page.reload();
+  await page.getByRole('button', { name: 'Download courses' }).waitFor();
+  await expect(page.getByText('since your last download')).toHaveCount(0);
+});
+
+test('dismissing the note keeps it away until there is newer news', async ({
+  page,
+  serviceWorker,
+  mock,
+}) => {
+  await resetExtensionStorage(serviceWorker, {});
+  await exportCourse(page, 104);
+  mock.state.newFileIn = [104];
+  await page.goto(`${CANVAS}/`);
+  const note = page.getByRole('status').filter({ hasText: 'since your last download' });
+  await note.getByRole('button', { name: 'Dismiss' }).click();
+  await expect(note).toHaveCount(0);
   await page.reload();
   await page.getByRole('button', { name: 'Download courses' }).waitFor();
   await expect(page.getByText('since your last download')).toHaveCount(0);
