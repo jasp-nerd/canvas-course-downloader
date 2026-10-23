@@ -40,11 +40,11 @@ test('the dashboard says when a saved course has new files, and downloads just t
 
   await page.goto(`${CANVAS}/`);
   const note = page.getByRole('status').filter({ hasText: 'since your last download' });
-  await expect(note).toContainText('1 new file');
+  await expect(note).toContainText('1 new file since your last download');
   await expect(note).toContainText('Academic Writing (1)');
 
   const next = page.context().waitForEvent('page');
-  await note.getByRole('button', { name: 'Download new files' }).click();
+  await note.getByRole('button', { name: 'Download 1 new file' }).click();
   const tab = await next;
   await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
     timeout: 60_000,
@@ -60,12 +60,38 @@ test('the dashboard says when a saved course has new files, and downloads just t
   await expect(page.getByText('since your last download')).toHaveCount(0);
 });
 
-test('the course button says how many files are new', async ({ page, serviceWorker, mock }) => {
+test('dismissing the note keeps it away until there is newer news', async ({
+  page,
+  serviceWorker,
+  mock,
+}) => {
+  await resetExtensionStorage(serviceWorker, {});
+  await exportCourse(page, 104);
+  mock.state.newFileIn = [104];
+  await page.goto(`${CANVAS}/`);
+  const note = page.getByRole('status').filter({ hasText: 'since your last download' });
+  await note.getByRole('button', { name: 'Dismiss' }).click();
+  await expect(note).toHaveCount(0);
+  await page.reload();
+  await page.getByRole('button', { name: 'Download courses' }).waitFor();
+  await expect(page.getByText('since your last download')).toHaveCount(0);
+});
+
+test('next to the course button, a chip says how many files are new since the last save', async ({
+  page,
+  serviceWorker,
+  mock,
+}) => {
   await resetExtensionStorage(serviceWorker, {});
   await exportCourse(page, 104);
   mock.state.newFileIn = [104];
   await page.goto(`${CANVAS}/courses/104`);
-  await expect(page.getByRole('button', { name: 'Download course (1 new)' })).toBeVisible();
+  const button = page.getByRole('button', { name: 'Download course', exact: true });
+  // Saved a moment ago: "yesterday" only when the test runs across midnight.
+  const chip = /^1 new since (earlier today|yesterday)$/;
+  await expect(page.getByText(chip)).toBeVisible();
+  // Screen readers hear it with the button.
+  await expect(button).toHaveAccessibleDescription(/1 new since/);
 });
 
 test('downloads new files on its own when that is switched on', async ({

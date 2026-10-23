@@ -4,6 +4,7 @@ import type { CourseInventory } from '../storage/inventory';
 import type { Settings } from '../storage/settings';
 import { AI_TARGETS } from '../export/study-pack';
 import type { UpdateCheck } from './updates';
+import { newItems } from './updates';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -56,8 +57,10 @@ export interface SavedCourseRow {
   courseId: string;
   courseName: string;
   savedAt: number;
-  /** From the last update check; null when it hasn't looked at this course. */
+  /** New files, announcements and updated pages from the last update check; null when it hasn't looked. */
   newFiles: number | null;
+  /** Something besides files changed, so "new files" would undersell it. */
+  moreThanFiles: boolean;
 }
 
 /** Courses saved before, most recent first, with what the last update check found. */
@@ -69,10 +72,14 @@ export function savedCourseRows(
   return [...saved]
     .sort((a, b) => b.savedAt - a.savedAt)
     .slice(0, limit)
-    .map(({ courseId, courseName, savedAt }) => ({
-      courseId,
-      courseName,
-      savedAt,
-      newFiles: check?.courses.find((c) => c.courseId === courseId)?.newFiles ?? null,
-    }));
+    .map(({ courseId, courseName, savedAt }) => {
+      const update = check?.courses.find((c) => c.courseId === courseId);
+      return {
+        courseId,
+        courseName,
+        savedAt,
+        newFiles: update ? newItems(update) : null,
+        moreThanFiles: !!(update?.newAnnouncements || update?.changedDocuments),
+      };
+    });
 }

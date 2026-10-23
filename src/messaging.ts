@@ -26,6 +26,16 @@ export interface PageInfo {
   courseId: string | null;
 }
 
+/** One of our typefaces, for the FontFace API on Canvas pages. */
+export interface FontData {
+  family: string;
+  /** A weight range, e.g. "300 900": the files are variable fonts. */
+  weight: string;
+  unicodeRange: string;
+  /** The woff2 file, base64: Chrome's runtime messages are JSON. */
+  data: string;
+}
+
 interface ProtocolMap {
   /** Content script → background: open the Export tab for these courses. */
   startExport(data: StartExportRequest): void;
@@ -41,6 +51,8 @@ interface ProtocolMap {
   openPicker(): void;
   /** Content script → background: the number on the toolbar icon for this tab ("" clears it). */
   setBadge(text: string): void;
+  /** Content script → background: our typefaces, which Canvas pages can't load from the extension. */
+  fontData(): FontData[];
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<ProtocolMap>();

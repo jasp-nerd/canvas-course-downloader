@@ -1,68 +1,67 @@
 <script lang="ts">
-  import type { CourseUpdate } from '../../app/updates';
+  import {
+    describeNew,
+    downloadNewLabel,
+    newItems,
+    totalNew,
+    type CourseUpdate,
+  } from '../../app/updates';
+  import Icon from '../../ui/Icon.svelte';
+  import Logo from '../../ui/Logo.svelte';
 
   let {
     updates,
     ondownload,
     ondismiss,
   }: { updates: CourseUpdate[]; ondownload: () => void; ondismiss: () => void } = $props();
-  const total = $derived(updates.reduce((n, c) => n + c.newFiles, 0));
+  const total = $derived(totalNew(updates));
 </script>
 
-<div class="note" role="status">
+<div class="cd note" role="status">
+  <Logo size={28} />
   <p>
-    <strong>{total} new {total === 1 ? 'file' : 'files'}</strong> since your last download:
-    {updates.map((c) => `${c.courseName} (${c.newFiles})`).join(', ')}
+    <strong>{describeNew(total)} since your last download</strong>
+    <span>{updates.map((c) => `${c.courseName} (${newItems(c)})`).join(', ')}</span>
   </p>
-  <button type="button" class="primary" onclick={ondownload}>Download new files</button>
-  <button type="button" class="dismiss" aria-label="Dismiss" onclick={ondismiss}>×</button>
+  <button type="button" class="btn btn-primary btn-sm" onclick={ondownload}>
+    <Icon name="download" size={18} />{downloadNewLabel(total)}
+  </button>
+  <button type="button" class="icon-btn" aria-label="Dismiss" onclick={ondismiss}>
+    <Icon name="x" />
+  </button>
 </div>
 
 <style>
+  /* Canvas's dashboard header sits above; px, as rem follows Canvas's root size. */
   .note {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin: 0 0 16px;
-    padding: 10px 14px;
-    border: 1px solid #b9d5f2;
-    background: #eef6fd;
-    color: #1d2733;
-    border-radius: 8px;
-    font:
-      14px/1.4 system-ui,
-      -apple-system,
-      'Segoe UI',
-      Roboto,
-      sans-serif;
+    gap: 14px;
+    margin: 0 0 24px;
+    padding: 12px 12px 12px 16px;
+    border-radius: var(--r-choice);
+    background: var(--mint-wash);
+    color: #0f4c32;
+    font-size: 14px;
+    line-height: 1.45;
   }
   p {
-    margin: 0;
     flex: 1;
+    min-width: 0;
   }
-  .primary {
-    border: 0;
-    border-radius: 6px;
-    padding: 7px 12px;
-    background: #0b5cad;
-    color: #ffffff;
-    font: 600 14px/1.2 inherit;
-    font-family: inherit;
-    cursor: pointer;
-    white-space: nowrap;
+  strong {
+    display: block;
+    font-weight: 700;
   }
-  .dismiss {
-    border: 0;
-    background: none;
-    font-size: 20px;
-    line-height: 1;
-    color: #556270;
-    cursor: pointer;
-    padding: 2px 6px;
-    border-radius: 4px;
+  p span {
+    display: block;
+    font-size: 13px;
   }
-  button:focus-visible {
-    outline: 3px solid #0b5cad;
-    outline-offset: 2px;
+  .icon-btn {
+    color: #0f4c32;
+  }
+  .icon-btn:hover {
+    background: rgba(255, 255, 255, 0.6);
+    color: #0f4c32;
   }
 </style>

@@ -1,24 +1,37 @@
 import { createShadowRootUi, defineContentScript, type ContentScriptContext } from '#imports';
 import { mount, unmount } from 'svelte';
-import { answerProfile, shouldAskProfile } from '../../app/onboarding';
+import { browser } from 'wxt/browser';
+import { answerProfile, shouldAskProfile, type ProfileAnswer } from '../../app/onboarding';
 import {
+  newItems,
   checkForUpdates,
   pendingUpdates,
   saveUpdateCheck,
   type UpdateCheck,
 } from '../../app/updates';
 import { createCanvasClient } from '../../canvas/client';
-import type { CourseSummary } from '../../canvas/courses';
+import { teaches, type CourseSummary } from '../../canvas/courses';
 import { courseIdFromPath, isCanvasPage } from '../../canvas/detect';
 import { onMessage, sendMessage } from '../../messaging';
-import { loadSettings, type Settings } from '../../storage/settings';
+import { loadInventory } from '../../storage/inventory';
+import { loadSettings } from '../../storage/settings';
+// With cssInjectionMode 'ui', WXT puts these (and the components' styles) in
+// each of our shadow roots, never in the Canvas page itself.
+import '../../ui/theme.css';
+import './base.css';
 import CoursePicker from './CoursePicker.svelte';
+import { loadCanvasFonts } from './fonts';
 import PageButton from './PageButton.svelte';
 import ProfileQuestion from './ProfileQuestion.svelte';
 import { pageState } from './state.svelte';
 import UpdatesNote from './UpdatesNote.svelte';
 
-type StartExport = (courseIds: string[], options?: { onlyNew?: boolean; quiet?: boolean }) => void;
+type StartExport = (
+  courseIds: string[],
+  options?: { onlyNew?: boolean; quiet?: boolean },
+  /** How many of the courses the user teaches, when the caller knows. */
+  taught?: number,
+) => void;
 
 export default defineContentScript({
   // Canvas runs on schools' own domains (canvas.vu.nl, ...), so this matches every
@@ -28,13 +41,19 @@ export default defineContentScript({
   cssInjectionMode: 'ui',
   async main(ctx) {
     if (!isCanvasPage(document, location.hostname)) return;
+    // Our own pages offer "Go to <school>" from this. One write per page load:
+    // Canvas's in-page navigation doesn't run the script again.
+    void browser.storage.local.set({ lastCanvas: { origin: location.origin, at: Date.now() } });
 
-    const startExport: StartExport = (courseIds, options = {}) =>
+    const startExport: StartExport = (courseIds, options = {}, taught) =>
       void (async () => {
         // A new user chooses what downloads should be, once, before the first one.
         // Downloads of only what's new add to a copy, so they don't ask.
         if (!options.quiet && !options.onlyNew && (await shouldAskProfile())) {
-          const choice = await askProfile(ctx);
+          const choice = await askProfile(ctx, {
+            courses: courseIds.length,
+            taught: taught ?? (await teachesCourse(courseIds[0]!)),
+          });
           if (!choice) return;
           await answerProfile(choice);
         }
@@ -67,13 +86,24 @@ export default defineContentScript({
       // Course pages: next to the breadcrumbs. Dashboard: in its header actions.
       anchor: onDashboard ? '.ic-Dashboard-header__actions' : '.ic-app-nav-toggle-and-crumbs',
       append: 'last',
-      onMount: (container) =>
-        mount(PageButton, {
+      onMount: (container) => {
+        void loadCanvasFonts();
+        return mount(PageButton, {
           target: container,
           props: courseId
-            ? { label: 'Download course', onclick: () => startExport([courseId]), showNew: true }
-            : { label: 'Download courses', onclick: openPicker },
-        }),
+            ? {
+                label: 'Download course',
+                hint: 'Course Downloader: save this course to your computer',
+                onclick: () => startExport([courseId]),
+                showNew: true,
+              }
+            : {
+                label: 'Download courses',
+                hint: 'Course Downloader: save courses to your computer',
+                onclick: openPicker,
+              },
+        });
+      },
       onRemove: (app) => {
         if (app) void unmount(app);
       },
@@ -85,7 +115,7 @@ export default defineContentScript({
   },
 });
 
-/** The "what's new" check for courses saved before: badge, button label, dashboard note, auto-download. */
+/** The "what's new" check for courses saved before: badge, "N new" chip, dashboard note, auto-download. */
 async function showUpdates(
   ctx: ContentScriptContext,
   page: { courseId: string | null; onDashboard: boolean; startExport: StartExport },
@@ -96,10 +126,17 @@ async function showUpdates(
   } catch {
     return; // Signed out, or Canvas is busy; try again on the next page.
   }
+  pageState.newByCourse = Object.fromEntries(
+    (check?.courses ?? []).map((c) => [c.courseId, newItems(c)]),
+  );
   const pending = pendingUpdates(check);
-  const total = pending.reduce((n, c) => n + c.newFiles, 0);
+  const total = pending.reduce((n, c) => n + newItems(c), 0);
   void sendMessage('setBadge', total ? String(total) : '');
-  pageState.newFiles = pending.find((c) => c.courseId === page.courseId)?.newFiles ?? 0;
+  const here = pending.find((c) => c.courseId === page.courseId);
+  if (here) {
+    pageState.savedAt = (await loadInventory(location.origin, here.courseId))?.savedAt ?? 0;
+    pageState.newFiles = newItems(here);
+  }
   if (!check || pending.length === 0) return;
 
   const settings = await loadSettings();
@@ -122,8 +159,9 @@ async function showUpdates(
     position: 'inline',
     anchor: '#dashboard_header_container, .ic-Dashboard-header__layout',
     append: 'after',
-    onMount: (container) =>
-      mount(UpdatesNote, {
+    onMount: (container) => {
+      void loadCanvasFonts();
+      return mount(UpdatesNote, {
         target: container,
         props: {
           updates: pending,
@@ -139,7 +177,8 @@ async function showUpdates(
             void saveUpdateCheck(location.origin, { ...latest, dismissedAt: Date.now() });
           },
         },
-      }),
+      });
+    },
     onRemove: (app) => {
       if (app) void unmount(app);
     },
@@ -157,19 +196,21 @@ async function showPicker(ctx: ContentScriptContext, startExport: StartExport) {
     anchor: 'body',
     // Keep Canvas's keyboard shortcuts from firing while typing in the search box.
     isolateEvents: true,
-    onMount: (container) =>
-      mount(CoursePicker, {
+    onMount: (container) => {
+      void loadCanvasFonts();
+      return mount(CoursePicker, {
         target: container,
         props: {
           origin: location.origin,
           onclose: () => picker.remove(),
-          ondownload: (courseIds: string[]) => {
+          ondownload: (courseIds: string[], taught: number) => {
             picker.remove();
-            startExport(courseIds);
+            startExport(courseIds, {}, taught);
           },
           onsettings: () => void sendMessage('openOptions'),
         },
-      }),
+      });
+    },
     onRemove: (app) => {
       if (app) void unmount(app);
     },
@@ -177,24 +218,42 @@ async function showPicker(ctx: ContentScriptContext, startExport: StartExport) {
   picker.mount();
 }
 
+/** 1 when the user teaches this course, else 0. One request, the same check the export makes. */
+async function teachesCourse(courseId: string): Promise<number> {
+  try {
+    const canvas = createCanvasClient({ origin: location.origin });
+    const course = await canvas.get<CourseSummary>(`/courses/${courseId}`, {
+      'include[]': 'enrollments',
+    });
+    return teaches(course) ? 1 : 0;
+  } catch {
+    // Canvas is busy or the user signed out: ask without the teacher's part.
+    // The export itself checks again, and Settings has the switch too.
+    return 0;
+  }
+}
+
 /** The first-download question, over the Canvas page. Resolves null when it's closed. */
 async function askProfile(
   ctx: ContentScriptContext,
-): Promise<Pick<Settings, 'profile' | 'aiTarget'> | null> {
-  let answer!: (choice: Pick<Settings, 'profile' | 'aiTarget'> | null) => void;
-  const answered = new Promise<Pick<Settings, 'profile' | 'aiTarget'> | null>(
-    (resolve) => (answer = resolve),
-  );
+  download: { courses: number; taught: number },
+): Promise<ProfileAnswer | null> {
+  let answer!: (choice: ProfileAnswer | null) => void;
+  const answered = new Promise<ProfileAnswer | null>((resolve) => (answer = resolve));
+  const { includeStudentWork } = await loadSettings();
   const ui = await createShadowRootUi(ctx, {
     name: 'ccd-profile-question',
     position: 'inline',
     anchor: 'body',
     isolateEvents: true,
-    onMount: (container) =>
-      mount(ProfileQuestion, {
+    onMount: (container) => {
+      void loadCanvasFonts();
+      return mount(ProfileQuestion, {
         target: container,
         props: {
-          onchoose: (choice: Pick<Settings, 'profile' | 'aiTarget'>) => {
+          ...download,
+          includeStudentWork,
+          onchoose: (choice: ProfileAnswer) => {
             ui.remove();
             answer(choice);
           },
@@ -203,7 +262,8 @@ async function askProfile(
             answer(null);
           },
         },
-      }),
+      });
+    },
     onRemove: (app) => {
       if (app) void unmount(app);
     },

@@ -1,6 +1,7 @@
 // Builds the full plan for one course export: what to fetch, what to render,
 // where everything goes, and what couldn't be captured.
 import type { CanvasClient } from '../canvas/client';
+import { TEACHER_ROLES } from '../canvas/courses';
 import { renderCourseIndex } from '../export/course-index';
 import { renderIcs, type CalendarEvent } from '../export/calendar';
 import { sanitizeFilename } from '../export/filenames';
@@ -50,7 +51,6 @@ import type {
   PreviousExport,
 } from './types';
 
-const TEACHER_ROLES = new Set(['teacher', 'ta', 'designer']);
 /** Course text that linked files are found in. */
 const LINK_SOURCES: ContentType[] = [
   'pages',

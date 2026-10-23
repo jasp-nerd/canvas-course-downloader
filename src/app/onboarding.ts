@@ -50,8 +50,16 @@ export async function shouldAskProfile(): Promise<boolean> {
   return local[ASK_PROFILE] === true && sync.profile === undefined;
 }
 
-export async function answerProfile(choice: Pick<Settings, 'profile' | 'aiTarget'>): Promise<void> {
-  await saveSettings(choice.profile === 'study' ? choice : { profile: choice.profile });
+/** The answer to the first-download question. Teachers also say whether students' work goes in. */
+export type ProfileAnswer = Pick<Settings, 'profile' | 'aiTarget'> &
+  Partial<Pick<Settings, 'includeStudentWork'>>;
+
+export async function answerProfile(choice: ProfileAnswer): Promise<void> {
+  const { includeStudentWork, ...kind } = choice;
+  await saveSettings({
+    ...(kind.profile === 'study' ? kind : { profile: kind.profile }),
+    ...(includeStudentWork === undefined ? {} : { includeStudentWork }),
+  });
   await browser.storage.local.remove(ASK_PROFILE);
 }
 

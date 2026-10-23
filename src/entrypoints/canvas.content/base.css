@@ -1,0 +1,62 @@
+/* Base for our parts of Canvas pages. Each lives in a shadow root whose host
+   WXT resets (all: initial), so nothing is inherited from Canvas: text starts
+   here. The tokens and component classes come from theme.css. */
+
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
+.cd {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+.cd h2,
+.cd p {
+  margin: 0;
+}
+
+/* Our dialogs: modal <dialog>s, in the browser's top layer above anything
+   Canvas stacks, with the page inert behind them. */
+.dialog {
+  padding: 0;
+  border: 0;
+  max-width: none;
+  max-height: calc(100vh - 32px);
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 24px 64px rgba(10, 16, 24, 0.35);
+}
+.dialog::backdrop {
+  background: rgba(20, 32, 47, 0.58);
+}
+.dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dialog-head .brand-name {
+  font-size: 16px;
+}
+
+/* Round icon buttons in dialog headers: close, settings. */
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.icon-btn:hover {
+  background: var(--mist);
+  color: var(--ink);
+}

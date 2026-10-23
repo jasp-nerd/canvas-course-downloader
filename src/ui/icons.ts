@@ -44,7 +44,8 @@ export const ICONS = {
     ['rect', { x: 8, y: 8, width: 14, height: 14, rx: 2 }],
     ...p('M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2'),
   ],
-  download: p('M12 15V3', 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm7 10 5 5 5-5'),
+  /** Arrow onto a line, as on every board's download buttons (Lucide arrow-down-to-line). */
+  download: p('M12 3v12', 'm7 10 5 5 5-5', 'M5 21h14'),
   error: [['circle', { cx: 12, cy: 12, r: 10 }], ...p('m15 9-6 6', 'm9 9 6 6')],
   external: p(
     'M15 3h6v6',

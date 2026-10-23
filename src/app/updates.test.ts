@@ -5,6 +5,9 @@ import { saveInventory } from '../storage/inventory';
 import {
   checkForUpdates,
   countNew,
+  describeNew,
+  downloadNewLabel,
+  totalNew,
   markExported,
   pendingUpdates,
   saveUpdateCheck,
@@ -131,5 +134,35 @@ describe('what else changed since the last save', () => {
     await saveInventory(ORIGIN, '103', { ...saved, savedAt: 0 });
     const { canvas } = fakeCanvas([], { '/discussion_topics': [{ posted_at: after }] });
     expect(pendingUpdates(await checkForUpdates(canvas, ORIGIN, NOW))).toEqual([]);
+  });
+});
+
+describe('how what is new reads', () => {
+  it('names files only when only files changed, and every kind otherwise', () => {
+    expect(describeNew({ newFiles: 1 })).toBe('1 new file');
+    expect(describeNew({ newFiles: 3 })).toBe('3 new files');
+    expect(describeNew({ newFiles: 2, newAnnouncements: 1 })).toBe(
+      '2 new files and 1 new announcement',
+    );
+    expect(describeNew({ newFiles: 0, newAnnouncements: 2, changedDocuments: 1 })).toBe(
+      '2 new announcements and 1 updated page',
+    );
+    expect(describeNew({ newFiles: 1, newAnnouncements: 1, changedDocuments: 4 })).toBe(
+      '1 new file, 1 new announcement and 4 updated pages',
+    );
+  });
+
+  it("offers to download the new files, or what's new when there's more than files", () => {
+    expect(downloadNewLabel({ newFiles: 2 })).toBe('Download 2 new files');
+    expect(downloadNewLabel({ newFiles: 2, changedDocuments: 1 })).toBe("Download what's new");
+  });
+
+  it('adds up several courses', () => {
+    expect(
+      totalNew([
+        { courseId: '1', courseName: 'A', newFiles: 1 },
+        { courseId: '2', courseName: 'B', newFiles: 2, newAnnouncements: 1 },
+      ]),
+    ).toEqual({ newFiles: 3, newAnnouncements: 1, changedDocuments: 0 });
   });
 });

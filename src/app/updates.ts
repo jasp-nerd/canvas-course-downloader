@@ -135,6 +135,36 @@ async function countChangedSince(
 export const newItems = (c: CourseUpdate) =>
   c.newFiles + (c.newAnnouncements ?? 0) + (c.changedDocuments ?? 0);
 
+type NewCounts = Pick<CourseUpdate, 'newFiles' | 'newAnnouncements' | 'changedDocuments'>;
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+/** "3 new files", or every kind that changed: "2 new files and 1 new announcement". */
+export function describeNew(c: NewCounts): string {
+  const parts = [
+    c.newFiles ? plural(c.newFiles, 'new file', 'new files') : '',
+    c.newAnnouncements ? plural(c.newAnnouncements, 'new announcement', 'new announcements') : '',
+    c.changedDocuments ? plural(c.changedDocuments, 'updated page', 'updated pages') : '',
+  ].filter(Boolean);
+  if (parts.length < 2) return parts[0] ?? plural(0, 'new file', 'new files');
+  return `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}`;
+}
+
+/** The button: the new files by number, or "what's new" when more than files changed. */
+export const downloadNewLabel = (c: NewCounts) =>
+  c.newAnnouncements || c.changedDocuments ? "Download what's new" : `Download ${describeNew(c)}`;
+
+/** Several courses' changes added up. */
+export const totalNew = (courses: CourseUpdate[]): Required<NewCounts> =>
+  courses.reduce(
+    (t, c) => ({
+      newFiles: t.newFiles + c.newFiles,
+      newAnnouncements: t.newAnnouncements + (c.newAnnouncements ?? 0),
+      changedDocuments: t.changedDocuments + (c.changedDocuments ?? 0),
+    }),
+    { newFiles: 0, newAnnouncements: 0, changedDocuments: 0 },
+  );
+
 /** After an export, its courses are up to date until the next check. */
 export async function markExported(origin: string, courseId: string): Promise<void> {
   const check = await loadUpdateCheck(origin);

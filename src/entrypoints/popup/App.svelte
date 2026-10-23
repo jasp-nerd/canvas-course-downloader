@@ -9,7 +9,7 @@
     savedCourseRows,
     type SavedCourseRow,
   } from '../../app/popup-view';
-  import { loadUpdateCheck } from '../../app/updates';
+  import { loadUpdateCheck, newItems, type CourseUpdate } from '../../app/updates';
   import { sendMessage, type CourseInfo, type PageInfo } from '../../messaging';
   import { loadSaveFolder } from '../../storage/folder';
   import { loadInventory, savedCourses, type CourseInventory } from '../../storage/inventory';
@@ -31,11 +31,17 @@
         /** On a course page: what was saved of it before, and what's new since. */
         saved: CourseInventory | null;
         newFiles: number | null;
+        moreThanFiles: boolean;
         /** Elsewhere on Canvas: the courses saved before. */
         rows: SavedCourseRow[];
       };
 
   let page = $state<Page>({ kind: 'loading' });
+  /** What the last update check found for this course: new files, posts and pages together. */
+  const newHere = (update: CourseUpdate | undefined) => ({
+    newFiles: update ? newItems(update) : null,
+    moreThanFiles: !!(update?.newAnnouncements || update?.changedDocuments),
+  });
   let course = $state<CourseInfo | null>(null);
   let whatsNew = $state(false);
 
@@ -87,9 +93,7 @@
       settings,
       saveTo: folder?.name || 'Downloads',
       saved,
-      newFiles: saved
-        ? (check?.courses.find((c) => c.courseId === info.courseId)?.newFiles ?? null)
-        : null,
+      ...newHere(saved ? check?.courses.find((c) => c.courseId === info.courseId) : undefined),
       rows: savedCourseRows(all, check, 4),
     };
   });
@@ -176,7 +180,7 @@
         class="btn btn-primary btn-block"
         onclick={() => startExport([courseId], true)}
       >
-        <Icon name="download" />Download new files
+        <Icon name="download" />{page.moreThanFiles ? "Download what's new" : 'Download new files'}
       </button>
       <!-- With "Only add what's new" on, a full download would only add the new files too. -->
       {#if !page.settings.incrementalMode}
@@ -248,7 +252,9 @@
             true,
           )}
       >
-        <Icon name="download" />Download all {plural(total, 'new file')}
+        <Icon name="download" />{withNew.some((r) => r.moreThanFiles)
+          ? `Download what's new (${total})`
+          : `Download all ${plural(total, 'new file')}`}
       </button>
     {/if}
 

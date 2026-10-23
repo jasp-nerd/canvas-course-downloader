@@ -68,6 +68,15 @@ describe('the first-download question', () => {
     expect(await shouldAskProfile()).toBe(false);
   });
 
+  it("saves a teacher's choice about students' work with the answer, when it was asked", async () => {
+    await markNewUser();
+    await answerProfile({ profile: 'copy', aiTarget: 'notebooklm', includeStudentWork: true });
+    expect(await fakeBrowser.storage.sync.get(null)).toEqual({
+      profile: 'copy',
+      includeStudentWork: true,
+    });
+  });
+
   it('saves only the profile when it is not a study pack', async () => {
     await markNewUser();
     await answerProfile({ profile: 'copy', aiTarget: 'notebooklm' });

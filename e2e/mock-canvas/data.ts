@@ -14,6 +14,8 @@ export interface Course {
   term: Term;
   color: string;
   state: 'active' | 'completed';
+  /** Sam teaches this one; every other course Sam takes as a student. */
+  teaching?: boolean;
 }
 
 type Json = Record<string, unknown>;
@@ -69,6 +71,15 @@ export const COURSES: Course[] = [
     term: ACTIVE_TERM,
     color: '#0f766e',
     state: 'active',
+  },
+  {
+    id: 107,
+    name: 'Teaching Practicum',
+    course_code: 'EDU 310',
+    term: ACTIVE_TERM,
+    color: '#a16207',
+    state: 'active',
+    teaching: true,
   },
   {
     id: 201,
