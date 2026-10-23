@@ -1,22 +1,74 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { PROFILES } from '../../app/profiles';
+  import type { ProfileAnswer } from '../../app/onboarding';
   import { AI_TARGETS, type AiTargetId } from '../../export/study-pack';
   import type { Settings } from '../../storage/settings';
-  import { canvasButtonColors } from '../../ui/contrast';
+  import Icon from '../../ui/Icon.svelte';
+  import type { IconName } from '../../ui/icons';
+  import Logo from '../../ui/Logo.svelte';
 
   let {
+    courses,
+    taught,
+    includeStudentWork: studentWorkSetting,
     onchoose,
     oncancel,
   }: {
-    onchoose: (choice: Pick<Settings, 'profile' | 'aiTarget'>) => void;
+    /** How many courses this download is for. */
+    courses: number;
+    /** How many of them the user teaches. */
+    taught: number;
+    includeStudentWork: boolean;
+    onchoose: (choice: ProfileAnswer) => void;
     oncancel: () => void;
   } = $props();
 
+  // Short versions of the kinds in Settings, for a question asked over Canvas.
+  const CHOICES: {
+    profile: Settings['profile'];
+    title: string;
+    text: string;
+    icon: IconName;
+    tone: 'red' | 'sun' | 'navy';
+  }[] = [
+    {
+      profile: 'copy',
+      title: 'A copy to keep',
+      text: 'Every file and page, in folders that open offline',
+      icon: 'folder',
+      tone: 'red',
+    },
+    {
+      profile: 'study',
+      title: 'A study pack for AI',
+      text: 'A few tidy files for NotebookLM, ChatGPT or Claude',
+      icon: 'ai',
+      tone: 'sun',
+    },
+    {
+      profile: 'agents',
+      title: 'Files for code',
+      text: 'Markdown with AGENTS.md for coding agents',
+      icon: 'code',
+      tone: 'navy',
+    },
+  ];
+
   let profile = $state<Settings['profile']>('copy');
   let aiTarget = $state<AiTargetId>('notebooklm');
+  // Starts from the setting and is the user's to change from there, so only
+  // the initial value is wanted. It's saved with the answer.
+  // svelte-ignore state_referenced_locally
+  let includeStudentWork = $state(studentWorkSetting);
   let dialog: HTMLDialogElement | undefined = $state();
-  const colors = canvasButtonColors();
+
+  const teaching = $derived(
+    courses === 1
+      ? 'You teach this course'
+      : taught === courses
+        ? 'You teach these courses'
+        : `You teach ${taught} of these courses`,
+  );
 
   // A modal dialog sits above anything Canvas stacks, with the page inert behind it.
   onMount(() => dialog?.showModal());
@@ -24,6 +76,7 @@
 
 <!-- Escape fires "cancel"; a click on the backdrop lands on the dialog element itself. -->
 <dialog
+  class="cd"
   aria-labelledby="ccd-question-title"
   bind:this={dialog}
   oncancel={(e) => {
@@ -37,40 +90,68 @@
   <form
     onsubmit={(e) => {
       e.preventDefault();
-      onchoose({ profile, aiTarget });
+      onchoose({ profile, aiTarget, ...(taught ? { includeStudentWork } : {}) });
     }}
   >
-    <header>
-      <h2 id="ccd-question-title">What should your downloads be?</h2>
-      <button type="button" class="close" aria-label="Close" onclick={oncancel}>×</button>
-    </header>
-    <fieldset>
-      <legend class="visually-hidden">What should your downloads be?</legend>
-      {#each PROFILES as choice (choice.profile)}
-        <label class="card" class:chosen={profile === choice.profile}>
+    <div class="head">
+      <span class="brand">
+        <Logo size={28} />
+        <span class="brand-name">Course Downloader</span>
+      </span>
+      <button type="button" class="icon-btn" aria-label="Close" onclick={oncancel}>
+        <Icon name="x" />
+      </button>
+    </div>
+    <h2 class="title" id="ccd-question-title">What should your downloads be?</h2>
+    <fieldset class="choices">
+      <legend class="sr-only">What should your downloads be?</legend>
+      {#each CHOICES as choice (choice.profile)}
+        <label class="choice">
           <input type="radio" name="profile" value={choice.profile} bind:group={profile} />
+          <span class="tile tile-{choice.tone}"><Icon name={choice.icon} size={22} /></span>
           <span>
             <strong>{choice.title}</strong>
-            <small>{choice.text}</small>
+            <span class="choice-text">{choice.text}</span>
           </span>
+          <span class="tick"></span>
         </label>
       {/each}
     </fieldset>
     {#if profile === 'study'}
-      <label class="field">
-        <span>For</span>
-        <select bind:value={aiTarget}>
+      <label class="for">
+        <span class="label">For</span>
+        <select class="select" bind:value={aiTarget}>
           {#each Object.entries(AI_TARGETS) as [id, target] (id)}
             <option value={id}>{target.label}</option>
           {/each}
         </select>
       </label>
     {/if}
+    {#if taught}
+      <label class="teach">
+        <span class="teach-text">
+          <span class="chip chip-line"><Icon name="teacher" size={14} />{teaching}</span>
+          <strong>Include students' work</strong>
+          <span class="small" id="ccd-student-work">
+            Off: every page, file, quiz with answers and rubric, no student data. On: adds
+            submissions, grades and names.
+          </span>
+        </span>
+        <input
+          type="checkbox"
+          role="switch"
+          class="toggle"
+          aria-label="Include students' work"
+          aria-describedby="ccd-student-work"
+          bind:checked={includeStudentWork}
+        />
+      </label>
+    {/if}
     <div class="actions">
-      <button type="submit" class="primary" style:--bg={colors.background} style:--fg={colors.text}
-        >Start download</button
+      <button type="submit" class="btn btn-primary"
+        ><Icon name="download" size={18} />Start download</button
       >
-      <span class="hint">You can change this anytime in Settings.</span>
+      <span class="small">Change anytime in Settings</span>
     </div>
   </form>
 </dialog>
@@ -78,126 +159,111 @@
 <style>
   /* px throughout: rem would follow the Canvas page's root font size. */
   dialog::backdrop {
-    background: rgba(16, 24, 32, 0.45);
+    background: rgba(20, 32, 47, 0.58);
   }
   dialog {
     padding: 0;
     border: 0;
-    width: min(520px, calc(100vw - 32px));
-    max-height: calc(100vh - 48px);
+    width: min(560px, calc(100vw - 32px));
+    max-width: none;
+    max-height: calc(100vh - 32px);
     overflow: auto;
-    background: #ffffff;
-    color: #1d2733;
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    font:
-      14px/1.45 system-ui,
-      -apple-system,
-      'Segoe UI',
-      Roboto,
-      sans-serif;
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 24px 64px rgba(10, 16, 24, 0.35);
   }
   form {
     display: grid;
-    gap: 12px;
-    padding: 16px 20px 20px;
+    gap: 18px;
+    padding: 20px 24px 24px;
   }
-  header {
+  .head {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    /* The close button's round hover sits in the padding, not inside the content edge. */
+    margin-right: -8px;
+  }
+  .brand-name {
+    font-size: 16px;
+  }
+  .icon-btn {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  .icon-btn:hover {
+    background: var(--mist);
+    color: var(--ink);
+  }
+  .title {
+    font-size: 28px;
+  }
+  .choice {
+    grid-template-columns: 44px 1fr 22px;
+    min-height: 68px;
+    padding: 10px 16px 10px 12px;
+  }
+  /* The hidden radio covers its whole row, so a click anywhere on it is a
+     click on the radio itself (also for tools that click form controls). */
+  .choice input {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    pointer-events: auto;
+    cursor: pointer;
+  }
+  .choice .tile {
+    width: 44px;
+    height: 44px;
+  }
+  .choice:has(input:checked) .tile {
+    background: #fff;
+  }
+  .for {
+    display: flex;
+    align-items: center;
     gap: 12px;
   }
-  h2 {
-    margin: 0;
-    font-size: 18px;
+  .for .select {
+    width: auto;
+    min-width: 220px;
   }
-  .close {
-    border: 0;
-    background: none;
-    font-size: 24px;
-    line-height: 1;
-    padding: 4px 8px;
-    border-radius: 6px;
+  .teach {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: var(--r-choice);
+    background: var(--mist);
     cursor: pointer;
-    color: #556270;
   }
-  fieldset {
-    border: 0;
-    margin: 0;
-    padding: 0;
+  .teach-text {
     display: grid;
-    gap: 8px;
+    gap: 6px;
+    flex: 1;
   }
-  .card {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    padding: 10px 12px;
-    border: 1px solid #d9dee4;
-    border-radius: 8px;
-    cursor: pointer;
+  .teach-text .chip {
+    justify-self: start;
   }
-  .card.chosen {
-    border-color: #0b5cad;
-    box-shadow: 0 0 0 1px #0b5cad;
+  .teach-text strong {
+    font-size: 15px;
   }
-  .card input {
-    margin-top: 4px;
-  }
-  small {
-    display: block;
-    color: #556270;
-  }
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  select {
-    font: inherit;
-    padding: 7px 9px;
-    border: 1px solid #b8c1cb;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #1d2733;
-    max-width: 320px;
+  .teach-text .small {
+    margin-top: -4px;
   }
   .actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
-  }
-  .hint {
-    color: #556270;
-    font-size: 13px;
-  }
-  .primary {
-    font:
-      600 14px/1.2 system-ui,
-      -apple-system,
-      'Segoe UI',
-      Roboto,
-      sans-serif;
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: 0;
-    cursor: pointer;
-    background: var(--bg);
-    color: var(--fg);
-  }
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-  }
-  button:focus-visible,
-  input:focus-visible,
-  select:focus-visible {
-    outline: 3px solid #0b5cad;
-    outline-offset: 2px;
+    gap: 16px;
   }
 </style>

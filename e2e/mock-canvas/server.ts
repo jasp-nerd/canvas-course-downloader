@@ -114,10 +114,12 @@ function apiRoute(
   if (path === '/api/v1/users/self') return { id: 1, name: 'Sam Student', short_name: 'Sam' };
   if (path === '/api/v1/courses') {
     const state = query.get('enrollment_state') ?? 'active';
-    return D.COURSES.filter((c) => c.state === state).map(({ color: _c, state: _s, ...c }) => ({
-      ...c,
-      enrollments: [{ type: 'student' }],
-    }));
+    return D.COURSES.filter((c) => c.state === state).map(
+      ({ color: _c, state: _s, teaching, ...c }) => ({
+        ...c,
+        enrollments: [{ type: teaching ? 'teacher' : 'student' }],
+      }),
+    );
   }
   if ((m = path.match(/^\/api\/v1\/courses\/(\d+)$/))) {
     const c = D.findCourse(m[1]!);
@@ -127,7 +129,11 @@ function apiRoute(
         name: c.name,
         course_code: c.course_code,
         term: c.term,
-        enrollments: [{ type: 'student', role: 'StudentEnrollment' }],
+        enrollments: [
+          c.teaching
+            ? { type: 'teacher', role: 'TeacherEnrollment' }
+            : { type: 'student', role: 'StudentEnrollment' },
+        ],
         syllabus_body: D.syllabus(c),
       }
     );

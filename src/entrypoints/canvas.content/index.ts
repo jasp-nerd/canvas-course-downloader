@@ -1,7 +1,7 @@
 import { createShadowRootUi, defineContentScript, type ContentScriptContext } from '#imports';
 import { mount, unmount } from 'svelte';
 import { browser } from 'wxt/browser';
-import { answerProfile, shouldAskProfile } from '../../app/onboarding';
+import { answerProfile, shouldAskProfile, type ProfileAnswer } from '../../app/onboarding';
 import {
   checkForUpdates,
   pendingUpdates,
@@ -9,10 +9,11 @@ import {
   type UpdateCheck,
 } from '../../app/updates';
 import { createCanvasClient } from '../../canvas/client';
+import { teaches, type CourseSummary } from '../../canvas/courses';
 import { courseIdFromPath, isCanvasPage } from '../../canvas/detect';
 import { onMessage, sendMessage } from '../../messaging';
 import { loadInventory } from '../../storage/inventory';
-import { loadSettings, type Settings } from '../../storage/settings';
+import { loadSettings } from '../../storage/settings';
 // With cssInjectionMode 'ui', WXT puts these (and the components' styles) in
 // each of our shadow roots, never in the Canvas page itself.
 import '../../ui/theme.css';
@@ -24,7 +25,12 @@ import ProfileQuestion from './ProfileQuestion.svelte';
 import { pageState } from './state.svelte';
 import UpdatesNote from './UpdatesNote.svelte';
 
-type StartExport = (courseIds: string[], options?: { onlyNew?: boolean; quiet?: boolean }) => void;
+type StartExport = (
+  courseIds: string[],
+  options?: { onlyNew?: boolean; quiet?: boolean },
+  /** How many of the courses the user teaches, when the caller knows. */
+  taught?: number,
+) => void;
 
 export default defineContentScript({
   // Canvas runs on schools' own domains (canvas.vu.nl, ...), so this matches every
@@ -38,12 +44,15 @@ export default defineContentScript({
     // Canvas's in-page navigation doesn't run the script again.
     void browser.storage.local.set({ lastCanvas: { origin: location.origin, at: Date.now() } });
 
-    const startExport: StartExport = (courseIds, options = {}) =>
+    const startExport: StartExport = (courseIds, options = {}, taught) =>
       void (async () => {
         // A new user chooses what downloads should be, once, before the first one.
         // Downloads of only what's new add to a copy, so they don't ask.
         if (!options.quiet && !options.onlyNew && (await shouldAskProfile())) {
-          const choice = await askProfile(ctx);
+          const choice = await askProfile(ctx, {
+            courses: courseIds.length,
+            taught: taught ?? (await teachesCourse(courseIds[0]!)),
+          });
           if (!choice) return;
           await answerProfile(choice);
         }
@@ -192,14 +201,29 @@ async function showPicker(ctx: ContentScriptContext, startExport: StartExport) {
   picker.mount();
 }
 
+/** 1 when the user teaches this course, else 0. One request, the same check the export makes. */
+async function teachesCourse(courseId: string): Promise<number> {
+  try {
+    const canvas = createCanvasClient({ origin: location.origin });
+    const course = await canvas.get<CourseSummary>(`/courses/${courseId}`, {
+      'include[]': 'enrollments',
+    });
+    return teaches(course) ? 1 : 0;
+  } catch {
+    // Canvas is busy or the user signed out: ask without the teacher's part.
+    // The export itself checks again, and Settings has the switch too.
+    return 0;
+  }
+}
+
 /** The first-download question, over the Canvas page. Resolves null when it's closed. */
 async function askProfile(
   ctx: ContentScriptContext,
-): Promise<Pick<Settings, 'profile' | 'aiTarget'> | null> {
-  let answer!: (choice: Pick<Settings, 'profile' | 'aiTarget'> | null) => void;
-  const answered = new Promise<Pick<Settings, 'profile' | 'aiTarget'> | null>(
-    (resolve) => (answer = resolve),
-  );
+  download: { courses: number; taught: number },
+): Promise<ProfileAnswer | null> {
+  let answer!: (choice: ProfileAnswer | null) => void;
+  const answered = new Promise<ProfileAnswer | null>((resolve) => (answer = resolve));
+  const { includeStudentWork } = await loadSettings();
   const ui = await createShadowRootUi(ctx, {
     name: 'ccd-profile-question',
     position: 'inline',
@@ -210,7 +234,9 @@ async function askProfile(
       return mount(ProfileQuestion, {
         target: container,
         props: {
-          onchoose: (choice: Pick<Settings, 'profile' | 'aiTarget'>) => {
+          ...download,
+          includeStudentWork,
+          onchoose: (choice: ProfileAnswer) => {
             ui.remove();
             answer(choice);
           },

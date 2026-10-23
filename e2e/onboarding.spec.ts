@@ -69,7 +69,23 @@ test("a new user's first download asks what downloads should be, once", async ({
   await page.goto(`${CANVAS}/courses/104`);
   await page.getByRole('button', { name: 'Download course' }).click();
   const question = page.getByRole('dialog', { name: 'What should your downloads be?' });
+  await expect(question.getByText('Course Downloader', { exact: true })).toBeVisible();
   await expect(question.getByRole('radio', { name: /^A copy to keep/ })).toBeChecked();
+  await expect(question.getByRole('radio', { name: /^Files for code/ })).not.toBeChecked();
+  // Sam takes this course: nothing to decide about students' work.
+  await expect(question.getByRole('switch')).toHaveCount(0);
+  // The title is in Gabarito, which the page got from the background.
+  const title = question.getByRole('heading', { name: 'What should your downloads be?' });
+  expect(await title.evaluate((h) => getComputedStyle(h).fontFamily)).toMatch(/^"?Gabarito/);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          [...document.fonts].some((f) => f.family === 'Gabarito' && f.status === 'loaded') &&
+          document.fonts.check('800 28px Gabarito'),
+      ),
+    )
+    .toBe(true);
   // Closing it starts nothing, and asks again next time.
   await question.getByRole('button', { name: 'Close' }).click();
   await expect(question).toBeHidden();
@@ -94,4 +110,40 @@ test("a new user's first download asks what downloads should be, once", async ({
   await expect((await next).getByRole('heading', { name: 'Export finished' })).toBeVisible({
     timeout: 60_000,
   });
+});
+
+type Store = { set(v: object): Promise<void>; get(k: null): Promise<Record<string, unknown>> };
+type Chrome = { chrome: { storage: { local: Store; sync: Store } } };
+
+test("a teacher's first download also asks whether to include students' work", async ({
+  page,
+  serviceWorker,
+  mock,
+}) => {
+  await resetExtensionStorage(serviceWorker, {});
+  await serviceWorker.evaluate(() =>
+    (globalThis as unknown as Chrome).chrome.storage.local.set({ askProfile: true }),
+  );
+  await page.goto(`${CANVAS}/courses/107`);
+  await page.getByRole('button', { name: 'Download course' }).click();
+  const question = page.getByRole('dialog', { name: 'What should your downloads be?' });
+  await expect(question.getByText('You teach this course')).toBeVisible();
+  const studentWork = question.getByRole('switch', { name: "Include students' work" });
+  await expect(studentWork).not.toBeChecked();
+  await expect(studentWork).toHaveAccessibleDescription(
+    'Off: every page, file, quiz with answers and rubric, no student data. On: adds submissions, grades and names.',
+  );
+  await studentWork.check();
+
+  // The choice is under test here, not the export: signed out, the export stops at once.
+  mock.state.signedIn = false;
+  const exportTab = page.context().waitForEvent('page');
+  await question.getByRole('button', { name: 'Start download' }).click();
+  await expect(question).toBeHidden();
+  await (await exportTab).close();
+  expect(
+    await serviceWorker.evaluate(() =>
+      (globalThis as unknown as Chrome).chrome.storage.sync.get(null),
+    ),
+  ).toEqual({ profile: 'copy', includeStudentWork: true });
 });
