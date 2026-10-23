@@ -1,6 +1,7 @@
 import { createShadowRootUi, defineContentScript, type ContentScriptContext } from '#imports';
 import { mount, unmount } from 'svelte';
 import { browser } from 'wxt/browser';
+import { csrfTokenFrom } from '../../app/course-package';
 import { answerProfile, shouldAskProfile, type ProfileAnswer } from '../../app/onboarding';
 import {
   newItems,
@@ -57,7 +58,16 @@ export default defineContentScript({
           if (!choice) return;
           await answerProfile(choice);
         }
-        await sendMessage('startExport', { origin: location.origin, courseIds, ...options });
+        // Canvas's own course package needs the page's security token (never put in a URL).
+        const csrfToken = (await loadSettings()).coursePackage
+          ? csrfTokenFrom(document.cookie)
+          : undefined;
+        await sendMessage('startExport', {
+          origin: location.origin,
+          courseIds,
+          ...options,
+          ...(csrfToken ? { csrfToken } : {}),
+        });
       })();
     const openPicker = () => void showPicker(ctx, startExport);
     const courseId = courseIdFromPath(location.pathname);

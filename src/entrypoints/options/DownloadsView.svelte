@@ -113,6 +113,12 @@
         checked={settings.includeStudentWork}
         onchange={(on: boolean) => save({ includeStudentWork: on })}
       />
+      <SwitchRow
+        title="Also save Canvas's course package (.imscc)"
+        text="For re-importing your course into Canvas. Canvas builds it on its servers, which can take a while. Co-teachers see it under Settings › Export Course Content for 30 days."
+        checked={settings.coursePackage}
+        onchange={(on: boolean) => save({ coursePackage: on })}
+      />
     </div>
   {/if}
 </Setting>

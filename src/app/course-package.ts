@@ -37,6 +37,9 @@ export function csrfTokenFrom(cookie: string): string | undefined {
   return raw ? decodeURIComponent(raw) : undefined;
 }
 
+/** Where the background keeps a page's token for the export tab: memory only, never a URL. */
+export const csrfKey = (origin: string) => `csrf:${origin}`;
+
 export async function requestCoursePackage(input: {
   origin: string;
   courseId: string;

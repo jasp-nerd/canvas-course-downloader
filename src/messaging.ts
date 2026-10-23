@@ -9,6 +9,11 @@ export interface StartExportRequest {
   onlyNew?: boolean;
   /** Started automatically: run in a background tab and close it when everything worked. */
   quiet?: boolean;
+  /**
+   * Canvas's security token from the page, for the one write request we make:
+   * asking Canvas to build its course package. Only sent when that's turned on.
+   */
+  csrfToken?: string;
 }
 
 /** A course as the toolbar popup shows it. */

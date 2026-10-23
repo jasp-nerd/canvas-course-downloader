@@ -345,3 +345,22 @@ test('the sidebar and Help keep the support links, the shortcut and the version'
     true,
   );
 });
+
+test("teachers can also save Canvas's course package, off unless they turn it on", async ({
+  page,
+  extensionId,
+  serviceWorker,
+}) => {
+  await resetExtensionStorage(serviceWorker, {});
+  await open(page, extensionId);
+  const coursePackage = page.getByRole('switch', { name: /^Also save Canvas's course package/ });
+  await expect(coursePackage).toHaveCount(0);
+
+  await page.getByRole('radio', { name: 'A teacher' }).check();
+  await expect(coursePackage).not.toBeChecked();
+  await expect(
+    page.getByText(/Co-teachers see it under Settings › Export Course Content/),
+  ).toBeVisible();
+  await coursePackage.check();
+  await expect.poll(() => stored(serviceWorker)).toMatchObject({ coursePackage: true });
+});

@@ -24,6 +24,11 @@ export interface Settings extends Required<Omit<StoredSettings, 'contentTypes'>>
   role: 'student' | 'teacher';
   /** In courses the user teaches: also save students' submissions, grades and names. */
   includeStudentWork: boolean;
+  /**
+   * In courses the user teaches: also ask Canvas to build its own course package
+   * (.imscc, for re-importing). The extension's only write request, so off by default.
+   */
+  coursePackage: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -42,6 +47,7 @@ export const DEFAULT_SETTINGS: Settings = {
   aiTarget: 'notebooklm',
   role: 'student',
   includeStudentWork: false,
+  coursePackage: false,
 };
 
 export async function loadSettings(): Promise<Settings> {

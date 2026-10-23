@@ -1,5 +1,6 @@
 import { defineBackground } from '#imports';
 import { browser, type Browser } from 'wxt/browser';
+import { csrfKey } from '../app/course-package';
 import { markNewUser, onboardingFor } from '../app/onboarding';
 import { onMessage, sendMessage } from '../messaging';
 import { readFonts } from '../ui/fonts';
@@ -32,6 +33,9 @@ export default defineBackground(() => {
     url.searchParams.set('courses', data.courseIds.join(','));
     if (data.onlyNew) url.searchParams.set('new', '1');
     if (data.quiet) url.searchParams.set('quiet', '1');
+    // Kept in memory only, for the export tab: a security token never goes into a URL.
+    if (data.csrfToken)
+      await browser.storage.session.set({ [csrfKey(data.origin)]: data.csrfToken });
     await browser.tabs.create({ url: url.toString(), active: !data.quiet });
   });
 

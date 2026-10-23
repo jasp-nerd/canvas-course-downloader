@@ -58,6 +58,10 @@ describe('settings added in 3.0', () => {
     expect(s.role).toBe('student');
   });
 
+  it('never asks Canvas for its own course package unless a teacher turns it on', async () => {
+    expect((await loadSettings()).coursePackage).toBe(false);
+  });
+
   it('reads back a teacher who includes student work', async () => {
     await saveSettings({ role: 'teacher', includeStudentWork: true });
     expect(await loadSettings()).toMatchObject({ role: 'teacher', includeStudentWork: true });
