@@ -3,6 +3,7 @@
   // in this tab's title and icon, and on the toolbar icon), then the receipts.
   import { onMount } from 'svelte';
   import { browser } from 'wxt/browser';
+  import { csrfKey } from '../../app/course-package';
   import { exportCourses, type CourseState } from '../../app/export-job';
   import { supportCardAfterExport } from '../../app/support';
   import { TimeLeft } from '../../app/time-left';
@@ -108,6 +109,14 @@
       );
   }
 
+  /** The Canvas page's security token, if the background kept one for us: used once, then gone. */
+  async function takeCsrfToken(): Promise<string | undefined> {
+    const key = csrfKey(origin);
+    const stored = await browser.storage.session.get<Record<string, string | undefined>>(key);
+    await browser.storage.session.remove(key);
+    return stored[key];
+  }
+
   function stop() {
     stopping = true;
     controller.abort();
@@ -116,21 +125,27 @@
   onMount(() => {
     // Closing this tab stops the export, so ask first while it runs.
     const warn = (event: BeforeUnloadEvent) => {
-      if (running) event.preventDefault();
+      // Canvas may still be building a teacher's course package after the copy is saved.
+      const packaging = courses.some((c) => c.coursePackage?.state === 'building');
+      if (running || packaging) event.preventDefault();
     };
     // A tab closed halfway shouldn't leave the toolbar icon half full.
     const leave = () => void resetToolbarIcon();
     window.addEventListener('beforeunload', warn);
     window.addEventListener('pagehide', leave);
     void browser.runtime.getPlatformInfo().then((info) => (isWindows = info.os === 'win'));
-    void exportCourses({
-      origin,
-      courseIds,
-      onlyNew,
-      allowFolder,
-      signal: controller.signal,
-      onChange: track,
-    })
+    void takeCsrfToken()
+      .then((csrfToken) =>
+        exportCourses({
+          origin,
+          courseIds,
+          onlyNew,
+          allowFolder,
+          ...(csrfToken ? { csrfToken } : {}),
+          signal: controller.signal,
+          onChange: track,
+        }),
+      )
       .then(async (finished) => {
         const allSaved = finished.length > 0 && finished.every((c) => c.outcome === 'success');
         if (quiet) {

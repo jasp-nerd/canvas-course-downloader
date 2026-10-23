@@ -36,4 +36,4 @@ The bundles are minified. The third-party code in them comes from npm packages l
 
 ## What the extension does
 
-It reads a Canvas LMS course through the Canvas API of the site the user is logged into, with the user's own session, and saves it to their computer. It sends no data anywhere else. See `PRIVACY.md` in the repository (https://github.com/jasp-nerd/canvas-course-downloader) for details.
+It reads a Canvas LMS course through the Canvas API of the site the user is logged into, with the user's own session, and saves it to their computer. It sends no data anywhere else. Its only write request is optional and off by default: a teacher who turns on "Also save Canvas's course package" makes the extension ask Canvas to build the course's own export (`POST /api/v1/courses/:id/content_exports`, `src/app/course-package.ts`), with the CSRF token the Canvas page itself provides. See `PRIVACY.md` in the repository (https://github.com/jasp-nerd/canvas-course-downloader) for details.

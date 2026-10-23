@@ -9,6 +9,7 @@
   import { joined, sizeOf, whenLine } from './lines';
   import Notices from './Notices.svelte';
   import OpeningIt from './OpeningIt.svelte';
+  import PackageRow from './PackageRow.svelte';
   import ShowInFolder from './ShowInFolder.svelte';
   import SupportCard from './SupportCard.svelte';
 
@@ -62,6 +63,10 @@
   </span>
   <button type="button" class="link change" onclick={openSettings}>Change in Settings</button>
 </section>
+
+{#if course.coursePackage}
+  <PackageRow pkg={course.coursePackage} />
+{/if}
 
 <main class="teacher-grid">
   <section class="card inside-card" aria-labelledby="inside-title">

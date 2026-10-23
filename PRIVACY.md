@@ -15,7 +15,8 @@ Canvas Course Downloader is a free, open-source browser extension. This policy e
 - The extension runs entirely in your browser.
 - It talks **only** to the Canvas site you are logged into (and Canvas's own file server for the files themselves), using your existing browser session. It never asks for your password or an access token.
 - Exports run in a browser tab the extension opens, and are saved to your Downloads folder or to a folder you choose.
-- If you have downloaded a course before, opening Canvas makes the extension ask that same Canvas site, at most every few hours, whether the course has new files, so it can show "new files" on your dashboard. This request goes only to Canvas.
+- If you have downloaded a course before, opening Canvas makes the extension ask that same Canvas site, at most every few hours, whether the course has new files, announcements or changed pages, so it can show what's new on your dashboard. This request goes only to Canvas.
+- If you teach a course and turn on "Also save Canvas's course package" (off by default), the extension asks your Canvas to build the course's own export file (.imscc) and downloads it. This is the only time it asks Canvas to create anything. Canvas lists that export under the course's Settings › Export Course Content, where your co-teachers can see it, and keeps it for 30 days. The security token Canvas puts in the page is used for that one request, kept only in memory, and never stored or sent anywhere else.
 - "Download new files automatically" is off unless you turn it on in the settings.
 
 ## What Is Stored on Your Computer

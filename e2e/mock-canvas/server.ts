@@ -46,6 +46,9 @@ export interface MockState {
   /** Courses the user teaches instead of takes. */
   teacherIn: number[];
   faults: FaultRule[];
+  /** Course packages (.imscc) the user asked Canvas to build, and the token the last request sent. */
+  contentExports: { id: number; courseId: number; polls: number }[];
+  lastCsrfToken?: string;
 }
 
 export interface RequestLogEntry {
@@ -68,6 +71,8 @@ export interface MockCanvas {
 }
 
 const SESSION_COOKIE = 'canvas_session=mock-session';
+/** What the mock puts in the readable _csrf_token cookie, as Canvas does. */
+export const CSRF_TOKEN = 'mock+token==';
 
 const initialState = (): MockState => ({
   signedIn: true,
@@ -77,6 +82,7 @@ const initialState = (): MockState => ({
   rateLimitBudget: 700,
   newFileIn: [],
   teacherIn: [],
+  contentExports: [],
   faults: [],
 });
 
@@ -177,6 +183,8 @@ function apiRoute(
   if ((m = rest.match(/^modules\/(\d+)\/items$/))) return D.moduleItems(c, Number(m[1]), origin);
   if (rest === 'quizzes') return D.quizzes(c);
   if (/^quizzes\/\d+\/submissions$/.test(rest)) return { quiz_submissions: [], submissions: [] };
+  // The answer key, which only teachers can see.
+  if (/^quizzes\/\d+\/questions$/.test(rest)) return D.quizQuestions();
   return undefined;
 }
 
@@ -233,11 +241,75 @@ export async function startMockCanvas(port = 0): Promise<MockCanvas> {
     status: number,
     type: string,
     body: string | Buffer,
-    headers: Record<string, string> = {},
+    headers: Record<string, string | string[]> = {},
   ) {
     const charset = type.startsWith('text/') || type.includes('json') ? '; charset=utf-8' : '';
     res.writeHead(status, { 'content-type': type + charset, ...headers });
     res.end(body);
+  }
+
+  /**
+   * Canvas's course export (.imscc): create (POST, with the page's CSRF token, teachers
+   * only), list, poll its progress (done on the second poll) and download it.
+   */
+  async function coursePackageRoute(
+    req: IncomingMessage,
+    res: ServerResponse,
+    path: string,
+    origin: string,
+  ): Promise<boolean> {
+    /** Answers with JSON; true, so routes can `return json(...)`. */
+    const json = (status: number, body: unknown) => {
+      send(res, status, 'application/json', JSON.stringify(body));
+      return true;
+    };
+    const shape = (e: MockState['contentExports'][number]) => ({
+      id: e.id,
+      user_id: 1,
+      export_type: 'common_cartridge',
+      workflow_state: e.polls >= 2 ? 'exported' : 'exporting',
+      progress_url: `${origin}/api/v1/progress/${e.id}`,
+      ...(e.polls >= 2
+        ? { attachment: { url: `${origin}/package/${e.id}/download?verifier=mock`, size: 512 } }
+        : {}),
+    });
+    let m: RegExpMatchArray | null;
+    if ((m = path.match(/^\/api\/v1\/courses\/(\d+)\/content_exports$/))) {
+      const courseId = Number(m[1]);
+      if (req.method === 'POST') {
+        for await (const _ of req) void _;
+        const token = req.headers['x-csrf-token'];
+        mock.state.lastCsrfToken = typeof token === 'string' ? token : undefined;
+        if (token !== CSRF_TOKEN) return json(422, { errors: [{ message: 'invalid token' }] });
+        const course = D.findCourse(courseId);
+        if (!course?.teaching && !mock.state.teacherIn.includes(courseId))
+          return json(403, { status: 'unauthorized' });
+        const created = { id: 900 + mock.state.contentExports.length, courseId, polls: 0 };
+        mock.state.contentExports.push(created);
+        return json(200, shape(created));
+      }
+      return json(200, mock.state.contentExports.filter((e) => e.courseId === courseId).map(shape));
+    }
+    if ((m = path.match(/^\/api\/v1\/courses\/\d+\/content_exports\/(\d+)$/))) {
+      const found = mock.state.contentExports.find((e) => e.id === Number(m![1]));
+      return found ? json(200, shape(found)) : json(404, {});
+    }
+    if ((m = path.match(/^\/api\/v1\/progress\/(\d+)$/))) {
+      const found = mock.state.contentExports.find((e) => e.id === Number(m![1]));
+      if (!found) return json(404, {});
+      found.polls++;
+      return json(200, {
+        workflow_state: found.polls >= 2 ? 'completed' : 'running',
+        completion: found.polls >= 2 ? 100 : 50,
+      });
+    }
+    if ((m = path.match(/^\/package\/(\d+)\/download$/))) {
+      send(res, 200, 'application/octet-stream', Buffer.from('PK mock imscc package'), {
+        'content-disposition': `attachment; filename="course-export-${m[1]}.imscc"`,
+      });
+      return true;
+    }
+    return false;
   }
 
   /** Applies the first matching fault rule. Returns true when it answered the request. */
@@ -323,8 +395,12 @@ export async function startMockCanvas(port = 0): Promise<MockCanvas> {
     }
 
     let m: RegExpMatchArray | null;
+    // Like Canvas: the session cookie is HttpOnly, the CSRF token one is readable by the page.
     const pageHeaders = {
-      'set-cookie': `${SESSION_COOKIE}; Path=/; Secure; HttpOnly; SameSite=Lax`,
+      'set-cookie': [
+        `${SESSION_COOKIE}; Path=/; Secure; HttpOnly; SameSite=Lax`,
+        `_csrf_token=${encodeURIComponent(CSRF_TOKEN)}; Path=/; Secure; SameSite=Lax`,
+      ],
     };
     if (path === '/' || path === '/courses')
       return send(res, 200, 'text/html', dashboardPage(mock.state.brand), pageHeaders);
@@ -355,6 +431,8 @@ export async function startMockCanvas(port = 0): Promise<MockCanvas> {
         },
       );
     }
+
+    if (await coursePackageRoute(req, res, path, origin)) return;
 
     if (path.startsWith('/api/v1/')) {
       activeApi++;

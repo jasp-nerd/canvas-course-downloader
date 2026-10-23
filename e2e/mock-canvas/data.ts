@@ -403,6 +403,28 @@ export function moduleItems(c: Course, moduleId: number, origin: string): Json[]
   ];
 }
 
+/** Invented questions with an answer key, as a teacher sees them. */
+export function quizQuestions(): Json[] {
+  return [
+    {
+      question_text: '<p>Which of these is a vector space over the reals?</p>',
+      points_possible: 1,
+      answers: [
+        { id: 1, text: 'The real plane with the usual addition', weight: 100 },
+        { id: 2, text: 'The integers with the usual addition', weight: 0 },
+      ],
+    },
+    {
+      question_text: '<p>What is the determinant of the 2×2 identity matrix?</p>',
+      points_possible: 1,
+      answers: [
+        { id: 3, text: '1', weight: 100 },
+        { id: 4, text: '0', weight: 0 },
+      ],
+    },
+  ];
+}
+
 export function quizzes(c: Course): Json[] {
   return [
     {

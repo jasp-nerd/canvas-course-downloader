@@ -16,6 +16,7 @@ A rewrite of the whole extension. Your settings and the list of files you alread
 - **Files for coding agents.** A Markdown copy with front matter on every page, plus `AGENTS.md`, `llms.txt` and `course.json`.
 - **Teachers' copies leave students' work out** unless you turn on "Include students' work": no roster, submissions, gradebook, quiz attempts or named discussion replies in a copy you might share. Questions, rubrics and prompts are still saved.
 - **Deadlines as a calendar file.** Every copy has `Deadlines.ics` with the course's due dates, linked back to Canvas. Import it again after a later download and the events update instead of doubling.
+- **Canvas's own course package for teachers.** Optionally, a teacher's copy also brings the `.imscc` file Canvas builds for re-importing a course, next to the readable copy. Off by default.
 - **More than new files.** The check for courses you saved before also counts new announcements and pages and assignments that changed since.
 - **A short setup** for new users: what downloads should be and how to save them. Whoever skips it gets one question at the first download instead. People updating from 2.x aren't asked anything.
 - A refreshed course picker and settings page. The settings, popup and export tab follow your system's dark mode.

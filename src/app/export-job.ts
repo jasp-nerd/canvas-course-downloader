@@ -7,6 +7,7 @@ import { planCourseExport } from '../engine/plan';
 import { runExport, type RunProgress, type RunResult } from '../engine/run';
 import { sanitizeFilename } from '../export/filenames';
 import { AI_TARGETS, packContents, type AiTargetId } from '../export/study-pack';
+import { requestCoursePackage } from './course-package';
 import { downloadBlob, downloadsSink } from '../sinks/downloads';
 import { folderSink, openFile } from '../sinks/folder';
 import { loadSaveFolder } from '../storage/folder';
@@ -89,6 +90,16 @@ export interface CourseState {
   filteredOut: number;
   /** In a study pack: the files the tool doesn't take, and the modules it holds. */
   pack?: { leftOut: string[]; modules: string[] };
+  /** Canvas's own course package (.imscc), when a teacher asked for it. */
+  coursePackage?: CoursePackageState;
+}
+
+export interface CoursePackageState {
+  state: 'building' | 'saved' | 'not-allowed' | 'slow' | 'failed' | 'session';
+  /** How far Canvas is with building it, 0 to 100. */
+  percent?: number;
+  savedAs?: string;
+  downloadId?: number;
 }
 
 const folderPath = (prefix: string) =>
@@ -159,6 +170,8 @@ export async function exportCourses(input: {
    * because nobody is looking (automatic exports).
    */
   allowFolder?: (folder: FileSystemDirectoryHandle) => Promise<boolean>;
+  /** Canvas's security token from the page, when a teacher turned on the course package. */
+  csrfToken?: string;
   signal: AbortSignal;
   onChange: (courses: CourseState[]) => void;
 }): Promise<CourseState[]> {
@@ -207,6 +220,37 @@ export async function exportCourses(input: {
     Object.assign(course, changes);
     input.onChange(courses.map((c) => ({ ...c })));
   };
+
+  /** Asks Canvas to build its course package, then saves it next to the copy. */
+  async function savePackage(course: CourseState, courseName: string, csrfToken: string) {
+    const set = (coursePackage: CoursePackageState) => update(course, { coursePackage });
+    set({ state: 'building', percent: 0 });
+    try {
+      const result = await requestCoursePackage({
+        origin: input.origin,
+        courseId: course.id,
+        csrfToken,
+        onProgress: (percent) => set({ state: 'building', percent }),
+      });
+      if (result.kind !== 'ready') {
+        // An expired token can't be refreshed from this tab: the next download reads a new one.
+        const state = result.kind === 'token' ? 'failed' : result.kind;
+        set({ state });
+        return;
+      }
+      const name = sanitizeFilename(`${courseName} - Canvas course package.imscc`);
+      const downloadId = await browser.downloads.download({
+        url: result.url,
+        filename: `${prefix}${name}`,
+        conflictAction: settings.conflictAction,
+        saveAs: false,
+      });
+      set({ state: 'saved', downloadId, savedAs: `Downloads/${prefix}${name}` });
+    } catch {
+      // Network trouble while Canvas built it: the package may still appear under the course's settings.
+      set({ state: 'failed' });
+    }
+  }
 
   for (const course of courses) {
     if (input.signal.aborted) break;
@@ -425,6 +469,18 @@ export async function exportCourses(input: {
         current: undefined,
         finishedAt: Date.now(),
       });
+      // Canvas's own package for re-importing: only for teachers who asked, on full copies
+      // that worked. It builds on Canvas's servers, so the receipt shows while it does.
+      if (
+        settings.coursePackage &&
+        input.csrfToken &&
+        plan.studentWork.teacher &&
+        !studyPack &&
+        !onlyNew &&
+        (result.outcome === 'success' || result.outcome === 'partial')
+      ) {
+        void savePackage(course, plan.courseName, input.csrfToken);
+      }
     } catch (error) {
       const cancelled = error instanceof CanvasError && error.kind === 'aborted';
       update(course, {
