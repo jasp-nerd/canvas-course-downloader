@@ -1,7 +1,8 @@
 // What a new install or an update shows. Existing users are never interrupted:
 // nothing opens on update, browser start or browser update.
 import { browser } from 'wxt/browser';
-import { saveSettings, type Settings } from '../storage/settings';
+import type { AiTargetId } from '../export/study-pack';
+import { DEFAULT_SETTINGS, saveSettings, type Settings } from '../storage/settings';
 
 export type InstallReason =
   'install' | 'update' | 'chrome_update' | 'browser_update' | 'shared_module_update';
@@ -52,4 +53,73 @@ export async function shouldAskProfile(): Promise<boolean> {
 export async function answerProfile(choice: Pick<Settings, 'profile' | 'aiTarget'>): Promise<void> {
   await saveSettings(choice.profile === 'study' ? choice : { profile: choice.profile });
   await browser.storage.local.remove(ASK_PROFILE);
+}
+
+/** The first question of setup: what the new user wants to do with their courses. */
+export type SetupGoal = 'copy' | 'study' | 'code' | 'teach';
+export type SetupScreen = 'hello' | 'goal' | 'teacher' | 'ai' | 'save' | 'ready';
+
+export interface SetupAnswers {
+  goal: SetupGoal;
+  /** Asked only when archiving a course the user teaches. */
+  includeStudentWork: boolean;
+  /** Asked only for study packs. */
+  aiTarget: AiTargetId;
+  zipMode: boolean;
+  saveTo: Settings['saveTo'];
+  incrementalMode: boolean;
+}
+
+/** Only for new users, so "only add what's new" starts on; existing users never see setup. */
+export const SETUP_DEFAULTS: SetupAnswers = {
+  goal: 'copy',
+  includeStudentWork: false,
+  aiTarget: DEFAULT_SETTINGS.aiTarget,
+  zipMode: true,
+  saveTo: 'downloads',
+  incrementalMode: true,
+};
+
+export function setupScreens(goal: SetupGoal): SetupScreen[] {
+  const followUp: SetupScreen[] = goal === 'teach' ? ['teacher'] : goal === 'study' ? ['ai'] : [];
+  return ['hello', 'goal', ...followUp, 'save', 'ready'];
+}
+
+const GOAL_PROFILE: Record<SetupGoal, Settings['profile']> = {
+  copy: 'copy',
+  study: 'study',
+  code: 'agents',
+  teach: 'copy',
+};
+
+/**
+ * The settings setup writes. Role and student work are always written, so a
+ * user who reaches the end, goes back and picks another goal keeps no stale
+ * teacher choice.
+ */
+export function setupSettings(answers: SetupAnswers): Partial<Settings> {
+  const teach = answers.goal === 'teach';
+  return {
+    profile: GOAL_PROFILE[answers.goal],
+    ...(answers.goal === 'study' ? { aiTarget: answers.aiTarget } : {}),
+    role: teach ? 'teacher' : 'student',
+    includeStudentWork: teach && answers.includeStudentWork,
+    zipMode: answers.zipMode,
+    saveTo: answers.saveTo,
+    incrementalMode: answers.incrementalMode,
+  };
+}
+
+/** Saves setup's answers; the first download then starts without asking. */
+export async function finishSetup(answers: SetupAnswers): Promise<void> {
+  await saveSettings(setupSettings(answers));
+  await browser.storage.local.remove(ASK_PROFILE);
+}
+
+/** The Canvas origin from storage.local `lastCanvas` ({ origin, at }), or null when there's none to trust. */
+export function canvasToReturnTo(stored: unknown): string | null {
+  const origin = (stored as { origin?: unknown } | null | undefined)?.origin;
+  if (typeof origin !== 'string' || !URL.canParse(origin)) return null;
+  const url = new URL(origin);
+  return url.protocol === 'https:' || url.protocol === 'http:' ? url.origin : null;
 }
