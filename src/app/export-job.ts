@@ -221,6 +221,19 @@ export async function exportCourses(input: {
     input.onChange(courses.map((c) => ({ ...c })));
   };
 
+  // The queue shows real names straight away, not "Course 105" until each course's turn.
+  if (courses.length > 1) {
+    const names = createCanvasClient({ origin: input.origin, signal: input.signal });
+    for (const course of courses.slice(1)) {
+      names
+        .get<{ name?: string }>(`/courses/${course.id}`)
+        .then((c) => {
+          if (c.name && !course.named) update(course, { name: c.name, named: true });
+        })
+        .catch(() => {}); // The course's own turn reports anything wrong with it.
+    }
+  }
+
   /** Asks Canvas to build its course package, then saves it next to the copy. */
   async function savePackage(course: CourseState, courseName: string, csrfToken: string) {
     const set = (coursePackage: CoursePackageState) => update(course, { coursePackage });

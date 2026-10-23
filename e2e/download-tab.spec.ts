@@ -180,3 +180,26 @@ test('Stop all stops, and says nothing was saved when the ZIP never was', async 
   await expect(tab.getByText(/nothing was saved/)).toBeVisible();
   expect(readdirSync(downloadsDir)).toEqual([]);
 });
+
+test('courses waiting their turn show their names, not "Course 105"', async ({
+  page,
+  serviceWorker,
+  mock,
+  extensionId,
+}) => {
+  await resetExtensionStorage(serviceWorker, FILES_ONLY);
+  mock.state.fileDelayMs = 1500;
+  await page.goto(
+    `chrome-extension://${extensionId}/export.html?origin=${encodeURIComponent(CANVAS)}&courses=104,105,101`,
+  );
+  // While the first course is still saving, the two after it already have their names.
+  await expect(page.getByRole('heading', { name: 'Saving Academic Writing' })).toBeVisible({
+    timeout: 30_000,
+  });
+  const queue = page.getByRole('region', { name: /3 courses/ });
+  await expect(queue.getByText('Machine Learning')).toBeVisible({ timeout: 3000 });
+  await expect(queue.getByText('Introduction to Psychology')).toBeVisible({ timeout: 3000 });
+  await expect(queue.getByText(/^Course \d+$/)).toHaveCount(0);
+  await page.getByRole('button', { name: 'Stop all' }).click();
+  await waitForExport(page);
+});
