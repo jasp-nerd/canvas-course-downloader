@@ -112,6 +112,9 @@ async function showUpdates(
   } catch {
     return; // Signed out, or Canvas is busy; try again on the next page.
   }
+  pageState.newByCourse = Object.fromEntries(
+    (check?.courses ?? []).map((c) => [c.courseId, c.newFiles]),
+  );
   const pending = pendingUpdates(check);
   const total = pending.reduce((n, c) => n + c.newFiles, 0);
   void sendMessage('setBadge', total ? String(total) : '');
@@ -186,9 +189,9 @@ async function showPicker(ctx: ContentScriptContext, startExport: StartExport) {
         props: {
           origin: location.origin,
           onclose: () => picker.remove(),
-          ondownload: (courseIds: string[]) => {
+          ondownload: (courseIds: string[], taught: number) => {
             picker.remove();
-            startExport(courseIds);
+            startExport(courseIds, {}, taught);
           },
           onsettings: () => void sendMessage('openOptions'),
         },

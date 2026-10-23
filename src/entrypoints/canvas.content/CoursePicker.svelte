@@ -7,10 +7,17 @@
     groupByTerm,
     listCourses,
     matchesSearch,
+    teaches,
     type CourseSummary,
   } from '../../canvas/courses';
-  import { loadSettings } from '../../storage/settings';
-  import { canvasButtonColors } from '../../ui/contrast';
+  import { AI_TARGETS } from '../../export/study-pack';
+  import { savedCourses } from '../../storage/inventory';
+  import { loadSettings, type Settings } from '../../storage/settings';
+  import Icon from '../../ui/Icon.svelte';
+  import type { IconName } from '../../ui/icons';
+  import Logo from '../../ui/Logo.svelte';
+  import { shortDay } from './day';
+  import { pageState } from './state.svelte';
 
   let {
     origin,
@@ -20,7 +27,8 @@
   }: {
     origin: string;
     onclose: () => void;
-    ondownload: (courseIds: string[]) => void;
+    /** The chosen courses, and how many of them the user teaches. */
+    ondownload: (courseIds: string[], taught: number) => void;
     onsettings: () => void;
   } = $props();
 
@@ -30,18 +38,31 @@
     | { status: 'ready'; courses: CourseSummary[] }
     | { status: 'error'; signedOut: boolean };
 
+  // The footer's chip: what a download makes, in that kind's colour.
+  const KINDS: Record<
+    Settings['profile'],
+    { label: string; icon: IconName; tone: 'red' | 'sun' | 'navy' }
+  > = {
+    copy: { label: 'A copy', icon: 'folder', tone: 'red' },
+    study: { label: 'Study pack', icon: 'ai', tone: 'sun' },
+    agents: { label: 'Files for code', icon: 'code', tone: 'navy' },
+  };
+  // Canvas data: only a plain hex colour goes into a style.
+  const HEX = /^#[0-9a-f]{3,8}$/i;
+
   let tab = $state<Tab>('active');
   let lists = $state<Record<Tab, List>>({
     active: { status: 'loading' },
     completed: { status: 'loading' },
   });
   let query = $state('');
-  let summary = $state('');
+  let settings = $state<Settings>();
+  let colors = $state<Record<string, string>>({});
+  let savedAt = $state<Record<string, number>>({});
   let dialog: HTMLDialogElement | undefined = $state();
   let search: HTMLInputElement | undefined = $state();
   // Selection is kept across tabs and searches.
   const selected = new SvelteSet<string>();
-  const colors = canvasButtonColors();
   const canvas = $derived(createCanvasClient({ origin }));
 
   async function load(which: Tab) {
@@ -56,6 +77,17 @@
     }
   }
 
+  async function loadColors() {
+    try {
+      const reply = await canvas.get<{ custom_colors?: Record<string, string> }>(
+        '/users/self/colors',
+      );
+      colors = reply.custom_colors ?? {};
+    } catch {
+      // Without the user's Canvas colours every dot stays neutral; nothing else depends on them.
+    }
+  }
+
   onMount(() => {
     // A modal dialog sits in the browser's top layer: above anything Canvas
     // stacks (its main column has z-index 10), with the page inert behind it.
@@ -63,7 +95,11 @@
     search?.focus();
     void load('active');
     void load('completed');
-    void loadSettings().then((s) => (summary = describeExport(s)));
+    void loadColors();
+    void loadSettings().then((s) => (settings = s));
+    void savedCourses(origin).then(
+      (saved) => (savedAt = Object.fromEntries(saved.map((c) => [c.courseId, c.savedAt]))),
+    );
   });
 
   const current = $derived(lists[tab]);
@@ -72,6 +108,17 @@
   );
   const groups = $derived(groupByTerm(visible));
   const isSelected = (c: CourseSummary) => selected.has(String(c.id));
+  const mode = $derived(
+    settings && {
+      ...KINDS[settings.profile],
+      detail:
+        settings.profile === 'study'
+          ? AI_TARGETS[settings.aiTarget].label
+          : settings.zipMode
+            ? 'ZIP'
+            : 'Folders',
+    },
+  );
 
   function setAll(courses: CourseSummary[], on: boolean) {
     for (const c of courses) {
@@ -79,10 +126,24 @@
       else selected.delete(String(c.id));
     }
   }
+
+  function download() {
+    const all = [lists.active, lists.completed].flatMap((l) =>
+      l.status === 'ready' ? l.courses : [],
+    );
+    ondownload([...selected], all.filter((c) => isSelected(c) && teaches(c)).length);
+  }
+
+  const dotColor = (c: CourseSummary) => {
+    const color = colors[`course_${c.id}`];
+    return color && HEX.test(color) ? color : 'var(--control)';
+  };
+  const meta = (c: CourseSummary) => [c.course_code, c.term?.name].filter(Boolean).join(' · ');
 </script>
 
 <!-- Escape fires "cancel"; a click on the backdrop lands on the dialog element itself. -->
 <dialog
+  class="cd dialog"
   aria-labelledby="ccd-picker-title"
   bind:this={dialog}
   oncancel={(e) => {
@@ -93,33 +154,69 @@
     if (e.target === dialog) onclose();
   }}
 >
-  <header>
-    <h2 id="ccd-picker-title">Download courses</h2>
-    <button type="button" class="close" aria-label="Close" onclick={onclose}>×</button>
-  </header>
+  <div class="top">
+    <div class="dialog-head">
+      <span class="brand">
+        <Logo size={28} />
+        <span class="brand-name">Course Downloader</span>
+      </span>
+      <h2 class="sr-only" id="ccd-picker-title">Download courses</h2>
+      <span class="actions">
+        <button type="button" class="icon-btn" aria-label="Settings" onclick={onsettings}>
+          <Icon name="settings" />
+        </button>
+        <button type="button" class="icon-btn" aria-label="Close" onclick={onclose}>
+          <Icon name="x" />
+        </button>
+      </span>
+    </div>
 
-  <div class="tabs" role="tablist" aria-label="Which courses">
-    <button
-      type="button"
-      role="tab"
-      aria-selected={tab === 'active'}
-      onclick={() => (tab = 'active')}>Current</button
-    >
-    <button
-      type="button"
-      role="tab"
-      aria-selected={tab === 'completed'}
-      onclick={() => (tab = 'completed')}>Past</button
-    >
+    <div class="filters">
+      <div class="tabs" role="tablist" aria-label="Which courses">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'active'}
+          onclick={() => (tab = 'active')}>Current</button
+        >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'completed'}
+          onclick={() => (tab = 'completed')}>Past</button
+        >
+      </div>
+      <label class="search">
+        <Icon name="search" size={18} />
+        <input
+          bind:this={search}
+          bind:value={query}
+          class="input"
+          type="search"
+          placeholder="Search by name, code or term"
+          aria-label="Search courses"
+        />
+      </label>
+    </div>
   </div>
 
-  <input
-    bind:this={search}
-    bind:value={query}
-    type="search"
-    placeholder="Search by name, code or term"
-    aria-label="Search courses"
-  />
+  <div class="select-bar">
+    {#if visible.length}
+      <label class="all">
+        <input
+          type="checkbox"
+          class="check"
+          checked={visible.every(isSelected)}
+          indeterminate={!visible.every(isSelected) && visible.some(isSelected)}
+          onchange={(e) => setAll(visible, e.currentTarget.checked)}
+        />
+        Select all{query ? ' matching' : ''}
+      </label>
+    {/if}
+    {#if selected.size}
+      <span class="small num count">{selected.size} selected</span>
+    {/if}
+  </div>
 
   <div
     class="list"
@@ -134,7 +231,9 @@
           <p>You're signed out of Canvas. Sign in again, then reopen this window.</p>
         {:else}
           <p>Canvas didn't answer. Check your connection and try again.</p>
-          <button type="button" class="secondary" onclick={() => load(tab)}>Try again</button>
+          <button type="button" class="btn btn-light btn-sm" onclick={() => load(tab)}
+            >Try again</button
+          >
         {/if}
       </div>
     {:else if visible.length === 0}
@@ -143,38 +242,46 @@
           Past.{:else}No past courses.{/if}
       </p>
     {:else}
-      <label class="all">
-        <input
-          type="checkbox"
-          checked={visible.every(isSelected)}
-          indeterminate={!visible.every(isSelected) && visible.some(isSelected)}
-          onchange={(e) => setAll(visible, e.currentTarget.checked)}
-        />
-        Select all{query ? ' matching' : ''}
-      </label>
       {#each groups as group (group.term)}
         <fieldset>
           <legend>
-            <label>
+            <label class="group">
               <input
                 type="checkbox"
+                class="check"
                 checked={group.courses.every(isSelected)}
                 indeterminate={!group.courses.every(isSelected) && group.courses.some(isSelected)}
                 onchange={(e) => setAll(group.courses, e.currentTarget.checked)}
               />
               {group.term}
-              <span class="count">{group.courses.length}</span>
+              <span class="pill num">{group.courses.length}</span>
             </label>
           </legend>
           {#each group.courses as course (course.id)}
+            {@const newFiles = pageState.newByCourse[String(course.id)] ?? 0}
+            {@const saved = savedAt[String(course.id)]}
             <label class="course">
               <input
                 type="checkbox"
+                class="check"
                 checked={isSelected(course)}
                 onchange={(e) => setAll([course], e.currentTarget.checked)}
               />
-              <span class="name">{course.name}</span>
-              {#if course.course_code}<span class="code">{course.course_code}</span>{/if}
+              <span class="dot" style:background={dotColor(course)}></span>
+              <span class="text">
+                <strong>{course.name}</strong>
+                {#if meta(course)}<small>{meta(course)}</small>{/if}
+              </span>
+              <span class="chips">
+                {#if newFiles}
+                  <span class="chip chip-mint num">{newFiles} new</span>
+                {:else if saved}
+                  <span class="small">Saved {shortDay(saved)}</span>
+                {/if}
+                {#if teaches(course)}
+                  <span class="chip chip-line"><Icon name="teacher" size={14} />You teach</span>
+                {/if}
+              </span>
             </label>
           {/each}
         </fieldset>
@@ -183,18 +290,16 @@
   </div>
 
   <footer>
-    <p class="summary">
-      {summary}
+    <span class="mode">
+      {#if settings && mode}
+        <span class="chip chip-{mode.tone}" title={describeExport(settings)}>
+          <Icon name={mode.icon} size={14} />{mode.label} · {mode.detail}
+        </span>
+      {/if}
       <button type="button" class="link" onclick={onsettings}>Change</button>
-    </p>
-    <button
-      type="button"
-      class="primary"
-      disabled={selected.size === 0}
-      style:--bg={colors.background}
-      style:--fg={colors.text}
-      onclick={() => ondownload([...selected])}
-    >
+    </span>
+    <button type="button" class="btn btn-primary" disabled={selected.size === 0} onclick={download}>
+      <Icon name="download" size={18} />
       {selected.size === 0
         ? 'Choose courses'
         : `Download ${selected.size} ${selected.size === 1 ? 'course' : 'courses'}`}
@@ -204,175 +309,178 @@
 
 <style>
   /* px throughout: rem would follow the Canvas page's root font size. */
-  dialog::backdrop {
-    background: rgba(16, 24, 32, 0.45);
-  }
   dialog {
-    padding: 0;
-    border: 0;
-    max-width: none;
-    max-height: none;
-    width: min(560px, calc(100vw - 32px));
-    height: min(640px, calc(100vh - 48px));
-    flex-direction: column;
-    background: #ffffff;
-    color: #1d2733;
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    font:
-      14px/1.45 system-ui,
-      -apple-system,
-      'Segoe UI',
-      Roboto,
-      sans-serif;
+    width: min(640px, calc(100vw - 32px));
+    height: min(640px, calc(100vh - 32px));
     overflow: hidden;
+    grid-template-rows: auto auto 1fr auto;
   }
   dialog[open] {
-    display: flex;
+    display: grid;
   }
-  header {
+  .top {
+    display: grid;
+    gap: 14px;
+    padding: 18px 16px 0 20px;
+  }
+  .actions {
+    display: flex;
+    gap: 2px;
+  }
+  .filters {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: center;
+  }
+  /* Current / Past, as the theme's segmented control. */
+  .tabs {
+    display: inline-flex;
+    padding: 4px;
+    gap: 4px;
+    background: var(--mist-2);
+    border-radius: var(--r-pill);
+  }
+  [role='tab'] {
+    height: 34px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: var(--r-pill);
+    background: none;
+    font: 600 14px/1 var(--font-ui);
+    color: var(--ink-2);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  [role='tab'][aria-selected='true'] {
+    background: #fff;
+    color: var(--ink);
+    box-shadow: 0 1px 2px rgba(20, 32, 47, 0.12);
+  }
+  .search .input {
+    height: 42px;
+  }
+  .select-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px 8px;
-  }
-  h2 {
-    margin: 0;
-    font-size: 18px;
-  }
-  .close {
-    border: 0;
-    background: none;
-    font-size: 24px;
-    line-height: 1;
-    padding: 4px 8px;
-    border-radius: 6px;
-    cursor: pointer;
-    color: #556270;
-  }
-  .tabs {
-    display: flex;
-    gap: 4px;
-    padding: 0 20px;
-    border-bottom: 1px solid #d9dee4;
-  }
-  [role='tab'] {
-    border: 0;
-    background: none;
-    font: inherit;
-    padding: 8px 12px;
-    cursor: pointer;
-    color: #556270;
-    border-bottom: 2px solid transparent;
-  }
-  [role='tab'][aria-selected='true'] {
-    color: #1d2733;
-    font-weight: 600;
-    border-bottom-color: #1d2733;
-  }
-  input[type='search'] {
-    margin: 12px 20px 4px;
-    padding: 8px 10px;
-    border: 1px solid #b8c1cb;
-    border-radius: 8px;
-    font: inherit;
-  }
-  .list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px 20px;
-  }
-  .state {
-    color: #556270;
-    padding: 24px 0;
-    text-align: center;
-  }
-  label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
+    min-height: 42px;
+    padding: 12px 24px 6px 20px;
   }
   .all {
-    padding: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .count {
+    margin-left: auto;
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  .list {
+    overflow-y: auto;
+    padding: 0 8px 8px;
+  }
+  .state {
+    color: var(--ink-3);
+    padding: 24px 12px;
+    text-align: center;
+  }
+  .state .btn {
+    margin-top: 12px;
   }
   fieldset {
     border: 0;
-    margin: 8px 0 0;
+    margin: 0;
     padding: 0;
+    min-width: 0;
+  }
+  fieldset + fieldset {
+    margin-top: 6px;
   }
   legend {
-    font-weight: 600;
-    padding: 6px 0;
+    padding: 0;
+    width: 100%;
   }
-  .count {
-    color: #556270;
-    font-weight: 400;
+  .group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 40px;
+    padding: 0 12px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  .pill {
+    display: inline-grid;
+    place-items: center;
+    min-width: 24px;
+    height: 22px;
+    padding: 0 7px;
+    margin-left: -4px;
+    border-radius: var(--r-pill);
+    background: var(--mist-2);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-2);
   }
   .course {
-    padding: 6px 0 6px 24px;
+    display: grid;
+    grid-template-columns: 20px 10px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    padding: 8px 12px;
+    border-radius: 14px;
+    cursor: pointer;
   }
-  .name {
-    flex: 1;
+  .course:hover {
+    background: var(--mist);
   }
-  .code {
-    color: #556270;
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .text {
+    min-width: 0;
+  }
+  .text strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .text small {
+    display: block;
     font-size: 13px;
+    color: var(--ink-3);
+  }
+  .chips {
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
   footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 12px 20px;
-    border-top: 1px solid #d9dee4;
+    padding: 14px 20px 18px;
+    border-top: 1px solid var(--mist-2);
   }
-  .summary {
-    margin: 0;
-    color: #556270;
+  .mode {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mode .link {
     font-size: 13px;
-  }
-  .link {
-    border: 0;
-    background: none;
-    padding: 0;
-    font: inherit;
-    color: #0b5cad;
-    text-decoration: underline;
-    cursor: pointer;
-  }
-  .primary,
-  .secondary {
-    font:
-      600 14px/1.2 system-ui,
-      -apple-system,
-      'Segoe UI',
-      Roboto,
-      sans-serif;
-    padding: 10px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .primary {
-    border: 0;
-    background: var(--bg);
-    color: var(--fg);
-  }
-  .primary:disabled {
-    background: #d9dee4;
-    color: #556270;
-    cursor: default;
-  }
-  .secondary {
-    border: 1px solid #b8c1cb;
-    background: #ffffff;
-    color: #1d2733;
-  }
-  button:focus-visible,
-  input:focus-visible {
-    outline: 3px solid #0b5cad;
-    outline-offset: 2px;
+    font-weight: 600;
   }
 </style>

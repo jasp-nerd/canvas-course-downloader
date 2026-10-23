@@ -112,6 +112,8 @@ function apiRoute(
 ): ApiResult {
   let m: RegExpMatchArray | null;
   if (path === '/api/v1/users/self') return { id: 1, name: 'Sam Student', short_name: 'Sam' };
+  if (path === '/api/v1/users/self/colors')
+    return { custom_colors: Object.fromEntries(D.COURSES.map((c) => [`course_${c.id}`, c.color])) };
   if (path === '/api/v1/courses') {
     const state = query.get('enrollment_state') ?? 'active';
     return D.COURSES.filter((c) => c.state === state).map(

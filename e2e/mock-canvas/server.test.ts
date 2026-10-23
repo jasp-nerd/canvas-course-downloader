@@ -110,6 +110,26 @@ describe('mock Canvas', () => {
     expect(reply.body).not.toContain('ic-app');
   });
 
+  it("lists the user's role in each course, as Canvas does", async () => {
+    const courses = JSON.parse((await get('/api/v1/courses')).body) as {
+      id: number;
+      enrollments: { type: string }[];
+    }[];
+    const teaching = courses.filter((c) => c.enrollments.some((e) => e.type === 'teacher'));
+    expect(teaching.map((c) => c.id)).toEqual([107]);
+    const course = JSON.parse((await get('/api/v1/courses/107')).body) as {
+      enrollments: { type: string }[];
+    };
+    expect(course.enrollments).toEqual([{ type: 'teacher', role: 'TeacherEnrollment' }]);
+  });
+
+  it("serves the user's course colours", async () => {
+    const colors = JSON.parse((await get('/api/v1/users/self/colors')).body) as {
+      custom_colors: Record<string, string>;
+    };
+    expect(colors.custom_colors.course_103).toBe('#c2410c');
+  });
+
   it('logs every request except control endpoints', async () => {
     await get('/api/v1/courses');
     await get('/__health');
