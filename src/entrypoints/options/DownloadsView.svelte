@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { NO_FOLDER_ACCESS } from '../../app/folder-access';
   import { AI_TARGETS, type AiTargetId } from '../../export/study-pack';
   import type { Settings } from '../../storage/settings';
   import Icon from '../../ui/Icon.svelte';
@@ -10,7 +11,7 @@
   const settings = $derived(options.settings);
   const target = $derived(AI_TARGETS[settings.aiTarget]);
 
-  // Each kind of download has its colour, as on the Canvas question and the Download tab.
+  // Each kind of download has its own colour, in an icon band rather than the mascot.
   const MODES: { profile: Settings['profile']; title: string; icon: IconName; tone: string }[] = [
     { profile: 'copy', title: 'A copy to keep', icon: 'folder', tone: 'red' },
     { profile: 'study', title: 'A study pack', icon: 'ai', tone: 'sun' },
@@ -22,13 +23,6 @@
       : profile === 'study'
         ? `Sized for ${target.tool}`
         : 'Markdown and AGENTS.md';
-
-  const NO_FOLDER_ACCESS = {
-    firefox: "Firefox can't save into a folder you choose. Files go to your Downloads folder.",
-    brave:
-      'Brave turns this off. To use it, open brave://flags/#file-system-access-api, choose Enabled and restart Brave.',
-    no: "Your browser doesn't let extensions save to a folder you pick.",
-  };
 
   const folderChosen = $derived(folderAccess === 'yes' && settings.saveTo === 'folder');
   let downloadsRadio = $state<HTMLInputElement>();

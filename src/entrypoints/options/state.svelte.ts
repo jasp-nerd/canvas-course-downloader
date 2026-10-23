@@ -1,5 +1,6 @@
 // Settings as the page shows them. Every change is saved at once and confirmed
 // with a short "Saved".
+import { folderAccessFor } from '../../app/folder-access';
 import { canChooseFolder, loadSaveFolder, storeSaveFolder } from '../../storage/folder';
 import {
   DEFAULT_SETTINGS,
@@ -33,17 +34,11 @@ export async function save(changes: Partial<Settings>) {
   savedTimer = setTimeout(() => (options.saved = false), SAVED_FOR_MS);
 }
 
-/**
- * Where folder access stands in this browser. Chromium has the picker; Firefox
- * has none, and Brave switches it off unless a flag is set.
- */
-export const folderAccess: 'yes' | 'firefox' | 'brave' | 'no' = canChooseFolder()
-  ? 'yes'
-  : import.meta.env.FIREFOX
-    ? 'firefox'
-    : 'brave' in navigator
-      ? 'brave'
-      : 'no';
+export const folderAccess = folderAccessFor({
+  picker: canChooseFolder(),
+  firefox: import.meta.env.FIREFOX,
+  brave: 'brave' in navigator,
+});
 
 export async function chooseFolder() {
   options.folderError = '';
