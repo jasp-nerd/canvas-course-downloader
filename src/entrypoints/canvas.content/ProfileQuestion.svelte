@@ -76,7 +76,7 @@
 
 <!-- Escape fires "cancel"; a click on the backdrop lands on the dialog element itself. -->
 <dialog
-  class="cd"
+  class="cd dialog"
   aria-labelledby="ccd-question-title"
   bind:this={dialog}
   oncancel={(e) => {
@@ -93,7 +93,7 @@
       onchoose({ profile, aiTarget, ...(taught ? { includeStudentWork } : {}) });
     }}
   >
-    <div class="head">
+    <div class="dialog-head">
       <span class="brand">
         <Logo size={28} />
         <span class="brand-name">Course Downloader</span>
@@ -158,50 +158,14 @@
 
 <style>
   /* px throughout: rem would follow the Canvas page's root font size. */
-  dialog::backdrop {
-    background: rgba(20, 32, 47, 0.58);
-  }
   dialog {
-    padding: 0;
-    border: 0;
     width: min(560px, calc(100vw - 32px));
-    max-width: none;
-    max-height: calc(100vh - 32px);
     overflow: auto;
-    background: #fff;
-    border-radius: 24px;
-    box-shadow: 0 24px 64px rgba(10, 16, 24, 0.35);
   }
   form {
     display: grid;
     gap: 18px;
     padding: 20px 24px 24px;
-  }
-  .head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    /* The close button's round hover sits in the padding, not inside the content edge. */
-    margin-right: -8px;
-  }
-  .brand-name {
-    font-size: 16px;
-  }
-  .icon-btn {
-    display: grid;
-    place-items: center;
-    width: 38px;
-    height: 38px;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: transparent;
-    color: var(--ink-2);
-    cursor: pointer;
-  }
-  .icon-btn:hover {
-    background: var(--mist);
-    color: var(--ink);
   }
   .title {
     font-size: 28px;
