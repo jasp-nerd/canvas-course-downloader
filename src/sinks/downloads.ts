@@ -25,6 +25,8 @@ interface Options {
   downloads: DownloadsApi;
   /** Downloads running at once. */
   concurrency?: number;
+  /** Called with each file's download id, e.g. to show it in its folder later. */
+  onStarted?: (path: string, id: number) => void;
 }
 
 export function downloadsSink(options: Options): FileSink {
@@ -64,6 +66,7 @@ export function downloadsSink(options: Options): FileSink {
       saveAs: false,
     });
     running.set(id, { path, done, blobUrl });
+    options.onStarted?.(path, id);
   }
 
   return {
@@ -97,7 +100,9 @@ export async function downloadBlob(
   blob: Blob,
   filename: string,
   conflictAction: 'uniquify' | 'overwrite',
-): Promise<{ ok: true; savedName: string } | { ok: false; reason: string }> {
+): Promise<
+  { ok: true; id: number; filename: string; savedName: string } | { ok: false; reason: string }
+> {
   const url = URL.createObjectURL(blob);
   try {
     const started = { id: -1 };
@@ -118,10 +123,16 @@ export async function downloadBlob(
     started.id = await downloads.download({ url, filename, conflictAction, saveAs: false });
     const result = await outcome;
     if (!result.ok) return result;
-    // "uniquify" may have saved it as "Course (1).zip"; report the name it really got.
+    // "uniquify" may have saved it as "Course (1).zip", and a save window lets the user
+    // pick any folder: report the full path it really got.
     const [item] = await downloads.search({ id: started.id });
     const saved = item?.filename.split(/[/\\]/).pop();
-    return { ok: true, savedName: saved || filename.split('/').pop()! };
+    return {
+      ok: true,
+      id: started.id,
+      filename: item?.filename ?? '',
+      savedName: saved || filename.split('/').pop()!,
+    };
   } finally {
     URL.revokeObjectURL(url);
   }

@@ -103,22 +103,52 @@ describe('runExport', () => {
     expect(result.written).toBeLessThan(p.files.length);
   });
 
-  it('reports progress for every file', async () => {
-    const p = await plan('104', {
-      contentTypes: {
-        files: true,
-        pages: false,
-        assignments: false,
-        submissions: false,
-        discussions: false,
-        announcements: false,
-        modules: false,
-        syllabus: false,
-        grades: false,
-        quizzes: false,
-        linkedFiles: false,
+  const filesOnly = {
+    contentTypes: {
+      files: true,
+      pages: false,
+      assignments: false,
+      submissions: false,
+      discussions: false,
+      announcements: false,
+      modules: false,
+      syllabus: false,
+      grades: false,
+      quizzes: false,
+      linkedFiles: false,
+    },
+  };
+
+  it('names in each report the file it is about, also when files finish out of order', async () => {
+    const p = await plan('104', filesOnly);
+    const slow = p.files[0]!.path;
+    const memory = memorySink();
+    const sink = {
+      ...memory,
+      async write(path: string, body: Uint8Array | ReadableStream<Uint8Array>) {
+        if (path === slow) await new Promise((r) => setTimeout(r, 50));
+        await memory.write(path, body, {});
       },
-    });
+    };
+    const seen: string[] = [];
+    await runExport(p, { canvas: canvas(), sink, onProgress: (x) => seen.push(x.current) });
+    expect(seen.sort()).toEqual(p.files.map((f) => f.path).sort());
+  });
+
+  it('counts the size of files handed to the browser by URL', async () => {
+    const p = await plan('104', filesOnly);
+    const sink = { ...memorySink(), writeUrl: () => Promise.resolve() };
+    let bytes = 0;
+    await runExport(p, { canvas: canvas(), sink, onProgress: (x) => (bytes = x.bytes) });
+    const remote = p.files.reduce(
+      (n, f) => n + (f.source.kind === 'remote' ? f.source.size : 0),
+      0,
+    );
+    expect(bytes).toBeGreaterThanOrEqual(remote);
+  });
+
+  it('reports progress for every file', async () => {
+    const p = await plan('104', filesOnly);
     const seen: RunProgress[] = [];
     await runExport(p, { canvas: canvas(), sink: memorySink(), onProgress: (x) => seen.push(x) });
     expect(seen).toHaveLength(p.files.length);
