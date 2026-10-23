@@ -1,5 +1,6 @@
 import { createShadowRootUi, defineContentScript, type ContentScriptContext } from '#imports';
 import { mount, unmount } from 'svelte';
+import { browser } from 'wxt/browser';
 import { answerProfile, shouldAskProfile } from '../../app/onboarding';
 import {
   checkForUpdates,
@@ -28,6 +29,9 @@ export default defineContentScript({
   cssInjectionMode: 'ui',
   async main(ctx) {
     if (!isCanvasPage(document, location.hostname)) return;
+    // Our own pages offer "Go to <school>" from this. One write per page load:
+    // Canvas's in-page navigation doesn't run the script again.
+    void browser.storage.local.set({ lastCanvas: { origin: location.origin, at: Date.now() } });
 
     const startExport: StartExport = (courseIds, options = {}) =>
       void (async () => {
