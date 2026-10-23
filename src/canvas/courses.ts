@@ -5,7 +5,15 @@ export interface CourseSummary {
   name: string;
   course_code?: string;
   term?: { name?: string; start_at?: string | null };
+  /** The user's own enrollments; Canvas lists them with each course. */
+  enrollments?: { type: string }[];
 }
+
+/** Enrollment types that make the user a teacher of a course: they see students' work. */
+export const TEACHER_ROLES = new Set(['teacher', 'ta', 'designer']);
+
+export const teaches = (course: { enrollments?: { type: string }[] }): boolean =>
+  (course.enrollments ?? []).some((e) => TEACHER_ROLES.has(e.type));
 
 export interface TermGroup {
   term: string;

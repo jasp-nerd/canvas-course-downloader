@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { groupByTerm, matchesSearch, type CourseSummary } from './courses';
+import { groupByTerm, matchesSearch, teaches, type CourseSummary } from './courses';
 
 const course = (id: number, name: string, term?: string, start?: string): CourseSummary => ({
   id,
@@ -71,5 +71,17 @@ describe('matchesSearch', () => {
     ['biology', false],
   ])('%j', (query, expected) => {
     expect(matchesSearch(course(7, 'Linear Algebra', 'Spring 2026'), query)).toBe(expected);
+  });
+});
+
+describe('teaches', () => {
+  it('is true for teachers, TAs and designers, as the export decides it', () => {
+    for (const type of ['teacher', 'ta', 'designer'])
+      expect(teaches({ enrollments: [{ type: 'student' }, { type }] })).toBe(true);
+  });
+
+  it('is false for students, observers and courses listed without enrollments', () => {
+    expect(teaches({ enrollments: [{ type: 'student' }, { type: 'observer' }] })).toBe(false);
+    expect(teaches({})).toBe(false);
   });
 });
