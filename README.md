@@ -50,11 +50,11 @@ If you teach, it doubles as an end-of-term archiving tool: it detects your instr
 
 The button on every course page:
 
-![The "Download course" button next to the course name](public/welcome/course-button.png)
+![The "Download course" button next to the course name](screenshots/course-button.png)
 
 Picking courses from the dashboard:
 
-![The course picker with courses grouped by term](public/welcome/picker.png)
+![The course picker with courses grouped by term](screenshots/picker.png)
 
 ## Installation
 

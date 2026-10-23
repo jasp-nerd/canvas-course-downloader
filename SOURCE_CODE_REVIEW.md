@@ -18,7 +18,7 @@ pnpm build             # Chrome and Edge: output in .output/chrome-mv3/
 
 `pnpm install --frozen-lockfile` installs exactly the versions in `pnpm-lock.yaml`. `pnpm-workspace.yaml` lets only esbuild run an install script.
 
-The build uses [WXT](https://wxt.dev) (Vite and Rolldown) to bundle TypeScript and Svelte from `src/` into plain JavaScript. Files in `public/` (icons, the network rule in `rules.json`, the welcome page images) are copied unchanged.
+The build uses [WXT](https://wxt.dev) (Vite and Rolldown) to bundle TypeScript and Svelte from `src/` into plain JavaScript. Files in `public/` (icons, the network rule in `rules.json`, the fonts and the mascot images) are copied unchanged.
 
 ## What is generated
 
@@ -30,7 +30,7 @@ Everything in the output folder comes from this package:
 | `content-scripts/canvas.js` | `src/entrypoints/canvas.content/` |
 | `popup.html`, `options.html`, `export.html`, `welcome.html` and `chunks/`, `assets/` | `src/entrypoints/popup/`, `options/`, `export/`, `welcome/` |
 | `manifest.json` | `wxt.config.ts` |
-| `icons/`, `rules.json`, `welcome/` | `public/` |
+| `icons/`, `rules.json`, `fonts/`, `pip/` | `public/` |
 
 The bundles are minified. The third-party code in them comes from npm packages listed in `package.json`, at the versions in `pnpm-lock.yaml`: Svelte, client-zip, DOMPurify, turndown, @joplin/turndown-plugin-gfm and @webext-core/messaging (exactly the `dependencies` in `package.json`). Nothing is downloaded or evaluated at runtime, and the extension doesn't use `eval` or remote code.
 
