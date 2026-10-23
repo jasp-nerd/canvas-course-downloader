@@ -58,9 +58,29 @@ describe('savedCourseRows', () => {
       ],
     };
     expect(savedCourseRows(saved, check, 2)).toEqual([
-      { courseId: '2', courseName: 'Newest', savedAt: NOW - HOUR, newFiles: 4 },
-      { courseId: '3', courseName: 'Middle', savedAt: NOW - 20 * HOUR, newFiles: 0 },
+      {
+        courseId: '2',
+        courseName: 'Newest',
+        savedAt: NOW - HOUR,
+        newFiles: 4,
+        moreThanFiles: false,
+      },
+      {
+        courseId: '3',
+        courseName: 'Middle',
+        savedAt: NOW - 20 * HOUR,
+        newFiles: 0,
+        moreThanFiles: false,
+      },
     ]);
+  });
+
+  it('counts new announcements and updated pages too, and says so', () => {
+    const check = {
+      checkedAt: NOW,
+      courses: [{ courseId: '2', courseName: 'Newest', newFiles: 1, newAnnouncements: 2 }],
+    };
+    expect(savedCourseRows(saved, check, 1)[0]).toMatchObject({ newFiles: 3, moreThanFiles: true });
   });
 
   it('says nothing about new files for a course the check has not seen', () => {
