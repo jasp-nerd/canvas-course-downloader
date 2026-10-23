@@ -2,6 +2,8 @@
   import { browser } from 'wxt/browser';
   import { LINKS, feedbackUrl, reviewUrl, tracked } from '../../app/links';
   import { REVIEW_FLOW, finishSupportCard } from '../../app/support';
+  import { MASCOT_NAME } from '../../ui/brand';
+  import Logo from '../../ui/Logo.svelte';
 
   let step = $state<'ask' | 'yes' | 'no' | 'thanks' | 'gone'>('ask');
   const review = tracked(reviewUrl(), 'support-card');
@@ -14,130 +16,118 @@
 </script>
 
 {#if step !== 'gone'}
-  <aside class="support" aria-labelledby="support-title">
-    {#if step === 'ask'}
-      <h2 id="support-title">Did this work well for you?</h2>
-      <div class="row">
-        <button type="button" onclick={() => answer('yes')}
-          ><span aria-hidden="true">👍</span> Yes</button
-        >
-        <button type="button" onclick={() => answer('no')}
-          ><span aria-hidden="true">👎</span> Not really</button
-        >
-        <button
-          type="button"
-          class="quiet"
-          onclick={() => {
-            step = 'gone';
-            void finishSupportCard();
-          }}>Don't ask again</button
-        >
-      </div>
-    {:else if step === 'yes'}
-      <h2 id="support-title">Glad to hear it</h2>
-      <p>It's free and made by a student. A short review helps other students find it.</p>
-      <div class="row">
-        {#if review}
+  <!-- The logo, not the mascot: every receipt already has the mascot on it. -->
+  <aside class="card support" aria-labelledby="support-title">
+    <Logo size={56} />
+    <div class="body">
+      {#if step === 'ask'}
+        <h2 id="support-title">Did {MASCOT_NAME} get everything?</h2>
+        <div class="row actions">
+          <button type="button" class="btn btn-light btn-sm" onclick={() => answer('yes')}
+            >Yes, all there</button
+          >
+          <button type="button" class="btn btn-light btn-sm" onclick={() => answer('no')}
+            >Something's missing</button
+          >
+          <button
+            type="button"
+            class="btn btn-text btn-sm quiet"
+            onclick={() => {
+              step = 'gone';
+              void finishSupportCard();
+            }}>Don't ask</button
+          >
+        </div>
+      {:else if step === 'yes'}
+        <h2 id="support-title">Glad to hear it</h2>
+        <p>It's free and made by a student. A short review helps other students find it.</p>
+        <div class="row actions">
+          {#if review}
+            <a
+              class="btn btn-primary btn-sm"
+              href={review}
+              target="_blank"
+              rel="noopener"
+              onclick={() => (step = 'thanks')}>Write a review</a
+            >
+          {/if}
           <a
-            class="primary"
-            href={review}
+            class="btn btn-light btn-sm"
+            href={tracked(LINKS.github, 'support-card')}
             target="_blank"
             rel="noopener"
-            onclick={() => (step = 'thanks')}>Write a review</a
+            onclick={() => (step = 'thanks')}>Star on GitHub</a
           >
-        {/if}
-        <a
-          href={tracked(LINKS.github, 'support-card')}
-          target="_blank"
-          rel="noopener"
-          onclick={() => (step = 'thanks')}>Star on GitHub</a
-        >
-        {#if LINKS.koFi}
+          {#if LINKS.koFi}
+            <a
+              class="btn btn-light btn-sm"
+              href={tracked(LINKS.koFi, 'support-card')}
+              target="_blank"
+              rel="noopener"
+              onclick={() => (step = 'thanks')}>Buy me a coffee</a
+            >
+          {/if}
+        </div>
+      {:else if step === 'no'}
+        <h2 id="support-title">Sorry about that</h2>
+        <p>Tell me what went wrong and I'll look at it. It takes a minute.</p>
+        <div class="row actions">
           <a
-            href={tracked(LINKS.koFi, 'support-card')}
+            class="btn btn-primary btn-sm"
+            href={feedback}
             target="_blank"
             rel="noopener"
-            onclick={() => (step = 'thanks')}>Buy me a coffee</a
+            onclick={() => (step = 'thanks')}>Tell me what went wrong</a
           >
-        {/if}
-      </div>
-    {:else if step === 'no'}
-      <h2 id="support-title">Sorry about that</h2>
-      <p>Tell me what went wrong and I'll look at it. It takes a minute.</p>
-      <div class="row">
-        <a
-          class="primary"
-          href={feedback}
-          target="_blank"
-          rel="noopener"
-          onclick={() => (step = 'thanks')}>Tell me what went wrong</a
-        >
-        {#if REVIEW_FLOW === 'both' && review}
-          <a href={review} target="_blank" rel="noopener" onclick={() => (step = 'thanks')}
-            >Write a review</a
-          >
-        {/if}
-      </div>
-    {:else}
-      <p id="support-title">Thanks!</p>
-    {/if}
+          {#if REVIEW_FLOW === 'both' && review}
+            <a
+              class="btn btn-light btn-sm"
+              href={review}
+              target="_blank"
+              rel="noopener"
+              onclick={() => (step = 'thanks')}>Write a review</a
+            >
+          {/if}
+        </div>
+      {:else}
+        <h2 id="support-title">Thanks!</h2>
+      {/if}
+    </div>
   </aside>
 {/if}
 
 <style>
   .support {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 18px;
-    margin: 0 0 16px;
     display: grid;
-    gap: 8px;
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+    padding: 16px 20px;
+    border-radius: 24px;
+  }
+  .support > :global(svg) {
+    justify-self: center;
+  }
+  .body {
+    display: grid;
+    gap: 10px;
   }
   h2 {
-    font-size: 15px;
     margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.3;
   }
   p {
     margin: 0;
-    color: var(--muted);
+    font-size: 14px;
+    color: var(--ink-2);
   }
-  .row {
-    display: flex;
+  .actions {
+    gap: 8px;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 14px;
-  }
-  button {
-    font: inherit;
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-    cursor: pointer;
   }
   .quiet {
-    border: 0;
-    background: none;
-    color: var(--muted);
-    text-decoration: underline;
-    padding: 0;
-  }
-  a {
-    color: var(--accent);
-  }
-  a.primary {
-    padding: 7px 14px;
-    border-radius: 8px;
-    background: var(--accent);
-    color: var(--surface);
-    text-decoration: none;
-    font-weight: 600;
-  }
-  button:focus-visible,
-  a:focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 2px;
+    font-size: 13px;
   }
 </style>

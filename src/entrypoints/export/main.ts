@@ -1,4 +1,7 @@
 import { mount } from 'svelte';
+import '../../ui/fonts.css';
+import '../../ui/theme.css';
+import './page.css';
 import App from './App.svelte';
 
 const params = new URLSearchParams(location.search);

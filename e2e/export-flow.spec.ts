@@ -6,7 +6,7 @@ import { readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { collectExport, waitForDownloads } from './golden/collect';
 import { diffAgainstGolden } from './golden/compare';
-import { CANVAS, expect, resetExtensionStorage, test } from './fixtures';
+import { CANVAS, expect, resetExtensionStorage, test, waitForExport } from './fixtures';
 
 test.beforeEach(({ downloadsDir }) => {
   for (const entry of readdirSync(downloadsDir))
@@ -18,9 +18,7 @@ async function exportFromCoursePage(page: import('@playwright/test').Page, cours
   const exportTab = page.context().waitForEvent('page');
   await page.getByRole('button', { name: 'Download course' }).click();
   const tab = await exportTab;
-  await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
-    timeout: 60_000,
-  });
+  await waitForExport(tab);
   return tab;
 }
 
@@ -28,7 +26,11 @@ test('exports a course as a ZIP that matches v2', async ({ page, serviceWorker, 
   await resetExtensionStorage(serviceWorker, {});
   const tab = await exportFromCoursePage(page, 101);
   await expect(
-    tab.getByText(/^Saved \d+ files to Downloads\/Introduction to Psychology\.zip$/),
+    tab.getByRole('heading', { level: 1, name: 'Introduction to Psychology is saved' }),
+  ).toBeVisible();
+  // The path the browser really saved to, from the folder it's in.
+  await expect(
+    tab.getByText(`${path.basename(downloadsDir)}/Introduction to Psychology.zip`),
   ).toBeVisible();
   await waitForDownloads(downloadsDir);
   expect(diffAgainstGolden('student-zip-default', collectExport(downloadsDir))).toEqual([]);
@@ -54,7 +56,10 @@ test('says Partial and lists files that failed, instead of "complete"', async ({
   await resetExtensionStorage(serviceWorker, {});
   mock.addFault({ path: '^/files/101003/download', status: 500 });
   const tab = await exportFromCoursePage(page, 101);
-  await expect(tab.locator('.result')).toContainText("1 file couldn't be downloaded");
+  await expect(tab.getByText("1 file couldn't be downloaded.")).toBeVisible();
+  // Its kind's row on the receipt says so, and opens to name the file and why.
+  await tab.getByText("1 couldn't be downloaded").click();
+  await expect(tab.getByText(/Canvas had an error \(HTTP 500\)/)).toBeVisible();
   await waitForDownloads(downloadsDir);
   const zip = path.join(downloadsDir, 'Introduction to Psychology.zip');
   // The overview inside the ZIP lists it too, as written after the downloads finished.
@@ -75,9 +80,9 @@ test('names the file the browser actually saved when one with that name was ther
   await exportFromCoursePage(page, 104);
   await waitForDownloads(downloadsDir);
   const tab = await exportFromCoursePage(page, 104);
-  await expect(tab.locator('.result')).toHaveText(
-    /^Saved \d+ files to Downloads\/Academic Writing \(1\)\.zip$/,
-  );
+  await expect(
+    tab.getByText(`${path.basename(downloadsDir)}/Academic Writing (1).zip`, { exact: true }),
+  ).toBeVisible();
   await waitForDownloads(downloadsDir);
   expect(readdirSync(downloadsDir).sort()).toEqual([
     'Academic Writing (1).zip',

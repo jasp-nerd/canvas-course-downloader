@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { downloadsSink, mimeTypeFor } from './downloads';
+import { downloadBlob, downloadsSink, mimeTypeFor } from './downloads';
 
 /** A downloads API that finishes each download when the test says so. */
 function fakeDownloads() {
@@ -89,5 +89,68 @@ describe('downloadsSink', () => {
     fake.finish(1, 'complete');
     await sink.close();
     expect(revoke).toHaveBeenCalledWith(fake.started[0]!.url);
+  });
+
+  it('tells which download each file became, so the page can show it in its folder', async () => {
+    const fake = fakeDownloads();
+    const started: [string, number][] = [];
+    const sink = downloadsSink({
+      folder: 'Course/',
+      conflictAction: 'uniquify',
+      downloads: fake.api as never,
+      onStarted: (path, id) => started.push([path, id]),
+    });
+    await sink.writeUrl!('Files/a.pdf', 'https://x/a');
+    await sink.write('index.html', new TextEncoder().encode('<p>x</p>'), {});
+    expect(started).toEqual([
+      ['Files/a.pdf', 1],
+      ['index.html', 2],
+    ]);
+    fake.finish(1, 'complete');
+    fake.finish(2, 'complete');
+    await sink.close();
+  });
+});
+
+describe('downloadBlob', () => {
+  function fakeApi(outcome: { state: string; error?: string }, filename: string) {
+    const fake = fakeDownloads();
+    const api = {
+      ...fake.api,
+      download: vi.fn(async (opts: { url: string }) => {
+        const id = await fake.api.download(opts);
+        setTimeout(() => fake.finish(id, outcome.state as 'complete', outcome.error));
+        return id;
+      }),
+      search: vi.fn(() => Promise.resolve([{ id: 1, filename }])),
+    };
+    return api;
+  }
+
+  it('reports the download id and the full path the browser saved the ZIP at', async () => {
+    const api = fakeApi({ state: 'complete' }, '/Users/sam/Desktop/Linear Algebra (1).zip');
+    const saved = await downloadBlob(
+      api as never,
+      new Blob(['zip']),
+      'Linear Algebra.zip',
+      'uniquify',
+    );
+    expect(saved).toEqual({
+      ok: true,
+      id: 1,
+      filename: '/Users/sam/Desktop/Linear Algebra (1).zip',
+      savedName: 'Linear Algebra (1).zip',
+    });
+  });
+
+  it("passes on the browser's reason when the ZIP wasn't saved, e.g. a closed save window", async () => {
+    const api = fakeApi({ state: 'interrupted', error: 'USER_CANCELED' }, '');
+    const saved = await downloadBlob(
+      api as never,
+      new Blob(['zip']),
+      'Linear Algebra.zip',
+      'uniquify',
+    );
+    expect(saved).toEqual({ ok: false, reason: 'USER_CANCELED' });
   });
 });

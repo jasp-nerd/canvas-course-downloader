@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { waitForDownloads } from './golden/collect';
-import { CANVAS, expect, resetExtensionStorage, test } from './fixtures';
+import { CANVAS, expect, resetExtensionStorage, test, waitForExport } from './fixtures';
 
 const unzip = (...args: string[]) => execFileSync('unzip', args, { encoding: 'utf8' });
 const zipEntries = (zip: string) => unzip('-Z1', zip).trim().split('\n');
@@ -18,9 +18,7 @@ async function exportCourse(page: import('@playwright/test').Page, courseId: num
   const next = page.context().waitForEvent('page');
   await page.getByRole('button', { name: 'Download course' }).click();
   const tab = await next;
-  await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
-    timeout: 60_000,
-  });
+  await waitForExport(tab);
   return tab;
 }
 
@@ -31,13 +29,31 @@ test('makes a NotebookLM pack: a guide, one Markdown file per module and the sli
 }) => {
   await resetExtensionStorage(serviceWorker, { profile: 'study', aiTarget: 'notebooklm' });
   const tab = await exportCourse(page, 104);
-  await expect(tab.locator('.next')).toHaveText(
-    'Unzip it, then add its files to a new notebook in NotebookLM.',
-  );
-  await expect(tab.getByRole('link', { name: 'NotebookLM' })).toHaveAttribute(
+  await expect(
+    tab.getByText(/^Academic Writing · \d+ sources · fits in one notebook$/),
+  ).toBeVisible();
+  const steps = tab.getByRole('list', { name: 'Three steps to start studying' });
+  await expect(steps.getByRole('listitem')).toHaveCount(3);
+  await expect(steps.getByRole('link', { name: 'Open NotebookLM' })).toHaveAttribute(
     'href',
     'https://notebooklm.google.com/',
   );
+  await expect(steps.getByRole('listitem').nth(1)).toContainText('Unzip it first');
+  await expect(steps.getByRole('button', { name: 'Show in folder' })).toBeVisible();
+
+  // The starter prompt and the suggestions copy their text.
+  await tab.evaluate(() => {
+    navigator.clipboard.writeText = (text: string) => {
+      (window as unknown as { copied: string }).copied = text;
+      return Promise.resolve();
+    };
+  });
+  const copied = () => tab.evaluate(() => (window as unknown as { copied?: string }).copied);
+  await steps.getByRole('button', { name: 'Copy', exact: true }).click();
+  expect(await copied()).toMatch(/^Quiz me on Week 1: .+\. Ask one question at a time/);
+  await expect(steps.getByRole('button', { name: 'Copied', exact: true })).toBeVisible();
+  await steps.getByRole('button', { name: "What's due next?" }).click();
+  expect(await copied()).toBe("What's due next?");
   await waitForDownloads(downloadsDir);
 
   expect(readdirSync(downloadsDir)).toEqual(['Academic Writing - AI study pack.zip']);
@@ -76,8 +92,17 @@ test('splits a course into projects that each fit in Claude', async ({
 }) => {
   await resetExtensionStorage(serviceWorker, { profile: 'study', aiTarget: 'claude' });
   const tab = await exportCourse(page, 104);
-  await expect(tab.locator('.next')).toContainText('Unzip it, then add each of its');
-  await expect(tab.locator('.next')).toContainText('folders to its own project in Claude.');
+  await expect(
+    tab.getByText(/^Academic Writing · \d+ sources · split into \d+ projects$/),
+  ).toBeVisible();
+  const steps = tab.getByRole('list', { name: 'Three steps to start studying' });
+  await expect(steps.getByRole('link', { name: 'Open Claude' })).toHaveAttribute(
+    'href',
+    'https://claude.ai/projects',
+  );
+  await expect(steps.getByRole('listitem').nth(1)).toContainText(
+    'Add each folder to its own project',
+  );
   await tab.locator('main').screenshot({ path: 'test-results/export-study-pack.png' });
   await waitForDownloads(downloadsDir);
 

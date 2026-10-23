@@ -1,6 +1,13 @@
 import type { Page, Worker } from '@playwright/test';
 import type { browser } from 'wxt/browser';
-import { CANVAS, expect, openActionPopup, resetExtensionStorage, test } from './fixtures';
+import {
+  CANVAS,
+  expect,
+  openActionPopup,
+  resetExtensionStorage,
+  test,
+  waitForExport,
+} from './fixtures';
 
 type Chrome = { chrome: typeof browser };
 
@@ -418,18 +425,17 @@ test("a new user's first download asks what downloads should be, once", async ({
   const exportTab = page.context().waitForEvent('page');
   await question.getByRole('button', { name: 'Start download' }).click();
   const tab = await exportTab;
-  await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
-    timeout: 60_000,
-  });
-  await expect(tab.locator('.result')).toContainText('Academic Writing - AI study pack.zip');
+  await waitForExport(tab);
+  await expect(
+    tab.getByRole('heading', { level: 1, name: 'Your study pack is ready' }),
+  ).toBeVisible();
+  await expect(tab.getByText(/\/Academic Writing - AI study pack\.zip$/)).toBeVisible();
 
   // Asked once: the next download starts straight away.
   const next = page.context().waitForEvent('page');
   await page.getByRole('button', { name: 'Download course' }).click();
   await expect(question).toBeHidden();
-  await expect((await next).getByRole('heading', { name: 'Export finished' })).toBeVisible({
-    timeout: 60_000,
-  });
+  await waitForExport(await next);
 });
 
 test("a teacher's first download also asks whether to include students' work", async ({

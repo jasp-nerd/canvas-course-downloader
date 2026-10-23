@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { waitForDownloads } from './golden/collect';
-import { CANVAS, expect, resetExtensionStorage, test } from './fixtures';
+import { CANVAS, expect, resetExtensionStorage, test, waitForExport } from './fixtures';
 
 const today = new Date().toISOString().slice(0, 10);
 const pdfsIn = (zip: string) =>
@@ -22,9 +22,7 @@ async function exportCourse(page: import('@playwright/test').Page, courseId: num
   const next = page.context().waitForEvent('page');
   await page.getByRole('button', { name: /^Download course/ }).click();
   const tab = await next;
-  await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
-    timeout: 60_000,
-  });
+  await waitForExport(tab);
   await tab.close();
 }
 
@@ -46,9 +44,7 @@ test('the dashboard says when a saved course has new files, and downloads just t
   const next = page.context().waitForEvent('page');
   await note.getByRole('button', { name: 'Download 1 new file' }).click();
   const tab = await next;
-  await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
-    timeout: 60_000,
-  });
+  await waitForExport(tab);
   await waitForDownloads(downloadsDir);
   expect(pdfsIn(path.join(downloadsDir, `Academic Writing (update ${today}).zip`))).toEqual([
     'Files/Lectures/Lecture 13 - Review session.pdf',

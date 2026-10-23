@@ -6,15 +6,14 @@ import {
   openActionPopup,
   resetExtensionStorage,
   test,
+  waitForExport,
 } from './fixtures';
 
 const HOUR = 60 * 60 * 1000;
 
 /** Lets an export the popup started finish, so it can't write to the next test's storage. */
 async function finish(tab: Page) {
-  await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
-    timeout: 60_000,
-  });
+  await waitForExport(tab);
   await tab.close();
 }
 

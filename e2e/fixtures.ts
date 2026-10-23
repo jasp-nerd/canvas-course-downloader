@@ -3,7 +3,14 @@
 //
 // Use `test.use({ extensionPath: V2_BUILD })` to run the same scenario
 // against the v2.11.0 reference build.
-import { chromium, expect, test as base, type BrowserContext, type Worker } from '@playwright/test';
+import {
+  chromium,
+  expect,
+  test as base,
+  type BrowserContext,
+  type Page,
+  type Worker,
+} from '@playwright/test';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import os from 'node:os';
@@ -174,6 +181,16 @@ export const test = base.extend<object, WorkerFixtures>({
 });
 
 export { expect };
+
+/**
+ * Waits until the Download tab has finished every course. Its status line (a
+ * live region, so screen readers hear it too) starts with "Finished" then.
+ */
+export async function waitForExport(tab: Page, timeout = 60_000) {
+  await expect(tab.getByRole('status').filter({ hasText: /^Finished/ })).toHaveCount(1, {
+    timeout,
+  });
+}
 
 /**
  * Opens the real toolbar popup for the focused window (as a click on the

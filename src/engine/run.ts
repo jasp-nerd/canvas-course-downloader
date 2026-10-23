@@ -10,6 +10,7 @@ export interface RunProgress {
   done: number;
   failed: number;
   bytes: number;
+  /** The file this report is about: the one just written, or the one that just failed. */
   current: string;
 }
 
@@ -55,7 +56,11 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
     bytes: 0,
     current: '',
   };
-  const report = () => options.onProgress?.({ ...progress });
+  // Several files are written at once, so each report names its own file.
+  const report = (file: PlannedFile) => {
+    progress.current = file.path;
+    options.onProgress?.({ ...progress });
+  };
 
   async function fetchBody(file: PlannedFile, buffer: boolean): Promise<Body> {
     if (file.source.kind === 'text') return { ok: true, data: encoder.encode(file.source.content) };
@@ -71,7 +76,6 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
   }
 
   async function write(file: PlannedFile, body: Body) {
-    progress.current = file.path;
     if (!body.ok) {
       failed.push({ path: file.path, reason: body.reason });
       progress.failed++;
@@ -95,20 +99,21 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
         progress.failed++;
       }
     }
-    report();
+    report(file);
   }
 
   async function passUrl(file: PlannedFile, url: string) {
-    progress.current = file.path;
     try {
       await sink.writeUrl!(file.path, url);
       progress.done++;
+      // The browser fetches it, so Canvas's size is the one there is.
+      progress.bytes += file.source.kind === 'remote' ? file.source.size : 0;
     } catch (error) {
       if (signal?.aborted) throw error;
       failed.push({ path: file.path, reason: reasonOf(error) });
       progress.failed++;
     }
-    report();
+    report(file);
   }
 
   // Pages like the overview are written last, when every other file's outcome is known.

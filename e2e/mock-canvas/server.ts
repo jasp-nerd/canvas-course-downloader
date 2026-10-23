@@ -43,6 +43,8 @@ export interface MockState {
   rateLimitBudget: number;
   /** Courses that got a new file after their first export. */
   newFileIn: number[];
+  /** Courses the user teaches instead of takes. */
+  teacherIn: number[];
   faults: FaultRule[];
 }
 
@@ -74,6 +76,7 @@ const initialState = (): MockState => ({
   fileDelayMs: 0,
   rateLimitBudget: 700,
   newFileIn: [],
+  teacherIn: [],
   faults: [],
 });
 
@@ -132,7 +135,7 @@ function apiRoute(
         course_code: c.course_code,
         term: c.term,
         enrollments: [
-          c.teaching
+          c.teaching || state.teacherIn.includes(c.id)
             ? { type: 'teacher', role: 'TeacherEnrollment' }
             : { type: 'student', role: 'StudentEnrollment' },
         ],

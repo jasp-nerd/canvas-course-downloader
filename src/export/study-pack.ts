@@ -147,6 +147,7 @@ interface Names {
 }
 
 const GUIDE = '00 Course guide.md';
+const SKIPPED_LIST = '_extras/skipped files.txt';
 const hasText = (p: Part) => p.docs.length > 0 || p.transcripts.length > 0;
 const textName = (p: Part) => `${pad(p.number)} ${p.name}.md`;
 const fileName = (p: Part, f: RemoteEntry) => `M${pad(p.number)} ${f.name}`;
@@ -322,7 +323,7 @@ export function planStudyPack(input: StudyPackInput): PlannedFile[] {
       ? `${target.tool} doesn't take these file types, or the files are too large.`
       : 'This pack is text only.';
     out.push({
-      path: '_extras/skipped files.txt',
+      path: SKIPPED_LIST,
       source: { kind: 'text', content: `Not in this pack. ${why}\n\n${skipped.join('\n')}\n` },
     });
   }
@@ -330,6 +331,30 @@ export function planStudyPack(input: StudyPackInput): PlannedFile[] {
 }
 
 const baseName = (path: string) => path.slice(path.lastIndexOf('/') + 1);
+
+/**
+ * What the Download tab tells the user about a pack, read back from the pack
+ * itself: the files the tool doesn't take, and the Canvas modules it holds.
+ */
+export function packContents(
+  files: PlannedFile[],
+  courseName: string,
+): { leftOut: string[]; modules: string[] } {
+  const text = (f: PlannedFile) => (f.source.kind === 'text' ? f.source.content : '');
+  const list = files.find((f) => f.path === SKIPPED_LIST);
+  // "Not in this pack. <why>" then a blank line and one path per line.
+  const leftOut = list ? text(list).split('\n\n')[1]!.split('\n').filter(Boolean) : [];
+  const modules = new Set<string>();
+  for (const f of files) {
+    const name = baseName(f.path);
+    if (name === GUIDE || !/^\d{2} .*\.md$/.test(name)) continue;
+    // "# 01 Week 1: Vectors — Linear Algebra", a blank line, then "> Canvas module 1 of 6."
+    const [title = '', , note = ''] = text(f).split('\n');
+    if (note.startsWith('> Canvas module '))
+      modules.add(title.replace(/^# \d{2} /, '').replace(` — ${courseName}`, ''));
+  }
+  return { leftOut, modules: [...modules] };
+}
 
 /** Item headings are level 2, so headings inside an item start at level 3. */
 const demoteHeadings = (html: string) =>

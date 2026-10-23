@@ -2,7 +2,7 @@
 import { readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { waitForDownloads } from './golden/collect';
-import { CANVAS, expect, resetExtensionStorage, test } from './fixtures';
+import { CANVAS, expect, resetExtensionStorage, test, waitForExport } from './fixtures';
 
 test.beforeEach(async ({ serviceWorker, downloadsDir }) => {
   await resetExtensionStorage(serviceWorker, {});
@@ -28,9 +28,7 @@ async function exportCourse(page: Page, courseId: number) {
   const next = page.context().waitForEvent('page');
   await page.getByRole('button', { name: 'Download course', exact: true }).click();
   const tab = await next;
-  await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
-    timeout: 60_000,
-  });
+  await waitForExport(tab);
   await tab.close();
 }
 
@@ -66,10 +64,11 @@ test('exports courses picked from Current and Past, keeping the selection across
   await dialog.getByRole('button', { name: 'Download 2 courses' }).click();
   await expect(dialog).toBeHidden();
   const tab = await exportTab;
-  await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
-    timeout: 60_000,
-  });
-  await expect(tab.locator('[data-outcome="success"]')).toHaveCount(2);
+  await waitForExport(tab);
+  // One receipt per course, each with its own Show in folder.
+  await expect(tab.getByRole('heading', { name: 'Linear Algebra is saved' })).toBeVisible();
+  await expect(tab.getByRole('heading', { name: 'Calculus I is saved' })).toBeVisible();
+  await expect(tab.getByRole('button', { name: 'Show in folder' })).toHaveCount(2);
   await waitForDownloads(downloadsDir);
   expect(readdirSync(downloadsDir).sort()).toEqual(['Calculus I.zip', 'Linear Algebra.zip']);
 });

@@ -99,6 +99,15 @@ describe('mock Canvas', () => {
     expect((await get('/api/v1/courses', MOCK_HOSTS.instructure, setCookie)).status).toBe(200);
   });
 
+  it('makes the user a teacher in the courses the test says', async () => {
+    const role = async (id: number) =>
+      (JSON.parse((await get(`/api/v1/courses/${id}`)).body) as { enrollments: { type: string }[] })
+        .enrollments[0]!.type;
+    mock.state.teacherIn = [104];
+    expect(await role(104)).toBe('teacher');
+    expect(await role(101)).toBe('student');
+  });
+
   it('serves a real PDF for file downloads', async () => {
     const reply = await get('/files/101001/download?download_frd=1');
     expect(reply.status).toBe(200);

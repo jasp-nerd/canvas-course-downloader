@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { waitForDownloads } from './golden/collect';
-import { CANVAS, expect, resetExtensionStorage, test } from './fixtures';
+import { CANVAS, expect, resetExtensionStorage, test, waitForExport } from './fixtures';
 
 const unzip = (...args: string[]) => execFileSync('unzip', args, { encoding: 'utf8' });
 
@@ -22,9 +22,13 @@ test('a copy in Markdown with front matter, AGENTS.md, llms.txt and course.json'
   const next = page.context().waitForEvent('page');
   await page.getByRole('button', { name: 'Download course' }).click();
   const tab = await next;
-  await expect(tab.getByRole('heading', { name: 'Export finished' })).toBeVisible({
-    timeout: 60_000,
-  });
+  await waitForExport(tab);
+  // The receipt names the folder the ZIP unzips to, with a command to start an agent there.
+  await expect(tab.getByText(/^cd ".+" && claude$/)).toHaveText(
+    new RegExp(`${path.basename(downloadsDir)}/Academic Writing" && claude$`),
+  );
+  await expect(tab.getByRole('button', { name: 'Copy path' })).toBeVisible();
+  await expect(tab.getByText(/AGENTS\.md at the top of the folder/)).toBeVisible();
   await waitForDownloads(downloadsDir);
 
   const zip = path.join(downloadsDir, 'Academic Writing.zip');

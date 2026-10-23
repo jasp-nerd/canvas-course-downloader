@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { DocumentEntry, PlannedFile, RemoteEntry, TextEntry } from '../engine/types';
-import { AI_TARGETS, planStudyPack, type AiTarget, type StudyPackInput } from './study-pack';
+import {
+  AI_TARGETS,
+  packContents,
+  planStudyPack,
+  type AiTarget,
+  type StudyPackInput,
+} from './study-pack';
 
 const ORIGIN = 'https://school.instructure.com/courses/103';
 
@@ -277,5 +283,26 @@ describe('planStudyPack', () => {
     expect(text(pack, '00 Course guide.md')).toContain(
       '- Old slides.pdf (Page: Week 2): No access (403)',
     );
+  });
+});
+
+describe('packContents', () => {
+  it('reads back the files a pack leaves out and the modules it holds', () => {
+    expect(packContents(planStudyPack(input()), 'Linear Algebra')).toEqual({
+      leftOut: ['Files/Recording.mp4'],
+      modules: ['Week 1: Vectors', 'Week 2: Matrices'],
+    });
+  });
+
+  it('names each module once when the pack is split into notebooks', () => {
+    const small: AiTarget = { ...AI_TARGETS.notebooklm, maxFiles: 4 };
+    expect(packContents(planStudyPack(input({ target: small })), 'Linear Algebra').modules).toEqual(
+      ['Week 1: Vectors', 'Week 2: Matrices'],
+    );
+  });
+
+  it('is empty for a pack without modules or left-out files', () => {
+    const pack = planStudyPack(input({ outline: [], entries: [file('1', 'Notes.pdf')] }));
+    expect(packContents(pack, 'Linear Algebra')).toEqual({ leftOut: [], modules: [] });
   });
 });
