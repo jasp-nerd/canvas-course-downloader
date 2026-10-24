@@ -13,7 +13,7 @@ export default defineConfig(
       '.claude/',
       'legacy/',
       'marketing/',
-      'screenshots/',
+      'media/',
       'node_modules/',
       // Separate projects with their own tooling: the website (Astro) and the videos.
       'website/',
