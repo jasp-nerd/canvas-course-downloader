@@ -1,0 +1,27 @@
+---
+// The logo from the extension's own geometry: 32 dots and the arrow. `filled` dots are red,
+// the rest pale, so the same mark doubles as a progress ring (the page script fills it).
+import { LOGO_ARROW, LOGO_DOTS, LOGO_TRANSFORM, LOGO_VIEWBOX } from '../../../src/ui/logo-paths';
+
+interface Props {
+  class?: string;
+  filled?: number;
+  label?: string;
+  ring?: string;
+}
+const { class: className = '', filled = LOGO_DOTS.length, label, ring } = Astro.props;
+---
+
+<svg
+  class:list={['logo', className]}
+  viewBox={LOGO_VIEWBOX}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  data-ring={ring}
+>
+  <g transform={LOGO_TRANSFORM}>
+    {LOGO_DOTS.map((d, i) => <path class:list={['dot', { on: i < filled }]} d={d} />)}
+    <path class="arrow" d={LOGO_ARROW} />
+  </g>
+</svg>

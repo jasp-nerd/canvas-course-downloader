@@ -1,0 +1,26 @@
+---
+// A folder tree from data/kinds.ts. Rows carry `data-row` so the page script can reveal them in order.
+import type { Node } from '../data/kinds';
+
+interface Props {
+  nodes: Node[];
+}
+const { nodes } = Astro.props;
+---
+
+<ul>
+  {
+    nodes.map((n) => (
+      <li class:list={{ folder: !!n.children }}>
+        <span class:list={['row', { more: /^\d+ /.test(n.name) }]} data-row>
+          <svg class="icon" aria-hidden="true">
+            <use href={n.children ? '#i-folder' : '#i-file'} />
+          </svg>
+          {n.name}
+          {n.note && <span class="note">{n.note}</span>}
+        </span>
+        {n.children && <Astro.self nodes={n.children} />}
+      </li>
+    ))
+  }
+</ul>
