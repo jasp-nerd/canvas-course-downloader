@@ -20,6 +20,8 @@ const sounds = {
   'click.wav': ['-f', 'lavfi', '-i', 'anoisesrc=d=0.06:c=pink:a=0.6', '-af', 'highpass=f=900,lowpass=f=5000,afade=t=out:st=0:d=0.06,volume=0.9'],
   // A two-note chime for "saved": E6 then A6, each fading out.
   'chime.wav': ['-f', 'lavfi', '-i', 'sine=f=1318.5:d=1.2', '-f', 'lavfi', '-i', 'sine=f=1760:d=1.2', '-filter_complex', '[0]afade=t=out:st=0:d=1.1,volume=0.22[a];[1]adelay=110|110,afade=t=out:st=0.1:d=1.1,volume=0.18[b];[a][b]amix=inputs=2:normalize=0'],
+  // A lighter, higher click for ticking a checkbox.
+  'tick.wav': ['-f', 'lavfi', '-i', 'anoisesrc=d=0.035:c=pink:a=0.5', '-af', 'highpass=f=2500,lowpass=f=8000,afade=t=out:st=0:d=0.035,volume=0.7'],
   // A soft pop for Pip: a short sine sweep.
   'pop.wav': ['-f', 'lavfi', '-i', 'sine=f=520:d=0.12', '-af', 'vibrato=f=18:d=0.4,afade=t=out:st=0.02:d=0.1,volume=0.5'],
 };

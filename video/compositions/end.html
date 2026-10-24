@@ -1,0 +1,127 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: var(--mist);
+      overflow: hidden;
+    }
+    #e-dark {
+      position: absolute;
+      inset: 0;
+      background: var(--navy);
+      opacity: 0;
+    }
+    #e-cam {
+      position: absolute;
+      inset: 0;
+      transform-origin: 960px 520px;
+    }
+    /* The lockup: the mark, 40 px, the name and the version, centred as one. */
+    #e-lockup {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 380px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
+    }
+    #e-ring {
+      flex: none;
+      width: 150px;
+      height: 150px;
+    }
+    #e-word {
+      position: relative;
+      font: 800 96px/1 Gabarito, sans-serif;
+      letter-spacing: -0.04em;
+      color: #fff;
+      white-space: nowrap;
+    }
+    #e-ver {
+      display: inline-block;
+      margin-left: 20px;
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: var(--sun);
+      color: var(--ink);
+      font: 800 42px/1 Gabarito, sans-serif;
+      letter-spacing: -0.02em;
+      vertical-align: 20px;
+    }
+    /* Pip sits on the end of the name, as if it had just climbed up. */
+    #e-pip {
+      position: absolute;
+      right: -24px;
+      bottom: 68px;
+      width: 138px;
+    }
+    #e-cta {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 630px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+    }
+    #e-pill {
+      display: inline-flex;
+      align-items: center;
+      height: 84px;
+      padding: 0 46px;
+      border-radius: 999px;
+      background: var(--red);
+      box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.2);
+      font: 700 36px/1 Figtree, sans-serif;
+      color: #fff;
+    }
+    #e-also {
+      font: 500 28px/1 Figtree, sans-serif;
+      color: #c9d2de;
+    }
+  </style>
+  <div id="root" data-composition-id="end" data-width="1920" data-height="1080">
+    <div id="e-dark"></div>
+    <div id="e-cam" data-layout-allow-overflow>
+      <div id="e-lockup">
+        <svg id="e-ring" class="ring"></svg>
+        <p id="e-word"><span id="e-name">Course Downloader</span><span id="e-ver">3.0</span><img id="e-pip" src="assets/pip/cheer.webp" alt="" /></p>
+      </div>
+      <div id="e-cta">
+        <span id="e-pill">Add to Chrome, free</span>
+        <span id="e-also">Also for Edge and Brave</span>
+      </div>
+    </div>
+  </div>
+  <script>
+    const ring = document.querySelector('#e-ring');
+    window.drawLogo(ring);
+    const progress = { p: 0 };
+    const paint = () => window.fillLogo(ring, progress.p);
+    // Before the name arrives, the mark sits large in the middle of the frame. The lockup is
+    // 150 + 40 + 774 (the name) + 20 + 91 (the badge) = 1075 px wide, so the mark's centre is at
+    // (497.5, 455); measured once with the fonts loaded, as layout may run before they are.
+    const dx = 960 - 497.5;
+    const dy = 540 - 455;
+
+    const tl = gsap.timeline({ paused: true });
+    // 0–1.5: the ring fills on the light ground, the drums out.
+    tl.fromTo('#e-ring', { x: dx, y: dy, scale: 2.4 }, { x: dx, y: dy, scale: 2.5, duration: 1.5, ease: 'sine.inOut' }, 0);
+    tl.fromTo(progress, { p: 0 }, { p: 1, duration: 1.3, ease: 'power2.inOut', onUpdate: paint }, 0.05);
+    // 1.5: the ground goes dark and the mark moves into the lockup as the name wipes in.
+    tl.fromTo('#e-dark', { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.inOut' }, 1.5);
+    tl.fromTo('#e-ring', { x: dx, y: dy, scale: 2.5 }, { immediateRender: false, x: 0, y: 0, scale: 1, duration: 0.6, ease: 'power3.inOut' }, 1.5);
+    tl.fromTo('#e-name', { clipPath: 'inset(0 100% 0 0)', x: -24 }, { clipPath: 'inset(0 0% 0 0)', x: 0, duration: 0.55, ease: 'expo.out' }, 1.85);
+    tl.fromTo('#e-ver', { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(2)' }, 2.15);
+    // Pip pops up onto the name on the beat at 2.0 (36.0 in the release film).
+    tl.fromTo('#e-pip', { y: 90, opacity: 0, scaleY: 0.9 }, { y: 0, opacity: 1, scaleY: 1, duration: 0.4, ease: 'back.out(1.6)', transformOrigin: '50% 100%' }, 2.0);
+    tl.fromTo('#e-cta', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, 2.45);
+    window.pushIn(tl, '#e-cam', 2.0, 4.0, 1.025);
+    paint();
+    window.__timelines['end'] = tl;
+  </script>
+</template>

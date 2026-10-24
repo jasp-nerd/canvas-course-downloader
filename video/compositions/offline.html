@@ -1,0 +1,91 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: var(--mist);
+      overflow: hidden;
+    }
+    #o-t {
+      position: absolute;
+      left: 160px;
+      top: 420px;
+      width: 620px;
+    }
+    /* The overview page from a real export, opened from the Downloads folder with Wi-Fi off. */
+    #o-win {
+      position: absolute;
+      left: 840px;
+      top: 110px;
+      width: 1080px;
+      height: 1000px;
+      transform-origin: 400px 400px;
+    }
+    #o-browser {
+      inset: 0;
+      border-radius: 28px 0 0 0;
+    }
+    #o-page {
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1600px;
+      background-image: url('assets/ui/open-me.webp');
+      background-position: -333px 0;
+    }
+    #o-wifi {
+      position: relative;
+      width: 30px;
+      height: 30px;
+      flex: none;
+    }
+    #o-wifi svg {
+      position: absolute;
+      inset: 0;
+      width: 30px;
+      height: 30px;
+    }
+    #o-slash {
+      color: var(--red);
+    }
+    .url svg {
+      width: 22px;
+      height: 22px;
+    }
+  </style>
+  <div id="root" data-composition-id="offline" data-width="1920" data-height="1080">
+    <p id="o-t" class="title"><span class="ln">Every copy opens</span><span class="ln">without internet.</span></p>
+    <div id="o-win" data-layout-allow-overflow>
+      <div id="o-browser" class="browser">
+        <div class="chrome">
+          <div class="tabs">
+            <div class="tab on" style="width: 420px"><svg class="fav" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5" fill="none" stroke="#5f6978" stroke-width="2" stroke-linejoin="round"></path></svg>Open me - Academic Writing</div>
+          </div>
+          <div class="toolbar">
+            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <div class="url"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>file:///Users/you/Downloads/Academic Writing/Open me - Academic Writing.html</div>
+            <span id="o-wifi">
+              <svg viewBox="0 0 24 24"><path d="M2 8.8a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 20h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              <svg id="o-slash" viewBox="0 0 24 24"><path id="o-slash-line" d="M3 3l18 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="26" stroke-dashoffset="26"></path></svg>
+            </span>
+          </div>
+        </div>
+        <div class="page">
+          <div id="o-page" class="capture"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo('#o-win', { x: 80, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 0);
+    window.enterTitle(tl, '#o-t', 0.2);
+    // The Wi-Fi goes off, and the page still reads, scrolled as a reader would.
+    tl.fromTo('#o-slash-line', { strokeDashoffset: 26 }, { strokeDashoffset: 0, duration: 0.3, ease: 'power2.out' }, 0.7);
+    tl.fromTo('#o-page', { y: 0 }, { y: -360, duration: 2.8, ease: 'power2.inOut' }, 1.0);
+    window.pushIn(tl, '#o-win', 0.5, 3.5, 1.03);
+    window.__timelines['offline'] = tl;
+  </script>
+</template>

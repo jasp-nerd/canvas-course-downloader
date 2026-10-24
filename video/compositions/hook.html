@@ -1,0 +1,428 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: var(--mist);
+      overflow: hidden;
+    }
+    /* One continuous shot: the Canvas page, the click, the new tab, the save and its receipt. */
+    #h-cam {
+      position: absolute;
+      inset: 0;
+      transform-origin: 0 0;
+    }
+    #h-hold {
+      position: absolute;
+      inset: 0;
+      transform-origin: 600px 560px;
+    }
+    #h-push {
+      position: absolute;
+      inset: 0;
+      transform-origin: 520px 620px;
+    }
+    #h-browser {
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+    .h-school {
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      background: #2e6fae;
+      font: 800 15px/1 Figtree, sans-serif;
+      color: #fff;
+    }
+    #h-tab-b {
+      width: 0;
+      padding: 0;
+    }
+    #h-url-b {
+      position: absolute;
+      left: 22px;
+      opacity: 0;
+    }
+    .url {
+      position: relative;
+    }
+    #h-canvas {
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 968px;
+      background-image: url('assets/ui/course-page.webp');
+    }
+    /* The Download course button on the capture, pressed by the cursor. */
+    #h-press {
+      position: absolute;
+      left: 480px;
+      top: 24px;
+      width: 221px;
+      height: 51px;
+      border-radius: 8px;
+      background: #14202f;
+      opacity: 0;
+    }
+    /* The export tab, rebuilt from the extension's CSS at film size. */
+    #h-export {
+      position: absolute;
+      inset: 0;
+      background: var(--mist);
+    }
+    #h-head {
+      position: absolute;
+      left: 54px;
+      top: 26px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font: 800 26px/1 Gabarito, sans-serif;
+      letter-spacing: -0.01em;
+    }
+    #h-head svg {
+      width: 46px;
+      height: 46px;
+    }
+    #h-card {
+      position: absolute;
+      left: 160px;
+      top: 190px;
+      width: 760px;
+      height: 484px;
+      border-radius: 40px;
+      background: #fff;
+      overflow: hidden;
+    }
+    #h-prog {
+      position: absolute;
+      left: 48px;
+      top: 44px;
+      width: 664px;
+    }
+    .h-top {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 36px;
+      align-items: center;
+      height: 180px;
+    }
+    #h-pct {
+      font: 800 92px/1 Gabarito, sans-serif;
+      letter-spacing: -0.04em;
+      color: var(--red);
+      font-variant-numeric: tabular-nums;
+    }
+    #h-name {
+      margin-top: 8px;
+      font: 700 34px/1.2 Gabarito, sans-serif;
+    }
+    #h-count {
+      margin-top: 4px;
+      font-size: 26px;
+      color: var(--ink-2);
+      font-variant-numeric: tabular-nums;
+    }
+    .h-bar {
+      height: 14px;
+      margin: 36px 0 22px;
+      border-radius: 99px;
+      background: var(--mist-2);
+      overflow: hidden;
+    }
+    #h-fill {
+      height: 100%;
+      width: 100%;
+      border-radius: inherit;
+      background: var(--red);
+      transform-origin: 0 50%;
+    }
+    .h-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      height: 46px;
+      font-size: 26px;
+      color: var(--ink-2);
+      white-space: nowrap;
+    }
+    .h-row svg {
+      flex: none;
+      width: 26px;
+      height: 26px;
+      color: var(--mint-ink);
+    }
+    /* The button's ring, which grows into the progress ring. */
+    #h-ring {
+      position: absolute;
+      left: 208px;
+      top: 234px;
+      width: 180px;
+      height: 180px;
+    }
+    #h-ring svg {
+      position: absolute;
+      inset: 0;
+      width: 180px;
+      height: 180px;
+    }
+    #h-ring-w .dot,
+    #h-ring-w .arrow {
+      fill: #fff;
+    }
+    /* The receipt the card becomes. */
+    #h-band {
+      position: absolute;
+      left: 160px;
+      top: 100px;
+      width: 960px;
+      padding: 38px 44px;
+      border-radius: 32px;
+      background: var(--sun-wash);
+    }
+    .h-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 44px;
+      padding: 0 20px;
+      border-radius: 999px;
+      background: #fff;
+      font: 700 21px Figtree, sans-serif;
+      color: var(--sun-ink);
+    }
+    .h-chip svg,
+    .h-r svg {
+      width: 26px;
+      height: 26px;
+    }
+    .h-rtitle {
+      margin-top: 14px;
+      font: 800 60px/1.05 Gabarito, sans-serif;
+      letter-spacing: -0.035em;
+    }
+    .h-meta {
+      margin-top: 10px;
+      font-size: 26px;
+      color: var(--ink-2);
+    }
+    #h-rcpt {
+      position: absolute;
+      left: 40px;
+      top: 30px;
+      width: 880px;
+    }
+    .h-rhead {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+      font-size: 24px;
+      color: var(--ink-3);
+    }
+    .h-rhead b {
+      font: 700 28px Gabarito, sans-serif;
+      color: var(--ink);
+    }
+    .h-r {
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      gap: 14px;
+      align-items: center;
+      height: 64px;
+      font-size: 26px;
+      border-top: 2px solid var(--line);
+    }
+    .h-r.first {
+      border-top: 0;
+    }
+    .h-r svg {
+      color: var(--mint-ink);
+    }
+    .h-r.warn svg {
+      color: var(--sun-ink);
+    }
+    .h-r u {
+      margin-left: 10px;
+      color: var(--ink-3);
+      text-underline-offset: 5px;
+    }
+    .h-r b span {
+      font-weight: 400;
+      color: var(--ink-3);
+    }
+    #h-fail {
+      margin: 0 0 12px 50px;
+      padding: 16px 22px;
+      border-radius: 18px;
+      background: var(--sun-wash);
+      font-size: 24px;
+    }
+    #h-fail small {
+      display: block;
+      margin-top: 4px;
+      font-size: 22px;
+      color: var(--ink-3);
+    }
+    #h-cursor {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    #h-t1 {
+      position: absolute;
+      left: 1040px;
+      top: 440px;
+      width: 760px;
+    }
+    #h-t2 {
+      position: absolute;
+      left: 1240px;
+      top: 440px;
+      width: 620px;
+    }
+  </style>
+  <div id="root" data-composition-id="hook" data-width="1920" data-height="1080">
+    <div id="h-cam" data-layout-allow-overflow>
+      <div id="h-hold" data-layout-allow-overflow>
+        <div id="h-push" data-layout-allow-overflow>
+          <div id="h-browser" class="browser">
+            <div class="chrome">
+              <div class="tabs">
+                <div id="h-tab-a" class="tab on"><span class="fav h-school">S</span>Academic Writing: Modules</div>
+                <div id="h-tab-b" class="tab"><svg id="h-fav" class="fav ring"></svg><span id="h-tab-title">Saving Academic Writing</span></div>
+              </div>
+              <div class="toolbar">
+                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                <div class="url"><span id="h-url-a">canvas.yourschool.edu/courses/104/modules</span><span id="h-url-b">Course Downloader</span></div>
+              </div>
+            </div>
+            <div class="page">
+              <div id="h-canvas" class="capture"><div id="h-press"></div></div>
+              <div id="h-export">
+                <div id="h-head"><svg id="h-logo" class="ring"></svg>Course Downloader</div>
+                <div id="h-band">
+                  <span class="h-chip"><svg viewBox="0 0 24 24"><path d="M10.3 3.9 2.4 17.6A2 2 0 0 0 4.1 20.6h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Some files missing</span>
+                  <p class="h-rtitle">Academic Writing is saved</p>
+                  <p class="h-meta">26 MB, saved as Downloads/Academic Writing.zip</p>
+                </div>
+                <div id="h-card">
+                  <div id="h-prog">
+                    <div class="h-top">
+                      <span></span>
+                      <div>
+                        <div id="h-pct">0%</div>
+                        <div id="h-name">Saving Academic Writing</div>
+                        <div id="h-count">0 of 54 files</div>
+                      </div>
+                    </div>
+                    <div class="h-bar"><div id="h-fill"></div></div>
+                    <div class="h-row"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span></span></div>
+                    <div class="h-row"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span></span></div>
+                    <div class="h-row"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span></span></div>
+                  </div>
+                  <div id="h-rcpt">
+                    <p class="h-rhead"><b>What's inside</b><span>53 files</span></p>
+                    <p class="h-r warn first"><svg viewBox="0 0 24 24"><path d="M10.3 3.9 2.4 17.6A2 2 0 0 0 4.1 20.6h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Files<u>1 couldn't be downloaded</u></span><b>23 <span>of 24</span></b></p>
+                    <p id="h-fail">Lectures / Lecture 02 - Academic Writing week 2.pdf<small>Not found in Canvas (HTTP 404)</small></p>
+                    <p class="h-r"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Pages</span><b>4</b></p>
+                    <p class="h-r"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Assignments</span><b>5</b></p>
+                    <p class="h-r"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Quizzes</span><b>2</b></p>
+                    <p class="h-r"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Discussions</span><b>3</b></p>
+                  </div>
+                </div>
+                <div id="h-ring"><svg id="h-ring-r" class="ring"></svg><svg id="h-ring-w"></svg></div>
+              </div>
+            </div>
+          </div>
+          <svg id="h-cursor" class="cursor" viewBox="0 0 28 28"><path d="M5 3l17 9.5-7.6 1.7L10.8 21z" fill="#14202f" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"></path></svg>
+        </div>
+      </div>
+    </div>
+    <p id="h-t1" class="title"><span class="ln">Exports run</span><span class="ln">in their own tab.</span></p>
+    <p id="h-t2" class="title"><span class="ln">Nothing goes</span><span class="ln">missing quietly.</span></p>
+  </div>
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const ring = $('#h-ring-r');
+    const fav = $('#h-fav');
+    for (const svg of [ring, $('#h-ring-w'), fav, $('#h-logo')]) window.drawLogo(svg);
+    window.fillLogo($('#h-logo'), 1);
+    window.fillLogo($('#h-ring-w'), 1);
+
+    // Every name once: 54 files, a new row every third file, 18 rows.
+    const FILES = [
+      'Syllabus.pdf', 'Lecture 01 - Academic Writing week 1.pdf', 'Week 1 - Core reading.pdf',
+      'Assignment 1 brief.pdf', 'Lecture 03 - Academic Writing week 3.pdf', 'Course schedule',
+      'Week 3 - Background article.pdf', 'Rubric.pdf', 'Lecture 05 - Academic Writing week 5.pdf',
+      'Assignment 2', 'Midterm project', 'Lecture 07 - Academic Writing week 7.pdf', 'Practice exam.pdf',
+      'Peer review guide.pdf', 'Lecture 09 - Academic Writing week 9.pdf', 'Final project', 'Grades.csv',
+      'Deadlines.ics',
+    ];
+    const total = 54;
+    const rows = [...document.querySelectorAll('.h-row')];
+    const progress = { p: 0 };
+    const paint = () => {
+      // Saved only at 100%, so the count never says done while the percentage still reads 99.
+      const finished = progress.p >= 1;
+      const done = finished ? total : Math.min(total - 1, Math.round(progress.p * total));
+      window.fillLogo(ring, progress.p);
+      window.fillLogo(fav, progress.p);
+      $('#h-pct').textContent = `${finished ? 100 : Math.min(99, Math.round(progress.p * 100))}%`;
+      $('#h-pct').style.color = finished ? 'var(--mint-ink)' : 'var(--red)';
+      $('#h-fill').style.background = finished ? 'var(--mint)' : 'var(--red)';
+      $('#h-name').textContent = finished ? 'Academic Writing is saved' : 'Saving Academic Writing';
+      $('#h-tab-title').textContent = finished ? 'Academic Writing is saved' : 'Saving Academic Writing';
+      $('#h-count').textContent = finished ? '53 of 54 files, 1 missing' : `${done} of ${total} files`;
+      $('#h-count').style.color = finished ? 'var(--sun-ink)' : 'var(--ink-2)';
+      const shown = Math.floor(done / 3);
+      rows.forEach((row, i) => {
+        const name = FILES[shown - 1 - i];
+        row.style.visibility = name ? 'visible' : 'hidden';
+        row.querySelector('span').textContent = name ?? '';
+      });
+    };
+
+    const tl = gsap.timeline({ paused: true });
+    // 0–2: close on the button, the cursor arrives, a click at 1.5 while the camera pulls back.
+    tl.fromTo('#h-cam', { scale: 1.25 }, { scale: 1.27, duration: 1.3, ease: 'sine.inOut' }, 0);
+    tl.fromTo('#h-cam', { scale: 1.27 }, { immediateRender: false, scale: 1, duration: 0.8, ease: 'power3.inOut' }, 1.3);
+    tl.fromTo('#h-cursor', { x: 1500, y: 860 }, { x: 579, y: 154, duration: 1.15, ease: 'power3.out' }, 0.25);
+    window.press(tl, '#h-cursor', 1.44);
+    tl.fromTo('#h-press', { opacity: 0 }, { opacity: 0.2, duration: 0.06 }, 1.44);
+    tl.fromTo('#h-press', { opacity: 0.2 }, { immediateRender: false, opacity: 0, duration: 0.2 }, 1.56);
+    tl.fromTo('#h-cursor', { opacity: 1 }, { immediateRender: false, opacity: 0, duration: 0.2 }, 1.85);
+    // The new tab opens beside the course and takes over.
+    tl.fromTo('#h-tab-b', { width: 0, padding: '0px 0px' }, { width: 360, padding: '0px 18px', duration: 0.35, ease: 'power3.out' }, 1.6);
+    tl.fromTo('#h-tab-a', { backgroundColor: '#ffffff' }, { backgroundColor: 'rgba(255,255,255,0)', duration: 0.12 }, 1.95);
+    tl.fromTo('#h-tab-b', { backgroundColor: 'rgba(255,255,255,0)' }, { backgroundColor: '#ffffff', duration: 0.12 }, 1.95);
+    tl.fromTo('#h-url-a', { opacity: 1 }, { opacity: 0, duration: 0.12 }, 1.95);
+    tl.fromTo('#h-url-b', { opacity: 0 }, { opacity: 1, duration: 0.12 }, 1.95);
+    tl.fromTo('#h-export', { opacity: 0 }, { opacity: 1, duration: 0.18 }, 1.95);
+    // The button's ring grows into the progress ring, turning from white to the brand's red.
+    tl.fromTo('#h-ring', { x: 214, y: -273, scale: 25 / 180 }, { x: 0, y: 0, scale: 1, duration: 0.6, ease: 'power4.out' }, 1.95);
+    tl.fromTo('#h-ring-w', { opacity: 1 }, { opacity: 0, duration: 0.35, ease: 'power1.in' }, 2.05);
+    tl.fromTo('#h-card', { opacity: 0, scale: 0.97 }, { opacity: 1, scale: 1, duration: 0.45, ease: 'power3.out', transformOrigin: '138px 134px' }, 2.3);
+    // 2.5–5.0: the course saves; 100% lands on the downbeat at 5.0.
+    tl.fromTo(progress, { p: 0 }, { p: 1, duration: 2.5, ease: 'power1.inOut', onUpdate: paint }, 2.5);
+    tl.fromTo('#h-fill', { scaleX: 0 }, { scaleX: 1, duration: 2.5, ease: 'power1.inOut' }, 2.5);
+    window.enterTitle(tl, '#h-t1', 2.9);
+    window.pushIn(tl, '#h-hold', 2.6, 3.3);
+    window.exitTitle(tl, '#h-t1', 5.7);
+    // 5.9–6.6: the card becomes the receipt; the yellow band drops in above it.
+    tl.fromTo('#h-prog', { opacity: 1 }, { immediateRender: false, opacity: 0, duration: 0.18 }, 5.9);
+    tl.fromTo('#h-ring', { opacity: 1 }, { immediateRender: false, opacity: 0, duration: 0.18 }, 5.9);
+    tl.fromTo('#h-card', { y: 0, width: 760, height: 484, borderRadius: 40 }, { immediateRender: false, y: 166, width: 960, height: 720, borderRadius: 32, duration: 0.6, ease: 'power3.inOut' }, 5.95);
+    tl.fromTo('#h-band', { opacity: 0, y: -28 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 6.1);
+    tl.fromTo('#h-rcpt', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 6.35);
+    window.enterTitle(tl, '#h-t2', 6.75);
+    // The camera eases in on the file that failed and holds while it's read.
+    tl.fromTo('#h-push', { scale: 1 }, { scale: 1.1, duration: 1.8, ease: 'sine.inOut' }, 7.1);
+    paint();
+    window.__timelines['hook'] = tl;
+  </script>
+</template>

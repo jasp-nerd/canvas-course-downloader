@@ -1,127 +1,31 @@
 <!doctype html>
-<!-- Course Downloader 3.0, the release film. Every UI pixel is the real extension: stills of the
-     build on the test Canvas (invented course data) or its own pieces rebuilt from its CSS, and
-     the logo's real geometry (assets/logo.js, from src/ui/logo-paths.ts). -->
+<!-- Course Downloader 3.0, the release film, on 2 s bars (120 BPM). Every UI pixel is the real
+     extension: stills of the build on the test Canvas (invented course data) or its own pieces rebuilt
+     from its CSS, and the logo's real geometry (assets/logo.js, from src/ui/logo-paths.ts). -->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1920, height=1080" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <script src="assets/logo.js"></script>
-    <script>
-      // The logo as progress: draw its 32 dots and arrow into an <svg>, then fill p (0..1) of them.
-      window.drawLogo = (svg) => {
-        const ns = 'http://www.w3.org/2000/svg';
-        svg.setAttribute('viewBox', window.LOGO.viewBox);
-        const g = document.createElementNS(ns, 'g');
-        g.setAttribute('transform', window.LOGO.transform);
-        for (const d of window.LOGO.dots) {
-          const path = document.createElementNS(ns, 'path');
-          path.setAttribute('d', d);
-          path.setAttribute('class', 'dot');
-          g.append(path);
-        }
-        const arrow = document.createElementNS(ns, 'path');
-        arrow.setAttribute('d', window.LOGO.arrow);
-        arrow.setAttribute('class', 'arrow');
-        g.append(arrow);
-        svg.append(g);
-      };
-      window.fillLogo = (svg, p) => {
-        const dots = svg.querySelectorAll('.dot');
-        const on = Math.round(p * dots.length);
-        dots.forEach((d, i) => d.classList.toggle('on', i < on));
-      };
-    </script>
-    <style>
-      @font-face {
-        font-family: 'Gabarito';
-        font-weight: 400 900;
-        src: url('assets/fonts/gabarito-latin.woff2') format('woff2');
-      }
-      @font-face {
-        font-family: 'Figtree';
-        font-weight: 300 900;
-        src: url('assets/fonts/figtree-latin.woff2') format('woff2');
-      }
-      :root {
-        --red: #d82828;
-        --red-pale: #f7d3d3;
-        --ink: #14202f;
-        --ink-2: #3f4a5a;
-        --ink-3: #5f6978;
-        --navy: #14202f;
-        --navy-2: #22324a;
-        --sun: #ffc43d;
-        --sun-wash: #fff4d6;
-        --sun-ink: #7a5200;
-        --mint: #29b36f;
-        --mint-wash: #e1f5ea;
-        --mint-ink: #16704a;
-        --mist: #f4f6f9;
-        --mist-2: #e9edf2;
-        --line: #e1e6ec;
-      }
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      html,
-      body {
-        width: 1920px;
-        height: 1080px;
-        overflow: hidden;
-        background: var(--mist);
-      }
-      body {
-        font-family: Figtree, sans-serif;
-        color: var(--ink);
-        -webkit-font-smoothing: antialiased;
-      }
-      .title {
-        font: 800 72px/1.02 Gabarito, sans-serif;
-        letter-spacing: -0.035em;
-        color: var(--ink);
-      }
-      .title .w {
-        display: inline-block;
-      }
-      .ring .dot {
-        fill: var(--red-pale);
-      }
-      .ring .dot.on,
-      .ring .arrow {
-        fill: var(--red);
-      }
-      .ring.on-navy .dot {
-        fill: #2b3b52;
-      }
-      .ring.on-navy .dot.on,
-      .ring.on-navy .arrow {
-        fill: var(--red);
-      }
-      .cursor {
-        width: 64px;
-        height: 64px;
-        filter: drop-shadow(0 4px 6px rgba(20, 32, 47, 0.35));
-      }
-    </style>
+    <link rel="stylesheet" href="assets/film.css" />
+    <script src="assets/film.js"></script>
   </head>
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="40" data-width="1920" data-height="1080">
-      <div id="s1" data-composition-id="s1" data-composition-src="compositions/s1-click.html" data-start="0" data-duration="2.4" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 1"></div>
-      <div id="s2" data-composition-id="s2" data-composition-src="compositions/s2-export.html" data-start="2.05" data-duration="6.95" data-track-index="2" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 2"></div>
-      <div id="s3" data-composition-id="s3" data-composition-src="compositions/s3-receipt.html" data-start="9" data-duration="6.6" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 3"></div>
-      <div id="s4" data-composition-id="s4" data-composition-src="compositions/s4-picker.html" data-start="15.6" data-duration="6.2" data-track-index="2" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 4"></div>
-      <div id="s5" data-composition-id="s5" data-composition-src="compositions/s5-study.html" data-start="21.8" data-duration="6.6" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 5"></div>
-      <div id="s6" data-composition-id="s6" data-composition-src="compositions/s6-montage.html" data-start="28.4" data-duration="5" data-track-index="2" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 6"></div>
-      <div id="s7" data-composition-id="s7" data-composition-src="compositions/s7-end.html" data-start="33.4" data-duration="6.6" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 7"></div>
+      <div id="hook" data-composition-id="hook" data-composition-src="compositions/hook.html" data-start="0" data-duration="10" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 1"></div>
+      <div id="dashboard" data-composition-id="dashboard" data-composition-src="compositions/dashboard.html" data-start="10" data-duration="6" data-track-index="2" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 2"></div>
+      <div id="study" data-composition-id="study" data-composition-src="compositions/study.html" data-start="16" data-duration="6" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 3"></div>
+      <div id="calendar" data-composition-id="calendar" data-composition-src="compositions/calendar.html" data-start="22" data-duration="4" data-track-index="2" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 4"></div>
+      <div id="teachers" data-composition-id="teachers" data-composition-src="compositions/teachers.html" data-start="26" data-duration="4" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 5"></div>
+      <div id="offline" data-composition-id="offline" data-composition-src="compositions/offline.html" data-start="30" data-duration="4" data-track-index="2" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 6"></div>
+      <div id="end" data-composition-id="end" data-composition-src="compositions/end.html" data-start="34" data-duration="6" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 7"></div>
 
-      <audio id="sfx-click-1" class="clip" src="assets/sfx/click.wav" data-start="1.9" data-duration="0.06" data-track-index="6" data-volume="1"></audio>
-      <audio id="sfx-chime" class="clip" src="assets/sfx/chime.wav" data-start="6.45" data-duration="1.3" data-track-index="7" data-volume="1"></audio>
-      <audio id="sfx-click-2" class="clip" src="assets/sfx/click.wav" data-start="20.2" data-duration="0.06" data-track-index="6" data-volume="1"></audio>
-      <audio id="sfx-pop" class="clip" src="assets/sfx/pop.wav" data-start="36.0" data-duration="0.12" data-track-index="8" data-volume="1"></audio>
+      <audio id="sfx-1" class="clip" src="assets/sfx/click.wav" data-start="1.5" data-duration="0.06" data-track-index="6" data-volume="1"></audio>
+      <audio id="sfx-2" class="clip" src="assets/sfx/chime.wav" data-start="5" data-duration="1.3" data-track-index="8" data-volume="1"></audio>
+      <audio id="sfx-3" class="clip" src="assets/sfx/click.wav" data-start="12.95" data-duration="0.06" data-track-index="6" data-volume="1"></audio>
+      <audio id="sfx-4" class="clip" src="assets/sfx/chime.wav" data-start="14.65" data-duration="1.3" data-track-index="8" data-volume="0.6"></audio>
+      <audio id="sfx-5" class="clip" src="assets/sfx/pop.wav" data-start="36" data-duration="0.12" data-track-index="9" data-volume="1"></audio>
     </div>
     <script>
       window.__timelines = window.__timelines || {};

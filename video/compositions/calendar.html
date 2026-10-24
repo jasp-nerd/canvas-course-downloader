@@ -1,0 +1,131 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: var(--mist);
+      overflow: hidden;
+    }
+    #c-t {
+      position: absolute;
+      left: 160px;
+      top: 372px;
+      width: 700px;
+    }
+    /* The calendar file every copy has, as the Finder or Explorer shows it. */
+    .c-file {
+      position: absolute;
+      left: 160px;
+      top: 600px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      height: 104px;
+      padding: 0 36px 0 28px;
+      border-radius: 28px;
+      background: #fff;
+      font: 700 34px/1 Figtree, sans-serif;
+      white-space: nowrap;
+    }
+    #c-ghost {
+      opacity: 0;
+    }
+    .c-file svg {
+      width: 48px;
+      height: 48px;
+      color: var(--red);
+    }
+    #c-cam {
+      position: absolute;
+      inset: 0;
+      transform-origin: 1340px 560px;
+    }
+    /* A month in a calendar app, after the file is imported. */
+    #c-cal {
+      position: absolute;
+      left: 860px;
+      top: 110px;
+      width: 960px;
+      height: 860px;
+      padding: 40px;
+      border-radius: 40px;
+      background: #fff;
+    }
+    #c-month {
+      font: 800 44px/1 Gabarito, sans-serif;
+      letter-spacing: -0.03em;
+    }
+    .c-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      margin-top: 28px;
+    }
+    .c-dow {
+      padding-bottom: 14px;
+      font: 600 20px/1 Figtree, sans-serif;
+      color: var(--ink-3);
+    }
+    .c-day {
+      height: 132px;
+      padding: 12px 8px 0 0;
+      border-top: 2px solid var(--line);
+      font: 600 22px/1 Figtree, sans-serif;
+      color: var(--ink-2);
+    }
+    .c-day.out {
+      color: #c3cad4;
+    }
+    .c-ev {
+      margin-top: 10px;
+      padding: 7px 8px;
+      border-radius: 10px;
+      background: var(--red);
+      font: 700 15px/1.2 Figtree, sans-serif;
+      color: #fff;
+    }
+  </style>
+  <div id="root" data-composition-id="calendar" data-width="1920" data-height="1080">
+    <div id="c-cam" data-layout-allow-overflow>
+      <div id="c-cal">
+        <p id="c-month">November 2026</p>
+        <div class="c-grid" id="c-grid"></div>
+      </div>
+    </div>
+    <p id="c-t" class="title"><span class="ln">Every deadline,</span><span class="ln">in your calendar.</span></p>
+    <div id="c-file" class="c-file"><svg viewBox="0 0 24 24"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Deadlines.ics</div>
+    <div id="c-ghost" class="c-file"><svg viewBox="0 0 24 24"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Deadlines.ics</div>
+  </div>
+  <script>
+    // November 2026 starts on a Sunday. The due dates are the sample course's assignments.
+    const EVENTS = { 4: 'Assignment 2', 13: 'Midterm project', 18: 'Assignment 3', 30: 'Final project' };
+    const grid = document.querySelector('#c-grid');
+    for (const d of ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']) {
+      const el = document.createElement('p');
+      el.className = 'c-dow';
+      el.textContent = d;
+      grid.append(el);
+    }
+    for (let i = 0; i < 35; i++) {
+      const day = i + 1;
+      const cell = document.createElement('div');
+      cell.className = day > 30 ? 'c-day out' : 'c-day';
+      cell.textContent = String(day > 30 ? day - 30 : day);
+      if (EVENTS[day]) {
+        const ev = document.createElement('p');
+        ev.className = 'c-ev';
+        ev.textContent = EVENTS[day];
+        cell.append(ev);
+      }
+      grid.append(cell);
+    }
+
+    const tl = gsap.timeline({ paused: true });
+    window.enterTitle(tl, '#c-t', 0.15);
+    tl.fromTo('#c-file', { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, 0.35);
+    // A copy of the file drops into the calendar, and the due dates appear.
+    tl.fromTo('#c-ghost', { x: 0, y: 0, scale: 1, opacity: 1 }, { immediateRender: false, x: 820, y: -40, scale: 0.6, opacity: 0, duration: 0.6, ease: 'power3.in' }, 0.95);
+    tl.fromTo('.c-ev', { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, stagger: 0.14, ease: 'back.out(2)', transformOrigin: '0% 50%' }, 1.5);
+    window.pushIn(tl, '#c-cam', 0, 4, 1.035);
+    window.__timelines['calendar'] = tl;
+  </script>
+</template>

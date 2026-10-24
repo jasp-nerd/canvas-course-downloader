@@ -1,0 +1,263 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: var(--mist);
+      overflow: hidden;
+    }
+    #d-t {
+      position: absolute;
+      left: 160px;
+      top: 78px;
+      width: 1400px;
+    }
+    /* The browser sits below the headline and runs off the bottom of the frame. */
+    #d-win {
+      position: absolute;
+      left: 0;
+      top: 300px;
+      width: 1920px;
+      height: 900px;
+      transform-origin: 960px 400px;
+    }
+    #d-browser {
+      inset: 0;
+      border-radius: 28px 28px 0 0;
+    }
+    .d-school {
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      background: #2e6fae;
+      font: 800 15px/1 Figtree, sans-serif;
+      color: #fff;
+    }
+    #d-tab-b {
+      width: 0;
+      padding: 0;
+    }
+    .url {
+      position: relative;
+    }
+    #d-url-b {
+      position: absolute;
+      left: 22px;
+      opacity: 0;
+    }
+    /* The real dashboard, in three slices so the note can push the course cards down. */
+    #d-head {
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 160px;
+      background-image: url('assets/ui/dashboard-new.webp');
+    }
+    #d-cards {
+      left: 0;
+      top: 273px;
+      width: 1920px;
+      height: 930px;
+      background-image: url('assets/ui/dashboard-new.webp');
+      background-position: 0 -273px;
+    }
+    #d-side {
+      left: 0;
+      top: 0;
+      width: 112px;
+      height: 1200px;
+      background-image: url('assets/ui/dashboard-new.webp');
+    }
+    /* The note, rebuilt from UpdatesNote.svelte at the page's scale. */
+    #d-note {
+      position: absolute;
+      left: 160px;
+      top: 176px;
+      width: 1712px;
+      height: 84px;
+      display: flex;
+      align-items: center;
+      gap: 19px;
+      padding: 0 16px 0 21px;
+      border-radius: 18px;
+      background: var(--mint-wash);
+      color: #0f4c32;
+      font: 400 18.7px/1.45 Figtree, sans-serif;
+      transform-origin: 50% 0;
+    }
+    #d-note svg.ring {
+      flex: none;
+      width: 37px;
+      height: 37px;
+    }
+    #d-note p {
+      flex: 1;
+    }
+    #d-note strong {
+      display: block;
+      font-weight: 700;
+    }
+    #d-note p span {
+      display: block;
+      font-size: 17.3px;
+    }
+    #d-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      height: 48px;
+      padding: 0 22px;
+      border-radius: 999px;
+      background: var(--red);
+      box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.18);
+      font: 700 18.7px/1 Figtree, sans-serif;
+      color: #fff;
+    }
+    #d-btn svg,
+    #d-x {
+      width: 24px;
+      height: 24px;
+    }
+    #d-x {
+      margin: 0 8px;
+      color: #0f4c32;
+    }
+    #d-press {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: #14202f;
+      opacity: 0;
+    }
+    #d-btn {
+      position: relative;
+    }
+    /* The export tab for the one new file. */
+    #d-export {
+      position: absolute;
+      inset: 0;
+      background: var(--mist);
+      opacity: 0;
+    }
+    #d-card {
+      position: absolute;
+      left: 160px;
+      top: 70px;
+      width: 900px;
+      padding: 44px 48px;
+      border-radius: 40px;
+      background: #fff;
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 36px;
+      align-items: center;
+    }
+    #d-ring {
+      width: 180px;
+      height: 180px;
+    }
+    #d-pct {
+      font: 800 92px/1 Gabarito, sans-serif;
+      letter-spacing: -0.04em;
+      color: var(--red);
+      font-variant-numeric: tabular-nums;
+    }
+    #d-name {
+      margin-top: 8px;
+      font: 700 34px/1.2 Gabarito, sans-serif;
+    }
+    #d-count {
+      margin-top: 4px;
+      font-size: 26px;
+      color: var(--ink-2);
+    }
+    #d-cursor {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+  </style>
+  <div id="root" data-composition-id="dashboard" data-width="1920" data-height="1080">
+    <p id="d-t" class="title"><span class="ln">New files show up</span><span class="ln">on your dashboard.</span></p>
+    <div id="d-win" data-layout-allow-overflow>
+      <div id="d-browser" class="browser">
+        <div class="chrome">
+          <div class="tabs">
+            <div id="d-tab-a" class="tab on"><span class="fav d-school">S</span>Dashboard</div>
+            <div id="d-tab-b" class="tab"><svg id="d-fav" class="fav ring"></svg><span id="d-tab-title">Saving Academic Writing</span></div>
+          </div>
+          <div class="toolbar">
+            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <div class="url"><span id="d-url-a">canvas.yourschool.edu</span><span id="d-url-b">Course Downloader</span></div>
+          </div>
+        </div>
+        <div class="page">
+          <div id="d-cards" class="capture"></div>
+          <div id="d-head" class="capture"></div>
+          <div id="d-side" class="capture"></div>
+          <div id="d-note">
+            <svg id="d-note-logo" class="ring"></svg>
+            <p><strong>1 new file since your last download</strong><span>Academic Writing (1)</span></p>
+            <div id="d-btn"><svg viewBox="0 0 24 24"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Download 1 new file<span id="d-press"></span></div>
+            <svg id="d-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+          </div>
+          <div id="d-export">
+            <div id="d-card">
+              <svg id="d-ring" class="ring"></svg>
+              <div>
+                <div id="d-pct">0%</div>
+                <div id="d-name">Saving Academic Writing</div>
+                <div id="d-count">0 of 1 new file</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <svg id="d-cursor" class="cursor" viewBox="0 0 28 28"><path d="M5 3l17 9.5-7.6 1.7L10.8 21z" fill="#14202f" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"></path></svg>
+    </div>
+  </div>
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const ring = $('#d-ring');
+    const fav = $('#d-fav');
+    for (const svg of [ring, fav, $('#d-note-logo')]) window.drawLogo(svg);
+    window.fillLogo($('#d-note-logo'), 1);
+    const progress = { p: 0 };
+    const paint = () => {
+      const done = progress.p >= 1;
+      window.fillLogo(ring, progress.p);
+      window.fillLogo(fav, progress.p);
+      $('#d-pct').textContent = `${done ? 100 : Math.min(99, Math.round(progress.p * 100))}%`;
+      $('#d-pct').style.color = done ? 'var(--mint-ink)' : 'var(--red)';
+      $('#d-name').textContent = done ? 'Academic Writing is saved' : 'Saving Academic Writing';
+      $('#d-tab-title').textContent = done ? 'Academic Writing is saved' : 'Saving Academic Writing';
+      $('#d-count').textContent = done ? '1 new file. The 53 you already had were skipped.' : '0 of 1 new file';
+    };
+
+    const tl = gsap.timeline({ paused: true });
+    // The note arrives at the top of the dashboard and pushes the courses down.
+    window.enterTitle(tl, '#d-t', 0.15);
+    tl.fromTo('#d-cards', { y: -116 }, { y: 0, duration: 0.55, ease: 'power3.inOut' }, 0.6);
+    tl.fromTo('#d-note', { opacity: 0, scaleY: 0.6 }, { opacity: 1, scaleY: 1, duration: 0.4, ease: 'power3.out' }, 0.9);
+    window.pushIn(tl, '#d-win', 0, 6, 1.025);
+    // The cursor presses Download 1 new file.
+    tl.fromTo('#d-cursor', { x: 1900, y: 860 }, { x: 1673, y: 323, duration: 1.2, ease: 'power3.out' }, 1.6);
+    window.press(tl, '#d-cursor', 2.94);
+    tl.fromTo('#d-press', { opacity: 0 }, { opacity: 0.2, duration: 0.06 }, 2.94);
+    tl.fromTo('#d-press', { opacity: 0.2 }, { immediateRender: false, opacity: 0, duration: 0.2 }, 3.06);
+    tl.fromTo('#d-cursor', { opacity: 1 }, { immediateRender: false, opacity: 0, duration: 0.2 }, 3.25);
+    // Its own tab opens and saves just that file.
+    tl.fromTo('#d-tab-b', { width: 0, padding: '0px 0px' }, { width: 360, padding: '0px 18px', duration: 0.35, ease: 'power3.out' }, 3.1);
+    tl.fromTo('#d-tab-a', { backgroundColor: '#ffffff' }, { backgroundColor: 'rgba(255,255,255,0)', duration: 0.12 }, 3.45);
+    tl.fromTo('#d-tab-b', { backgroundColor: 'rgba(255,255,255,0)' }, { backgroundColor: '#ffffff', duration: 0.12 }, 3.45);
+    tl.fromTo('#d-url-a', { opacity: 1 }, { opacity: 0, duration: 0.12 }, 3.45);
+    tl.fromTo('#d-url-b', { opacity: 0 }, { opacity: 1, duration: 0.12 }, 3.45);
+    tl.fromTo('#d-export', { opacity: 0 }, { opacity: 1, duration: 0.18 }, 3.45);
+    tl.fromTo('#d-card', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, 3.5);
+    tl.fromTo(progress, { p: 0 }, { p: 1, duration: 0.9, ease: 'power2.inOut', onUpdate: paint }, 3.75);
+    paint();
+    window.__timelines['dashboard'] = tl;
+  </script>
+</template>

@@ -1,0 +1,107 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: var(--mist);
+      overflow: hidden;
+    }
+    #st-browser {
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+    #st-cam {
+      position: absolute;
+      inset: 0;
+      background: #f4f6fa;
+      transform-origin: 300px 560px;
+    }
+    /* The real study-pack tab, in layers: header, banner, steps, and what's in the pack. */
+    #st-head {
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 94px;
+      background-image: url('assets/ui/study.webp');
+    }
+    #st-banner {
+      left: 53px;
+      top: 107px;
+      width: 1814px;
+      height: 299px;
+      border-radius: 43px;
+      background-image: url('assets/ui/study.webp');
+      background-position: -53px -107px;
+    }
+    #st-steps {
+      left: 53px;
+      top: 432px;
+      width: 1072px;
+      height: 709px;
+      background-image: url('assets/ui/study.webp');
+      background-position: -53px -432px;
+    }
+    #st-pack {
+      left: 1152px;
+      top: 432px;
+      width: 715px;
+      height: 501px;
+      background-image: url('assets/ui/study.webp');
+      background-position: -1152px -432px;
+    }
+    /* The yellow that grows out of the "Study pack" chip into the banner. */
+    #st-grow {
+      position: absolute;
+      left: 53px;
+      top: 107px;
+      width: 266px;
+      height: 32px;
+      border-radius: 16px;
+      transform-origin: 0 0;
+      background: var(--sun-wash);
+    }
+  </style>
+  <div id="root" data-composition-id="study" data-width="1920" data-height="1080">
+    <div id="st-browser" class="browser">
+      <div class="chrome">
+        <div class="tabs">
+          <div class="tab"><span class="fav" style="border-radius: 6px; background: #2e6fae"></span>Academic Writing: Modules</div>
+          <div class="tab on"><svg id="st-fav" class="fav ring"></svg>Your study pack is ready</div>
+        </div>
+        <div class="toolbar">
+          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <div class="url">Course Downloader</div>
+        </div>
+      </div>
+      <div class="page">
+        <div id="st-cam" data-layout-allow-overflow>
+          <div id="st-grow"></div>
+          <div id="st-head" class="capture"></div>
+          <div id="st-banner" class="capture"></div>
+          <div id="st-steps" class="capture"></div>
+          <div id="st-pack" class="capture"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const fav = document.querySelector('#st-fav');
+    window.drawLogo(fav);
+    window.fillLogo(fav, 1);
+    const tl = gsap.timeline({ paused: true });
+    // The chip in the header opens (from behind itself) into the yellow banner, which then shows its words and Pip.
+    tl.fromTo('#st-grow', { x: 1418, y: -75, width: 266, height: 32, borderRadius: 16, backgroundColor: '#fff5d6' }, { x: 0, y: 0, width: 1814, height: 299, borderRadius: 43, backgroundColor: '#ffc43d', duration: 0.6, ease: 'power3.inOut' }, 0.12);
+    tl.fromTo('#st-banner', { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'power1.out' }, 0.67);
+    tl.fromTo('#st-banner', { scale: 0.985 }, { scale: 1, duration: 0.5, ease: 'power3.out' }, 0.67);
+    // The next steps rise in under it.
+    tl.fromTo('#st-steps', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 1.0);
+    tl.fromTo('#st-pack', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 1.12);
+    // A slow move toward the first steps while they're read.
+    tl.fromTo('#st-cam', { scale: 1, y: 0 }, { scale: 1.07, y: -40, duration: 4.4, ease: 'sine.inOut' }, 1.5);
+    window.__timelines['study'] = tl;
+  </script>
+</template>

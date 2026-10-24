@@ -1,0 +1,167 @@
+/* Shared by both films: the brand's fonts, colours and type. */
+@font-face {
+  font-family: 'Gabarito';
+  font-weight: 400 900;
+  src: url('fonts/gabarito-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Figtree';
+  font-weight: 300 900;
+  src: url('fonts/figtree-latin.woff2') format('woff2');
+}
+:root {
+  --red: #d82828;
+  --red-pale: #f7d3d3;
+  --ink: #14202f;
+  --ink-2: #3f4a5a;
+  --ink-3: #5f6978;
+  --navy: #14202f;
+  --navy-2: #22324a;
+  --sun: #ffc43d;
+  --sun-wash: #fff4d6;
+  --sun-ink: #7a5200;
+  --mint: #29b36f;
+  --mint-wash: #e1f5ea;
+  --mint-ink: #16704a;
+  --mist: #f4f6f9;
+  --mist-2: #e9edf2;
+  --line: #e1e6ec;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html,
+body {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: var(--mist);
+}
+body {
+  font-family: Figtree, sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+.title {
+  font: 800 72px/1.02 Gabarito, sans-serif;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+}
+.title .w {
+  display: inline-block;
+}
+.ring .dot {
+  fill: var(--red-pale);
+}
+.ring .dot.on,
+.ring .arrow {
+  fill: var(--red);
+}
+.ring.on-navy .dot {
+  fill: #2b3b52;
+}
+.ring.on-navy .dot.on,
+.ring.on-navy .arrow {
+  fill: var(--red);
+}
+.cursor {
+  width: 64px;
+  height: 64px;
+  filter: drop-shadow(0 4px 6px rgba(20, 32, 47, 0.35));
+}
+.title .ln {
+  display: block;
+}
+
+/* A browser window, drawn at film size: the tab strip, the toolbar and the page below. */
+.browser {
+  position: absolute;
+  background: #fff;
+  overflow: hidden;
+}
+.chrome {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 112px;
+  background: var(--mist-2);
+}
+.tabs {
+  position: absolute;
+  left: 20px;
+  top: 10px;
+  display: flex;
+  gap: 4px;
+}
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 360px;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 14px 14px 0 0;
+  font: 500 19px/1 Figtree, sans-serif;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.tab.on {
+  background: #fff;
+  color: var(--ink);
+}
+.tab .fav {
+  flex: none;
+  width: 22px;
+  height: 22px;
+}
+.toolbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 24px;
+  background: #fff;
+  border-bottom: 2px solid var(--line);
+}
+.toolbar svg {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  color: var(--ink-3);
+}
+.url {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 42px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: var(--mist);
+  font: 500 20px/1 Figtree, sans-serif;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.page {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 112px;
+  bottom: 0;
+  overflow: hidden;
+}
+/* A 2x capture of a 1440 px wide page, drawn 1920 px wide. */
+.capture {
+  position: absolute;
+  background-size: 1920px auto;
+  background-repeat: no-repeat;
+}
