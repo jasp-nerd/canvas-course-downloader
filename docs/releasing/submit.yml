@@ -1,0 +1,69 @@
+# Sends a published release to the stores, after jasp approves the store-submit environment.
+# Uses the exact zips release.yml built and attested; never rebuilds them.
+name: Submit to stores
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag, like v3.0.0
+        required: true
+      dry_run:
+        description: Check everything, submit nothing
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency: store-submit
+
+jobs:
+  submit:
+    runs-on: ubuntu-24.04
+    environment: store-submit
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Fetch and check the release packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" -D dist
+          (cd dist && sha256sum -c SHA256SUMS.txt)
+          for zip in dist/*.zip; do
+            gh attestation verify "$zip" --repo "$GITHUB_REPOSITORY" \
+              --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release.yml"
+          done
+
+      - name: Submit
+        env:
+          # The Chrome Web Store's v1.1 API stopped working on 15 October 2026; v2 needs a service account.
+          CHROME_API_VERSION: v2
+          CHROME_EXTENSION_ID: ${{ vars.CHROME_EXTENSION_ID }}
+          CHROME_PUBLISHER_ID: ${{ vars.CHROME_PUBLISHER_ID }}
+          CHROME_PUBLISH_TYPE: ${{ vars.CHROME_PUBLISH_TYPE }}
+          CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
+          CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}
+          FIREFOX_EXTENSION_ID: ${{ vars.FIREFOX_EXTENSION_ID }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+        run: |
+          args="--chrome-zip dist/canvas-course-downloader-chrome.zip"
+          args="$args --firefox-zip dist/canvas-course-downloader-firefox.zip --firefox-sources-zip dist/canvas-course-downloader-sources.zip"
+          # Add --edge-zip dist/canvas-course-downloader-edge.zip and the EDGE_* settings once the Edge listing exists.
+          if [ "$DRY_RUN" = "true" ]; then args="$args --dry-run"; fi
+          pnpm exec wxt submit $args

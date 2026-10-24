@@ -4,5 +4,5 @@
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "tests", "e2e", "*.ts", ".wxt/wxt.d.ts"]
+  "include": ["src", "tests", "e2e", "scripts", "*.ts", ".wxt/wxt.d.ts"]
 }

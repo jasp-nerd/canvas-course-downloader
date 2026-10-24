@@ -1,0 +1,59 @@
+# Builds website/ and publishes it on GitHub Pages when it (or a file it shows) changes on main.
+name: Website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - website/**
+      - PRIVACY.md
+      - CHANGELOG.md
+      - public/fonts/**
+      - public/pip/**
+      - src/ui/theme.css
+      - src/ui/logo-paths.ts
+      - package.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: website/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: website
+      - run: pnpm build
+        working-directory: website
+        env:
+          # Until the domain exists: SITE_URL=https://jasp-nerd.github.io and BASE_PATH=/canvas-course-downloader/
+          SITE_URL: ${{ vars.SITE_URL || 'https://coursedownloader.com' }}
+          BASE_PATH: ${{ vars.BASE_PATH || '/' }}
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: website/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
