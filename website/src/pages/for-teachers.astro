@@ -1,0 +1,96 @@
+---
+import Base from '../layouts/Base.astro';
+import { href, LINKS, STORE, tracked } from '../data/site';
+import teacher from '../assets/shots/receipt-teacher.webp';
+
+const url = new URL(Astro.url.pathname, Astro.site).toString();
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: 'Archive the Canvas courses you teach',
+  description:
+    "What a teacher's copy holds, how students' work is left out unless you include it, Canvas's own course package, and a note for IT and privacy staff.",
+  datePublished: '2026-10-24',
+  dateModified: '2026-10-24',
+  inLanguage: 'en',
+  mainEntityOfPage: url,
+  publisher: { '@id': new URL('/#org', Astro.site).toString() },
+};
+---
+
+<Base
+  title="Archive a Canvas course you teach – Canvas Course Downloader"
+  description="Save the courses you teach before a term closes or your school changes systems: pages, files, assignments and quizzes, with students' work only if you include it."
+  ogTitle="Archive the Canvas courses you teach"
+  ogType="article"
+  jsonLd={jsonLd}
+  current="/for-teachers/"
+>
+  <section class="wrap page-head">
+    <h1>Archive the Canvas courses you teach</h1>
+    <p class="lead">
+      Save a course before the term closes or your school moves to another system. Everything you
+      made stays readable on your own computer, and students' work stays out unless you choose it.
+    </p>
+    <p style="margin-top: 24px">
+      <a class="btn btn-primary btn-lg" href={tracked(STORE.chrome, 'teachers')} data-install data-fallback={href('/download/')}>Add to Chrome, it's free</a>
+    </p>
+  </section>
+
+  <figure class="wrap shot" style="margin-block: 8px 56px">
+    <img src={teacher.src} width={teacher.width} height={teacher.height} decoding="async" alt="A teacher's receipt: Teaching Practicum is archived, course content only, and Student data: none included" />
+  </figure>
+
+  <article class="wrap prose">
+    <h2>What your copy holds</h2>
+    <p>The extension sees that you teach the course and saves what you made:</p>
+    <ul>
+      <li>Files in their folders, pages, assignments with their descriptions and rubrics, and announcements.</li>
+      <li>Quizzes with their questions.</li>
+      <li>Discussions with their prompts.</li>
+      <li>The syllabus, the modules in order, and a calendar file with every deadline (<code>Deadlines.ics</code>).</li>
+      <li>An overview page, <code>Open me</code>, that opens in any browser without internet.</li>
+    </ul>
+
+    <h2>Students' work stays out unless you include it</h2>
+    <p>
+      A copy you might share or keep for years shouldn't hold student data by accident. So a
+      teacher's copy leaves out the roster, submissions, the gradebook, quiz attempts and named
+      discussion replies, and its receipt says <strong>Student data: none included</strong>.
+    </p>
+    <p>
+      Turn on <strong>Include students' work</strong> in the settings when you do need it, for
+      example for an archive your school requires. Then the copy also holds every student's
+      submission with all attempts, the gradebook and roster, quiz results, rubric scores and
+      comments.
+    </p>
+
+    <h2>Canvas's own course package</h2>
+    <p>
+      Optionally, your copy can bring the <code>.imscc</code> course package Canvas builds for
+      importing a course again, saved next to the readable copy. It's off by default. Canvas makes
+      this package on its servers, lists it under the course's Settings › Export Course Content,
+      where your co-teachers can see it, and keeps it there for 30 days.
+    </p>
+
+    <h2>Many courses at once</h2>
+    <p>
+      On your Canvas dashboard, <strong>Download courses</strong> lists current and past courses
+      by term. Tick as many as you like; they save one after the other in their own tab, each with
+      its own receipt.
+    </p>
+
+    <h2>A note for IT and privacy staff</h2>
+    <ul>
+      <li>No server: the extension runs in the browser and talks only to your Canvas, with the teacher's own login. No API token, no account.</li>
+      <li>Nothing is sent to the developer. No analytics or tracking in the extension.</li>
+      <li>Files are saved to the computer's Downloads folder, or a folder the user picks.</li>
+      <li>It writes nothing to Canvas, except the course package above, which only a teacher can start.</li>
+      <li>The code is open source under the MIT license, and the <a href={href('/privacy/')}>privacy policy</a> lists every permission and why it's needed.</li>
+    </ul>
+    <p>
+      Questions? <a href={LINKS.issues}>Open an issue on GitHub</a>; it's read by the person who
+      wrote the code.
+    </p>
+  </article>
+</Base>

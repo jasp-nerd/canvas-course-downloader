@@ -1,0 +1,73 @@
+---
+import Base from '../layouts/Base.astro';
+import { LINKS, STATS, tracked } from '../data/site';
+import wave from '../../../public/pip/wave.webp';
+
+const url = new URL(Astro.url.pathname, Astro.site).toString();
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  url,
+  mainEntity: {
+    '@type': 'Person',
+    '@id': `${url}#person`,
+    name: 'Jasper',
+    alternateName: 'jasp-nerd',
+    url,
+    sameAs: ['https://github.com/jasp-nerd'],
+  },
+};
+---
+
+<Base
+  title="About – who makes Canvas Course Downloader"
+  description="Who builds Canvas Course Downloader, why it exists, how it's funded, and how to get in touch or report a problem."
+  ogTitle="About Canvas Course Downloader"
+  jsonLd={jsonLd}
+  current="/about/"
+>
+  <section class="wrap page-head">
+    <img src={wave.src} width="140" height={Math.round((140 * wave.height) / wave.width)} alt="Pip, the extension's squirrel, waving" style="margin-bottom: 16px" />
+    <h1>About Canvas Course Downloader</h1>
+    <p class="lead">
+      A free, open-source browser extension that saves Canvas courses to your own computer, started
+      by a student who wanted to keep their own.
+    </p>
+  </section>
+
+  <article class="wrap prose">
+    <h2>Who makes it</h2>
+    <p>
+      I'm Jasper (<a href="https://github.com/jasp-nerd">jasp-nerd</a> on GitHub), a student in
+      Amsterdam. I built the first version in March 2026 because downloading a course file by file
+      took an evening, and courses close after the term. Since then it has had 30 releases, and
+      about {STATS.users} students and teachers use it.
+    </p>
+
+    <h2>How it's paid for</h2>
+    <p>
+      It isn't. There are no ads, no paid version, and nothing about you is collected or sold. If it
+      saved you an afternoon, you can <a href={tracked(LINKS.koFi, 'about')}>buy me a coffee</a> or
+      <a href={LINKS.sponsors}>sponsor it on GitHub</a>. A review in the store helps other students
+      find it too.
+    </p>
+
+    <h2>Get in touch</h2>
+    <p>
+      Found a problem, or something you'd like it to do? <a href={LINKS.issues}>Open an issue on GitHub</a>.
+      I read all of them.
+    </p>
+
+    <h2>Pip</h2>
+    <p>
+      Pip is a red squirrel. Squirrels stash food before winter; Pip stashes courses before they
+      close.
+    </p>
+
+    <h2>Not affiliated with Instructure</h2>
+    <p>
+      Canvas is a trademark of Instructure, Inc. This is an independent project, not made,
+      endorsed or supported by Instructure.
+    </p>
+  </article>
+</Base>

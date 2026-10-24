@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+import { href } from '../data/site';
+import worried from '../../../public/pip/worried.webp';
+---
+
+<Base title="Page not found – Canvas Course Downloader" description="This page doesn't exist." noindex>
+  <section class="wrap not-found">
+    <img src={worried.src} width="180" height={Math.round((180 * worried.height) / worried.width)} alt="Pip, the extension's squirrel, looking worried" />
+    <h1 style="font-size: clamp(36px, 5vw, 60px); letter-spacing: -0.04em">This page isn't here</h1>
+    <p class="lead muted">It may have moved, or the link has a typo.</p>
+    <p class="cta-row">
+      <a class="btn btn-primary" href={href('/')}>Go to the home page</a>
+      <a class="link-plain" href={href('/download/')}>Install the extension</a>
+    </p>
+  </section>
+</Base>

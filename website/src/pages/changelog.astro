@@ -1,0 +1,16 @@
+---
+// From CHANGELOG.md in the repo, the same notes the releases use.
+import Base from '../layouts/Base.astro';
+import { Content } from '../../../CHANGELOG.md';
+---
+
+<Base
+  title="Changelog – Canvas Course Downloader"
+  description="Every release of Canvas Course Downloader and what changed: new features, fixes and changes, newest first."
+  ogTitle="Changelog"
+  current="/changelog/"
+>
+  <article class="wrap prose doc">
+    <Content />
+  </article>
+</Base>

@@ -1,0 +1,23 @@
+---
+// The extension's policy comes from PRIVACY.md in the repo, so the store, GitHub and this page
+// always say the same thing. The section about this website is added here.
+import Base from '../layouts/Base.astro';
+import { Content } from '../../../PRIVACY.md';
+---
+
+<Base
+  title="Privacy – Canvas Course Downloader"
+  description="What the extension and this website collect: nothing about you leaves your browser except requests to your own Canvas. Every permission and why it's needed."
+  ogTitle="Privacy policy"
+  current="/privacy/"
+>
+  <article class="wrap prose doc">
+    <Content />
+    <h2>This website</h2>
+    <p>
+      This website has no cookies, no analytics and no trackers, and it loads nothing from other
+      sites. It's hosted on GitHub Pages; like any web host, GitHub may keep technical logs such as
+      IP addresses for security. See <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub's privacy statement</a>.
+    </p>
+  </article>
+</Base>

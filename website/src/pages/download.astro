@@ -1,0 +1,86 @@
+---
+import Base from '../layouts/Base.astro';
+import { href, LINKS, STORE, tracked } from '../data/site';
+
+const mail = `mailto:?subject=${encodeURIComponent('Course Downloader')}&body=${encodeURIComponent(
+  `Install it on my laptop: ${new URL(href('/download/'), Astro.site)}`,
+)}`;
+---
+
+<Base
+  title="Install Canvas Course Downloader on Chrome, Edge or Brave"
+  description="Add Canvas Course Downloader to Chrome, Edge or Brave in one click, then download any Canvas course. A Firefox version is coming."
+  ogTitle="Install Canvas Course Downloader"
+  current="/download/"
+>
+  <section class="wrap page-head">
+    <h1>Install Course Downloader</h1>
+    <p class="lead">
+      It's free, and it runs in the browser on your laptop or desktop. Pick your browser; it takes
+      a few seconds.
+    </p>
+    <p class="only-phone" style="margin-top: 20px">
+      <a class="btn btn-primary btn-lg" href={mail}>Email myself the link</a>
+    </p>
+  </section>
+
+  <section class="wrap install-grid" aria-label="Browsers">
+    <div class="install-card">
+      <h2>Chrome or Brave</h2>
+      <p class="muted">From the Chrome Web Store. Updates come by themselves.</p>
+      <p><a class="btn btn-primary" href={tracked(STORE.chrome, 'download')}>Add to Chrome</a></p>
+    </div>
+    <div class="install-card">
+      <h2>Edge</h2>
+      <p class="muted">
+        Edge installs it from the Chrome Web Store too. Choose "Allow extensions from other stores"
+        when Edge asks, then Add to Chrome.
+      </p>
+      <p><a class="btn btn-light" href={tracked(STORE.chrome, 'download-edge')}>Open the Chrome Web Store</a></p>
+    </div>
+    <div class="install-card">
+      <h2>Firefox</h2>
+      {
+        STORE.firefox ? (
+          <>
+            <p class="muted">From Firefox Add-ons. Needs Firefox 140 or later.</p>
+            <p><a class="btn btn-primary" href={tracked(STORE.firefox, 'download')}>Add to Firefox</a></p>
+          </>
+        ) : (
+          <p class="muted">
+            The Firefox version is ready and waiting for its store listing. Follow the{' '}
+            <a href={LINKS.releases}>releases on GitHub</a> to hear when it's out.
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="wrap prose" aria-labelledby="after">
+    <h2 id="after">After installing</h2>
+    <ol>
+      <li>Open a course in Canvas. A <strong>Download course</strong> button appears next to its name.</li>
+      <li>Press it. A new tab shows the course saving; you can keep using Canvas or close it.</li>
+      <li>
+        When it's done, press <strong>Show in folder</strong>. On Windows, right-click the ZIP and
+        choose Extract All; on a Mac, double-click it. Start with the Open me page.
+      </li>
+    </ol>
+    <p>To save several courses, open your Canvas dashboard and press <strong>Download courses</strong>.</p>
+
+    <h2>Chrome says it can "read and change all your data"</h2>
+    <p>
+      That line is there because schools run Canvas on their own web addresses, so the extension
+      has to look at a page to know whether it's Canvas. On every other site it stops right away
+      and reads nothing. The <a href={href('/privacy/')}>privacy page</a> lists every permission and
+      why it's needed.
+    </p>
+
+    <h2>A specific version, or the code</h2>
+    <p>
+      Every release is on <a href={LINKS.releases}>GitHub</a> with the source code and ready-made
+      packages. Use the store if you can: a copy loaded by hand doesn't update itself, and your
+      settings and download history don't carry over between the two.
+    </p>
+  </section>
+</Base>
