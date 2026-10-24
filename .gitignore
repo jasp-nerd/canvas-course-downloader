@@ -8,6 +8,8 @@ node_modules/
 .claude/v3-research/
 .claude/skills/project-context/
 .claude/worktrees/
+# The design skill's working files (draws, inspector reports).
+.taste-skill/
 _metadata/
 generated_indexed_rulesets
 
