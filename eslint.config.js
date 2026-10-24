@@ -15,6 +15,9 @@ export default defineConfig(
       'marketing/',
       'screenshots/',
       'node_modules/',
+      // Separate projects with their own tooling: the website (Astro) and the videos.
+      'website/',
+      'video/',
     ],
   },
   js.configs.recommended,

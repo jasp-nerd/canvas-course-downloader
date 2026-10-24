@@ -25,3 +25,8 @@ playwright-report/
 
 # Mock Canvas TLS cert (generated)
 e2e/.certs/
+
+# Website and video build output
+website/dist/
+website/.astro/
+video/out/
