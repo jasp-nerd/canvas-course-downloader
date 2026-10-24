@@ -1,6 +1,6 @@
 // The three kinds of download, each with the folder tree it really makes. The trees come from
 // exports of the sample course "Academic Writing" in the test Canvas (invented data), shortened
-// where a folder repeats ("11 more").
+// to fit beside the text: a folder's contents become a count ("11 more", "4 pages").
 
 export interface Node {
   name: string;
@@ -29,17 +29,12 @@ export const KINDS: Kind[] = [
       f('Open me - Academic Writing.html', undefined, 'start here'),
       f('Files', [
         f('Lectures', [f('Lecture 01 - Academic Writing week 1.pdf'), f('11 more')]),
-        f('Readings', [f('4 PDFs')]),
-        f('Assignments', [f('4 PDFs')]),
-        f('Exam prep', [f('3 PDFs')]),
-        f('Syllabus.pdf'),
+        f('3 more folders and the syllabus'),
       ]),
-      f('Pages', [f('4 pages')]),
-      f('Assignments', [f('5 assignments')]),
-      f('Quizzes', [f('2 quizzes')]),
-      f('Discussions', [f('3 threads')]),
-      f('Announcements', [f('3 announcements')]),
-      f('Submissions', [f('Assignment 1', [f('You.html')]), f('3 more')]),
+      f('Pages', [], '4 pages'),
+      f('Assignments', [], '5, with their rubrics'),
+      f('Quizzes and discussions', [], '2 and 3'),
+      f('Submissions', [], 'your own work and feedback'),
       f('Grades.csv'),
       f('Deadlines.ics', undefined, 'for your calendar'),
     ],
@@ -63,17 +58,17 @@ export const KINDS: Kind[] = [
   {
     id: 'teacher',
     label: "A teacher's archive",
-    text: "The course you teach, without students' work unless you turn it on. Add the course package Canvas makes, to import the course again later.",
+    text: "The course you teach, quizzes with their questions included. Add students' submissions and grades when you need them, and the course package Canvas makes to import the course again.",
     zip: 'Teaching Practicum.zip',
     tree: [
       f('Open me - Teaching Practicum.html', undefined, 'start here'),
-      f('Files', [f('Lectures', [f('12 PDFs')]), f('Readings', [f('4 PDFs')]), f('Syllabus.pdf')]),
-      f('Pages', [f('4 pages')]),
-      f('Assignments', [f('5 assignments')]),
-      f('Quizzes', [f('2 quizzes with questions')]),
-      f('Discussions', [f('3 threads')]),
+      f('Files', [f('Lectures', [], '12 PDFs'), f('Readings', [], '4 PDFs'), f('Syllabus.pdf')]),
+      f('Pages', [], '4 pages'),
+      f('Assignments', [], '5, with their rubrics'),
+      f('Quizzes', [], '2, with their questions'),
+      f('Discussions', [], '3 prompts'),
       f('Deadlines.ics'),
+      f('Gradebook.csv', undefined, "with students' work"),
     ],
-    foot: 'Student data: none included',
   },
 ];

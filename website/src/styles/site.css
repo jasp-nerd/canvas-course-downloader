@@ -941,28 +941,41 @@ ol {
   color: var(--ink-3);
   font-size: 13px;
 }
-.mock-note {
+.mock-opt {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
   align-items: center;
-  padding: 16px 20px;
-  border-radius: var(--r-card);
-  background: var(--mint-wash);
-  color: #0f4c32;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
   font-size: var(--t-small);
+  color: var(--ink-2);
 }
-.mock-note .icon {
+.mock-head + .mock-opt {
+  border-top: 0;
+}
+.mock-opt b {
+  display: block;
+  color: var(--ink);
+}
+/* The extension's switch, off. */
+.mock-switch {
+  position: relative;
   width: 40px;
-  height: 40px;
-  padding: 9px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--mist-2);
+}
+.mock-switch::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #fff;
-  color: var(--mint-ink);
-}
-.mock-note strong {
-  display: block;
-  font: 700 16px var(--font-display);
+  box-shadow: 0 1px 2px rgba(20, 32, 47, 0.25);
 }
 
 /* Receipt */

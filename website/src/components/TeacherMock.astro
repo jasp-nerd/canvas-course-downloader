@@ -1,15 +1,30 @@
 ---
-// A teacher's receipt as the extension shows it, rebuilt at page size.
+// A teacher's receipt as the extension shows it, rebuilt at page size, with the two options a
+// teacher can add from the settings. Both are off by default; switched on, they come along.
+const options = [
+  ["Include students' work", 'Submissions, grades and names, when you need them.'],
+  ["Canvas's course package (.imscc)", 'To import the course into Canvas again.'],
+];
 ---
 
-<div class="mock" data-ui role="img" aria-label="A teacher's receipt: Teaching Practicum is archived, course content only, and Student data: none included">
+<div class="mock" data-ui role="img" aria-label="A teacher's receipt: Teaching Practicum is archived. Two options from the settings: include students' work, and Canvas's course package">
   <div class="mock-band">
     <span class="mock-chip"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Course archive</span>
     <p class="mock-title">Teaching Practicum is archived</p>
-    <p class="mock-meta">Course content only, 27 MB, saved as Downloads/Teaching Practicum.zip</p>
+    <p class="mock-meta">27 MB, saved as Downloads/Teaching Practicum.zip</p>
   </div>
-  <div class="mock-note">
-    <svg class="icon" aria-hidden="true"><use href="#i-user-x"></use></svg>
-    <p><strong>Student data: none included</strong>Submissions, grades and names were left out.</p>
+  <div class="mock-card">
+    <p class="mock-head"><strong>Add when you need it</strong><span>Settings</span></p>
+    {
+      options.map(([title, text]) => (
+        <p class="mock-opt">
+          <span>
+            <b>{title}</b>
+            {text}
+          </span>
+          <i class="mock-switch" />
+        </p>
+      ))
+    }
   </div>
 </div>
