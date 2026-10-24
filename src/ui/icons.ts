@@ -40,6 +40,12 @@ export const ICONS = {
   clock: [['circle', { cx: 12, cy: 12, r: 10 }], ...p('M12 6v6l4 2')],
   cloud: p('M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z'),
   code: p('m16 18 6-6-6-6', 'm8 6-6 6 6 6'),
+  coffee: p(
+    'M10 2v2',
+    'M14 2v2',
+    'M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1',
+    'M6 2v2',
+  ),
   copy: [
     ['rect', { x: 8, y: 8, width: 14, height: 14, rx: 2 }],
     ...p('M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2'),
@@ -128,6 +134,7 @@ export const ICONS = {
     'M6 12.5V16a6 3 0 0 0 12 0v-3.5',
   ),
   teacher: p('M2 3h20', 'M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3', 'm7 21 5-5 5 5'),
+  messageSquare: p('M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'),
   /** "No student data": a person, crossed out. */
   userX: [
     ...p('M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'),

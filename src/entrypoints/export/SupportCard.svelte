@@ -1,15 +1,18 @@
 <script lang="ts">
+  // The one ask for a store review, the same for everyone, with "tell me what's
+  // missing" beside it. A coffee is offered only after someone chose to help.
   import { browser } from 'wxt/browser';
   import { LINKS, feedbackUrl, reviewUrl, tracked } from '../../app/links';
-  import { REVIEW_FLOW, finishSupportCard } from '../../app/support';
-  import { MASCOT_NAME } from '../../ui/brand';
+  import { finishSupportCard } from '../../app/support';
+  import Icon from '../../ui/Icon.svelte';
   import Logo from '../../ui/Logo.svelte';
 
-  let step = $state<'ask' | 'yes' | 'no' | 'thanks' | 'gone'>('ask');
   const review = tracked(reviewUrl(), 'support-card');
   const feedback = feedbackUrl(browser.runtime.getManifest().version, import.meta.env.BROWSER);
+  // Without a store page to review on (Edge, for now) there's nothing to ask.
+  let step = $state<'ask' | 'thanks' | 'told' | 'gone'>(review ? 'ask' : 'gone');
 
-  function answer(next: 'yes' | 'no') {
+  function finish(next: typeof step) {
     step = next;
     void finishSupportCard();
   }
@@ -21,76 +24,43 @@
     <Logo size={56} />
     <div class="body">
       {#if step === 'ask'}
-        <h2 id="support-title">Did {MASCOT_NAME} get everything?</h2>
-        <div class="row actions">
-          <button type="button" class="btn btn-light btn-sm" onclick={() => answer('yes')}
-            >Yes, all there</button
-          >
-          <button type="button" class="btn btn-light btn-sm" onclick={() => answer('no')}
-            >Something's missing</button
-          >
-          <button
-            type="button"
-            class="btn btn-text btn-sm quiet"
-            onclick={() => {
-              step = 'gone';
-              void finishSupportCard();
-            }}>Don't ask</button
-          >
-        </div>
-      {:else if step === 'yes'}
-        <h2 id="support-title">Glad to hear it</h2>
-        <p>It's free and made by a student. A short review helps other students find it.</p>
-        <div class="row actions">
-          {#if review}
-            <a
-              class="btn btn-primary btn-sm"
-              href={review}
-              target="_blank"
-              rel="noopener"
-              onclick={() => (step = 'thanks')}>Write a review</a
-            >
-          {/if}
-          <a
-            class="btn btn-light btn-sm"
-            href={tracked(LINKS.github, 'support-card')}
-            target="_blank"
-            rel="noopener"
-            onclick={() => (step = 'thanks')}>Star on GitHub</a
-          >
-          {#if LINKS.koFi}
-            <a
-              class="btn btn-light btn-sm"
-              href={tracked(LINKS.koFi, 'support-card')}
-              target="_blank"
-              rel="noopener"
-              onclick={() => (step = 'thanks')}>Buy me a coffee</a
-            >
-          {/if}
-        </div>
-      {:else if step === 'no'}
-        <h2 id="support-title">Sorry about that</h2>
-        <p>Tell me what went wrong and I'll look at it. It takes a minute.</p>
+        <h2 id="support-title">Could you leave a short review?</h2>
+        <p>It's free and made by a student. Reviews help other students find it.</p>
         <div class="row actions">
           <a
             class="btn btn-primary btn-sm"
+            href={review}
+            target="_blank"
+            rel="noopener"
+            onclick={() => finish('thanks')}><Icon name="star" size={16} />Write a review</a
+          >
+          <a
+            class="btn btn-text btn-sm"
             href={feedback}
             target="_blank"
             rel="noopener"
-            onclick={() => (step = 'thanks')}>Tell me what went wrong</a
+            onclick={() => finish('told')}>Something missing? Tell me</a
           >
-          {#if REVIEW_FLOW === 'both' && review}
-            <a
-              class="btn btn-light btn-sm"
-              href={review}
-              target="_blank"
-              rel="noopener"
-              onclick={() => (step = 'thanks')}>Write a review</a
-            >
-          {/if}
+          <button type="button" class="btn btn-text btn-sm quiet" onclick={() => finish('gone')}
+            >Don't ask again</button
+          >
         </div>
+      {:else if step === 'thanks'}
+        <h2 id="support-title">Thank you!</h2>
+        {#if LINKS.koFi}
+          <p>
+            If it saved you an afternoon, you can
+            <a
+              class="coffee"
+              href={tracked(LINKS.koFi, 'support-card')}
+              target="_blank"
+              rel="noopener"><Icon name="coffee" size={16} />buy me a coffee</a
+            >.
+          </p>
+        {/if}
       {:else}
-        <h2 id="support-title">Thanks!</h2>
+        <h2 id="support-title">Thanks for telling me</h2>
+        <p>I read every report and fix what I can.</p>
       {/if}
     </div>
   </aside>
@@ -129,5 +99,12 @@
   }
   .quiet {
     font-size: 13px;
+  }
+  .coffee {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--red-ink);
+    font-weight: 600;
   }
 </style>

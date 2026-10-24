@@ -13,12 +13,23 @@ const NOW = Date.UTC(2026, 9, 20);
 beforeEach(() => fakeBrowser.reset());
 
 describe('shouldShowSupportCard', () => {
-  const base = { successfulExports: 2, timesShown: 0, lastShownAt: 0, done: false };
+  const base = {
+    successfulExports: 2,
+    timesShown: 0,
+    lastShownAt: 0,
+    done: false,
+    firstSuccessAt: NOW - DAY,
+  };
   it('never shows on the first export', () => {
     expect(shouldShowSupportCard({ ...base, successfulExports: 1 }, NOW)).toBe(false);
   });
   it('shows from the second successful export', () => {
     expect(shouldShowSupportCard(base, NOW)).toBe(true);
+  });
+  it('waits until a later day than the first export that worked', () => {
+    expect(shouldShowSupportCard({ ...base, firstSuccessAt: NOW - 60 * 60 * 1000 }, NOW)).toBe(
+      false,
+    );
   });
   it('waits 30 days before asking again', () => {
     expect(
@@ -39,10 +50,11 @@ describe('shouldShowSupportCard', () => {
 });
 
 describe('support state', () => {
-  it('shows on the second successful export, not the first', async () => {
+  it('shows on a later successful export, not the first, nor the same day', async () => {
     expect(await supportCardAfterExport(NOW)).toBe(false);
-    expect(await supportCardAfterExport(NOW)).toBe(true);
-    expect(await supportCardAfterExport(NOW + DAY)).toBe(false);
+    expect(await supportCardAfterExport(NOW + 60 * 60 * 1000)).toBe(false);
+    expect(await supportCardAfterExport(NOW + DAY)).toBe(true);
+    expect(await supportCardAfterExport(NOW + 2 * DAY)).toBe(false);
   });
 
   it('stops for good after an answer', async () => {
@@ -59,8 +71,9 @@ describe('support state', () => {
     expect(await loadSupportState()).toMatchObject({ successfulExports: 5, done: true });
   });
 
-  it('counts v2 exports for someone who never answered', async () => {
+  it('counts v2 exports for someone who never answered, but never asks on the first 3.0 export', async () => {
     await fakeBrowser.storage.local.set({ completedSessions: 3, feedbackState: 'pending' });
-    expect(await supportCardAfterExport(NOW)).toBe(true);
+    expect(await supportCardAfterExport(NOW)).toBe(false);
+    expect(await supportCardAfterExport(NOW + DAY)).toBe(true);
   });
 });

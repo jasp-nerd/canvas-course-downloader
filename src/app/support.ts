@@ -1,13 +1,8 @@
-// When to show the "Is it working well for you?" card after an export.
+// When to ask for a store review after an export. Everyone gets the same ask,
+// with "tell me what's missing" beside it: sending only happy users to the store
+// ("review gating") counts as review manipulation in store and consumer rules.
 // It asks rarely and stops for good once answered, so it never becomes a nag.
 import { browser } from 'wxt/browser';
-
-/**
- * 'gated': 👍 offers the store review, 👎 offers the feedback form (jasp's choice).
- * 'both': both paths offer the review; 👎 also offers the form. Store and consumer
- * rules treat review gating as review manipulation, so this is one switch away.
- */
-export const REVIEW_FLOW: 'gated' | 'both' = 'gated';
 
 const DAY = 24 * 60 * 60 * 1000;
 const MIN_EXPORTS = 2;
@@ -21,15 +16,22 @@ export interface SupportState {
   lastShownAt: number;
   /** Answered, clicked a link, or chose "Don't show again". */
   done: boolean;
+  /** When the first export that worked happened (since 3.0); the ask waits a day after it. */
+  firstSuccessAt?: number;
 }
 
 const KEY = 'supportCard';
 const FRESH: SupportState = { successfulExports: 0, timesShown: 0, lastShownAt: 0, done: false };
 
-/** Never on the first export, at most twice, a month apart, and never again once answered. */
+/**
+ * Never on the first export, nor within a day of the first that worked (so not on
+ * someone's first export after updating from 2.x either), at most twice, a month apart,
+ * and never again once answered.
+ */
 export function shouldShowSupportCard(state: SupportState, now: number): boolean {
   if (state.done) return false;
   if (state.successfulExports < MIN_EXPORTS) return false;
+  if (!state.firstSuccessAt || now - state.firstSuccessAt < DAY) return false;
   if (state.timesShown >= MAX_TIMES_SHOWN) return false;
   return now - state.lastShownAt >= MIN_DAYS_BETWEEN * DAY;
 }
@@ -61,6 +63,7 @@ export async function saveSupportState(state: SupportState): Promise<void> {
 export async function supportCardAfterExport(now = Date.now()): Promise<boolean> {
   const state = await loadSupportState();
   state.successfulExports++;
+  state.firstSuccessAt ??= now;
   const show = shouldShowSupportCard(state, now);
   if (show) {
     state.timesShown++;
