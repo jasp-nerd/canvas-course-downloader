@@ -63,7 +63,7 @@ test('on a course page, the popup shows the course and downloads it', async ({
   try {
     await expect(popup.getByText('Introduction to Psychology')).toBeVisible();
     await expect(popup.getByText('PSY 101 · Fall 2026')).toBeVisible();
-    await expect(popup.getByText('A copy to keep · ZIP · Downloads')).toBeVisible();
+    await expect(popup.getByText('One ZIP per course in Downloads')).toBeVisible();
     await expect(popup.getByText('Not saved yet')).toBeVisible();
     await expect(popup.getByRole('button', { name: 'Download new files' })).toHaveCount(0);
     const exportTab = page.context().waitForEvent('page', (p) => p.url().includes('/export.html'));
@@ -91,7 +91,7 @@ test('on a course saved before with new files, the popup offers just those', asy
   try {
     await expect(popup.getByText(/^3 new since \w+/)).toBeVisible();
     await expect(popup.getByText(/^Last saved \w+ \d/)).toBeVisible();
-    await expect(popup.getByText('A study pack for Claude · ZIP · Downloads')).toBeVisible();
+    await expect(popup.getByText('Study pack for Claude in Downloads')).toBeVisible();
     await expect(popup.getByRole('button', { name: 'Download everything again' })).toBeVisible();
     const exportTab = page.context().waitForEvent('page', (p) => p.url().includes('/export.html'));
     await popup.getByRole('button', { name: 'Download new files' }).click();
@@ -173,7 +173,7 @@ test('on the dashboard, courses saved before show what is new, and one press get
       /^Linear Algebra\s*3 new$/,
       /^Data Structures and Algorithms\s*Up to date$/,
     ]);
-    await expect(popup.getByText('A copy to keep · ZIP')).toBeVisible();
+    await expect(popup.getByText('One ZIP per course', { exact: true })).toBeVisible();
     const exportTab = page.context().waitForEvent('page', (p) => p.url().includes('/export.html'));
     await popup.getByRole('button', { name: 'Download all 8 new files' }).click();
     const tab = await exportTab;

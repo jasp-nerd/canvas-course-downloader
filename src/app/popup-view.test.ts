@@ -7,16 +7,17 @@ const NOW = Date.UTC(2026, 9, 22, 15, 30);
 const HOUR = 60 * 60 * 1000;
 
 describe('modeLine', () => {
-  it('says what a download makes, how it is packed and where it goes', () => {
-    expect(modeLine(DEFAULT_SETTINGS, 'Downloads')).toBe('A copy to keep · ZIP · Downloads');
-    expect(modeLine(DEFAULT_SETTINGS)).toBe('A copy to keep · ZIP');
+  it('says how a download is saved and where, in a few plain words', () => {
+    expect(modeLine(DEFAULT_SETTINGS, 'Downloads')).toBe('One ZIP per course in Downloads');
+    expect(modeLine(DEFAULT_SETTINGS)).toBe('One ZIP per course');
+    expect(modeLine({ ...DEFAULT_SETTINGS, zipMode: false }, 'Drive')).toBe('Folders in Drive');
   });
 
   it('names the AI tool of a study pack, and folders', () => {
     const study = { ...DEFAULT_SETTINGS, profile: 'study' as const, aiTarget: 'claude' as const };
-    expect(modeLine(study, 'Downloads')).toBe('A study pack for Claude · ZIP · Downloads');
+    expect(modeLine(study, 'Downloads')).toBe('Study pack for Claude in Downloads');
     const agents = { ...DEFAULT_SETTINGS, profile: 'agents' as const, zipMode: false };
-    expect(modeLine(agents, 'Canvas backup')).toBe('Files for code · Folders · Canvas backup');
+    expect(modeLine(agents, 'Canvas backup')).toBe('Files for code as folders in Canvas backup');
   });
 });
 

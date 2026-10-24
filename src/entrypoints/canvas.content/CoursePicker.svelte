@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
+  import { LINKS, tracked } from '../../app/links';
   import { describeExport } from '../../app/summary';
   import { CanvasError, createCanvasClient } from '../../canvas/client';
   import {
@@ -12,7 +13,9 @@
   } from '../../canvas/courses';
   import { AI_TARGETS } from '../../export/study-pack';
   import { savedCourses } from '../../storage/inventory';
+  import { sendMessage } from '../../messaging';
   import { loadSettings, type Settings } from '../../storage/settings';
+  import GitHubStars from '../../ui/GitHubStars.svelte';
   import Icon from '../../ui/Icon.svelte';
   import type { IconName } from '../../ui/icons';
   import Logo from '../../ui/Logo.svelte';
@@ -38,14 +41,11 @@
     | { status: 'ready'; courses: CourseSummary[] }
     | { status: 'error'; signedOut: boolean };
 
-  // The footer's chip: what a download makes, in that kind's colour.
-  const KINDS: Record<
-    Settings['profile'],
-    { label: string; icon: IconName; tone: 'red' | 'sun' | 'navy' }
-  > = {
-    copy: { label: 'A copy', icon: 'folder', tone: 'red' },
-    study: { label: 'Study pack', icon: 'ai', tone: 'sun' },
-    agents: { label: 'Files for code', icon: 'code', tone: 'navy' },
+  // The footer's chip: one word for what a download makes, in that kind's colour.
+  const KINDS: Record<Settings['profile'], { icon: IconName; tone: 'red' | 'sun' | 'navy' }> = {
+    copy: { icon: 'folder', tone: 'red' },
+    study: { icon: 'ai', tone: 'sun' },
+    agents: { icon: 'code', tone: 'navy' },
   };
   // Canvas data: only a plain hex colour goes into a style.
   const HEX = /^#[0-9a-f]{3,8}$/i;
@@ -58,6 +58,7 @@
   let query = $state('');
   let settings = $state<Settings>();
   let colors = $state<Record<string, string>>({});
+  let stars = $state<number | null>(null);
   let savedAt = $state<Record<string, number>>({});
   let dialog: HTMLDialogElement | undefined = $state();
   let search: HTMLInputElement | undefined = $state();
@@ -100,6 +101,11 @@
     void savedCourses(origin).then(
       (saved) => (savedAt = Object.fromEntries(saved.map((c) => [c.courseId, c.savedAt]))),
     );
+    // Without a count the button still says "Star"; nothing else depends on it.
+    sendMessage('githubStars').then(
+      (count) => (stars = count),
+      () => {},
+    );
   });
 
   const current = $derived(lists[tab]);
@@ -111,12 +117,14 @@
   const mode = $derived(
     settings && {
       ...KINDS[settings.profile],
-      detail:
+      label:
         settings.profile === 'study'
           ? AI_TARGETS[settings.aiTarget].label
-          : settings.zipMode
-            ? 'ZIP'
-            : 'Folders',
+          : settings.profile === 'agents'
+            ? 'For code'
+            : settings.zipMode
+              ? 'ZIP'
+              : 'Folders',
     },
   );
 
@@ -293,10 +301,11 @@
     <span class="mode">
       {#if settings && mode}
         <span class="chip chip-{mode.tone}" title={describeExport(settings)}>
-          <Icon name={mode.icon} size={14} />{mode.label} · {mode.detail}
+          <Icon name={mode.icon} size={14} />{mode.label}
         </span>
       {/if}
       <button type="button" class="link" onclick={onsettings}>Change</button>
+      <GitHubStars count={stars} href={tracked(LINKS.github, 'picker')} />
     </span>
     <button type="button" class="btn btn-primary" disabled={selected.size === 0} onclick={download}>
       <Icon name="download" size={18} />

@@ -8,15 +8,17 @@ import { newItems } from './updates';
 
 const DAY = 24 * 60 * 60 * 1000;
 
-/** "A copy to keep · ZIP · Downloads": what a download makes, how it's packed, where it goes. */
+/** "One ZIP per course in Downloads": how a download is saved and where, in plain words. */
 export function modeLine(settings: Settings, saveTo?: string): string {
   const makes =
     settings.profile === 'study'
-      ? `A study pack for ${AI_TARGETS[settings.aiTarget].tool}`
+      ? `Study pack for ${AI_TARGETS[settings.aiTarget].tool}`
       : settings.profile === 'agents'
-        ? 'Files for code'
-        : 'A copy to keep';
-  return [makes, settings.zipMode ? 'ZIP' : 'Folders', saveTo].filter(Boolean).join(' · ');
+        ? `Files for code as ${settings.zipMode ? 'a ZIP' : 'folders'}`
+        : settings.zipMode
+          ? 'One ZIP per course'
+          : 'Folders';
+  return saveTo ? `${makes} in ${saveTo}` : makes;
 }
 
 const startOfDay = (at: number) => new Date(at).setHours(0, 0, 0, 0);

@@ -152,7 +152,15 @@ test('the footer says what a download makes; Change and the settings button open
   extensionId,
 }) => {
   const dialog = await openPicker(page);
-  await expect(dialog.getByText('A copy · ZIP', { exact: true })).toBeVisible();
+  const footer = dialog.locator('footer');
+  await expect(footer.getByText('ZIP', { exact: true })).toBeVisible();
+  await expect(footer.getByText(/·/)).toHaveCount(0);
+  const star = footer.getByRole('link', { name: /^Star Course Downloader on GitHub/ });
+  await expect(star).toHaveAccessibleName('Star Course Downloader on GitHub, 297 stars');
+  await expect(star).toHaveAttribute(
+    'href',
+    /github\.com\/jasp-nerd\/canvas-course-downloader\?utm_source=extension&utm_medium=picker/,
+  );
   for (const name of ['Change', 'Settings']) {
     const settings = page.context().waitForEvent('page');
     await dialog.getByRole('button', { name, exact: true }).click();
