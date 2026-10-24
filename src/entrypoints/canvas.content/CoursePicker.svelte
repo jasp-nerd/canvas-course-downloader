@@ -170,6 +170,7 @@
       </span>
       <h2 class="sr-only" id="ccd-picker-title">Download courses</h2>
       <span class="actions">
+        <GitHubStars count={stars} href={tracked(LINKS.github, 'picker')} />
         <button type="button" class="icon-btn" aria-label="Settings" onclick={onsettings}>
           <Icon name="settings" />
         </button>
@@ -305,7 +306,6 @@
         </span>
       {/if}
       <button type="button" class="link" onclick={onsettings}>Change</button>
-      <GitHubStars count={stars} href={tracked(LINKS.github, 'picker')} />
     </span>
     <button type="button" class="btn btn-primary" disabled={selected.size === 0} onclick={download}>
       <Icon name="download" size={18} />
@@ -334,11 +334,15 @@
   }
   .actions {
     display: flex;
+    align-items: center;
     gap: 2px;
+  }
+  .actions > :global(.gh) {
+    margin-right: 6px;
   }
   .filters {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
     gap: 12px;
     align-items: center;
   }
@@ -491,5 +495,23 @@
   .mode .link {
     font-size: 13px;
     font-weight: 600;
+  }
+  /* A narrow window, or a zoomed-in page: the logo stands in for the name, and rows stack. */
+  @media (max-width: 520px) {
+    .dialog-head .brand-name {
+      display: none;
+    }
+    .filters {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .tabs {
+      justify-self: start;
+    }
+    footer {
+      flex-wrap: wrap;
+    }
+    footer .btn {
+      flex: 1 1 auto;
+    }
   }
 </style>

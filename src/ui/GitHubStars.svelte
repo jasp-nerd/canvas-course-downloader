@@ -41,20 +41,22 @@
     display: inline-flex;
     align-items: stretch;
     height: 32px;
+    box-sizing: border-box;
     border-radius: 999px;
+    /* White with its own outline, so it reads as one button on white, mist or sun. */
+    border: 1.5px solid var(--control, #c6ced8);
     background: #fff;
-    box-shadow: inset 0 0 0 1.5px var(--line, #e1e6ec);
     color: var(--ink, #14202f);
     font: 600 13px/1 var(--font-ui, system-ui, sans-serif);
     text-decoration: none;
     white-space: nowrap;
     overflow: hidden;
     transition:
-      box-shadow 0.12s,
+      border-color 0.12s,
       transform 0.12s;
   }
   .gh:hover {
-    box-shadow: inset 0 0 0 1.5px var(--control-strong, #8b95a5);
+    border-color: var(--control-strong, #8b95a5);
     transform: translateY(-1px);
   }
   .gh:focus-visible {
@@ -70,8 +72,10 @@
   }
   .gh-count {
     padding: 0 12px 0 10px;
-    background: var(--sun-wash, #fff4d6);
-    color: var(--sun-ink, #7a5200);
+    border-left: 1.5px solid var(--control, #c6ced8);
+  }
+  .gh:hover .gh-count {
+    border-left-color: var(--control-strong, #8b95a5);
   }
   .star {
     fill: var(--sun, #ffc43d);

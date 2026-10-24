@@ -155,11 +155,21 @@ test('the footer says what a download makes; Change and the settings button open
   const footer = dialog.locator('footer');
   await expect(footer.getByText('ZIP', { exact: true })).toBeVisible();
   await expect(footer.getByText(/·/)).toHaveCount(0);
-  const star = footer.getByRole('link', { name: /^Star Course Downloader on GitHub/ });
+  // The star sits in the header, just left of the settings button, not in the footer.
+  const starName = /^Star Course Downloader on GitHub/;
+  await expect(footer.getByRole('link', { name: starName })).toHaveCount(0);
+  const star = dialog.getByRole('link', { name: starName });
   await expect(star).toHaveAccessibleName('Star Course Downloader on GitHub, 297 stars');
   await expect(star).toHaveAttribute(
     'href',
     /github\.com\/jasp-nerd\/canvas-course-downloader\?utm_source=extension&utm_medium=picker/,
+  );
+  const starBox = (await star.boundingBox())!;
+  const gearBox = (await dialog.getByRole('button', { name: 'Settings' }).boundingBox())!;
+  expect(gearBox.x - (starBox.x + starBox.width)).toBeGreaterThanOrEqual(0);
+  expect(gearBox.x - (starBox.x + starBox.width)).toBeLessThan(16);
+  expect(Math.abs(starBox.y + starBox.height / 2 - (gearBox.y + gearBox.height / 2))).toBeLessThan(
+    2,
   );
   for (const name of ['Change', 'Settings']) {
     const settings = page.context().waitForEvent('page');
