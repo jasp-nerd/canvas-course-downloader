@@ -1,6 +1,7 @@
 import { defineBackground } from '#imports';
 import { browser, type Browser } from 'wxt/browser';
 import { csrfKey } from '../app/course-package';
+import { githubStars } from '../app/github';
 import { markNewUser, onboardingFor } from '../app/onboarding';
 import { onMessage, sendMessage } from '../messaging';
 import { readFonts } from '../ui/fonts';
@@ -41,6 +42,7 @@ export default defineBackground(() => {
 
   onMessage('openOptions', () => browser.runtime.openOptionsPage());
   onMessage('fontData', () => readFonts());
+  onMessage('githubStars', () => githubStars());
   onMessage('setBadge', async (message) => {
     // @webext-core/messaging types `sender` with @types/chrome, which WXT doesn't install.
     const tabId = (message.sender as Browser.runtime.MessageSender).tab?.id;

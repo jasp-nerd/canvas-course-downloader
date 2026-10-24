@@ -3,8 +3,7 @@
 export const LINKS = {
   github: 'https://github.com/jasp-nerd/canvas-course-downloader',
   sponsors: 'https://github.com/sponsors/jasp-nerd',
-  /** jasp's Ko-fi page, once created. */
-  koFi: '',
+  koFi: 'https://ko-fi.com/jaspnerd',
   /** Google Form for "something's wrong" feedback, once created. */
   feedbackForm: '',
   privacy: 'https://github.com/jasp-nerd/canvas-course-downloader/blob/main/PRIVACY.md',

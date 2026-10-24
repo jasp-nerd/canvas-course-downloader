@@ -58,6 +58,8 @@ interface ProtocolMap {
   setBadge(text: string): void;
   /** Content script → background: our typefaces, which Canvas pages can't load from the extension. */
   fontData(): FontData[];
+  /** Content script → background: the project's GitHub star count, null when unknown. */
+  githubStars(): number | null;
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<ProtocolMap>();

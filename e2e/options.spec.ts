@@ -306,10 +306,14 @@ test('the sidebar and Help keep the support links, the shortcut and the version'
     'href',
     /chromewebstore\.google\.com\/detail\/canvas-course-downloader\/mmnmcnffbkcnhcjiidmdnaclpfeekiol\/reviews\?utm_source=extension&utm_medium=options/,
   );
-  await expect(sidebar.getByRole('link', { name: 'Star on GitHub' })).toHaveAttribute(
+  // The star button shows GitHub's live count (the mock GitHub says 297).
+  const star = sidebar.getByRole('link', { name: /^Star Course Downloader on GitHub/ });
+  await expect(star).toHaveAttribute(
     'href',
     'https://github.com/jasp-nerd/canvas-course-downloader?utm_source=extension&utm_medium=options',
   );
+  await expect(star).toHaveAccessibleName('Star Course Downloader on GitHub, 297 stars');
+  await expect(star).toContainText('297');
   await expect(sidebar.getByText(/^Version \d+\.\d+\.\d+$/)).toBeVisible();
 
   await open(page, extensionId, '#help');

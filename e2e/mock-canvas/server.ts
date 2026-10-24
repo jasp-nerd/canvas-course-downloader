@@ -16,7 +16,12 @@ export const MOCK_HOSTS = {
   instructure: 'school.instructure.com',
   customDomain: 'canvas.example.edu',
   notCanvas: 'not-canvas.example.com',
+  /** GitHub's API, for the star count: tests never ask the real one. */
+  github: 'api.github.com',
 } as const;
+
+/** The star count the mock GitHub reports. */
+export const MOCK_STARS = 297;
 
 export interface FaultRule {
   /** Regex source matched against path + query, e.g. "^/files/101002/download". */
@@ -388,6 +393,13 @@ export async function startMockCanvas(port = 0): Promise<MockCanvas> {
 
     if (await applyFault(req, res, target)) return;
 
+    if (host === MOCK_HOSTS.github) {
+      return path === '/repos/jasp-nerd/canvas-course-downloader'
+        ? send(res, 200, 'application/json', JSON.stringify({ stargazers_count: MOCK_STARS }), {
+            'access-control-allow-origin': '*',
+          })
+        : send(res, 404, 'application/json', '{}');
+    }
     if (host === MOCK_HOSTS.notCanvas) {
       return path === '/'
         ? send(res, 200, 'text/html', plainPage())

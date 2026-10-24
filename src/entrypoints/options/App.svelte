@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onMount, tick, type Component } from 'svelte';
   import { browser } from 'wxt/browser';
+  import { githubStars } from '../../app/github';
   import { LINKS, reviewUrl, tracked } from '../../app/links';
   import { PRODUCT_NAME } from '../../ui/brand';
   import Icon from '../../ui/Icon.svelte';
   import type { IconName } from '../../ui/icons';
+  import GitHubStars from '../../ui/GitHubStars.svelte';
   import Logo from '../../ui/Logo.svelte';
   import AdvancedView from './AdvancedView.svelte';
   import DownloadsView from './DownloadsView.svelte';
@@ -59,8 +61,11 @@
   const version = browser.runtime.getManifest().version;
   const review = tracked(reviewUrl(), 'options');
 
+  let stars = $state<number | null>(null);
+
   onMount(() => {
     void load().then(() => (ready = true));
+    void githubStars().then((count) => (stars = count));
     const onHash = () => {
       current = fromHash();
       // Moving to another view moves the reader to its heading.
@@ -93,9 +98,7 @@
         <div class="enjoy">
           <strong><Icon name="star" size={16} />Enjoying it?</strong>
           {#if review}<a href={review} target="_blank" rel="noopener">Leave a review</a>{/if}
-          <a href={tracked(LINKS.github, 'options')} target="_blank" rel="noopener"
-            >Star on GitHub</a
-          >
+          <GitHubStars count={stars} href={tracked(LINKS.github, 'options')} />
         </div>
         <span class="small num">Version {version}</span>
       </div>
