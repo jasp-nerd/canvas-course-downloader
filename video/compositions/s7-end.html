@@ -1,0 +1,85 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: var(--navy);
+      overflow: hidden;
+    }
+    /* The ring that has been filling all film completes and becomes the mark. */
+    #s7-ring {
+      position: absolute;
+      left: 780px;
+      top: 290px;
+      width: 360px;
+      height: 360px;
+      transform-origin: 50% 50%;
+    }
+    #s7-word {
+      position: absolute;
+      left: 760px;
+      top: 418px;
+      font: 800 92px/1 Gabarito, sans-serif;
+      letter-spacing: -0.04em;
+      color: #fff;
+      white-space: nowrap;
+    }
+    #s7-ver {
+      display: inline-block;
+      margin-left: 18px;
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: var(--sun);
+      color: var(--ink);
+      font: 800 40px/1 Gabarito, sans-serif;
+      letter-spacing: -0.02em;
+      vertical-align: 18px;
+    }
+    #s7-cta {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 640px;
+      text-align: center;
+      font: 600 36px/1.3 Figtree, sans-serif;
+      color: #fff;
+    }
+    #s7-cta span {
+      display: block;
+      margin-top: 8px;
+      font-size: 28px;
+      font-weight: 500;
+      color: #c9d2de;
+    }
+    #s7-pip {
+      position: absolute;
+      left: 1540px;
+      top: 640px;
+      width: 190px;
+    }
+  </style>
+  <div id="root" data-composition-id="s7" data-width="1920" data-height="1080">
+    <svg id="s7-ring" class="ring on-navy"></svg>
+    <p id="s7-word">Course Downloader<span id="s7-ver">3.0</span></p>
+    <p id="s7-cta">Free on the Chrome Web Store<span>Also for Edge and Brave. Firefox is coming.</span></p>
+    <img id="s7-pip" src="assets/pip/cheer.webp" alt="" />
+  </div>
+  <script>
+    const ring = document.querySelector('#s7-ring');
+    window.drawLogo(ring);
+    const progress = { p: 0.7 };
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo('#s7-ring', { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'expo.out' }, 0);
+    tl.fromTo(progress, { p: 0.7 }, { p: 1, duration: 0.9, ease: 'power2.inOut', onUpdate: () => window.fillLogo(ring, progress.p) }, 0.2);
+    // Full: the mark moves left and shrinks while the name wipes in beside it.
+    tl.fromTo('#s7-ring', { x: 0, scale: 1 }, { immediateRender: false, x: -440, scale: 0.44, duration: 0.6, ease: 'power3.inOut' }, 1.35);
+    tl.fromTo('#s7-word', { clipPath: 'inset(0 100% 0 0)', x: -30 }, { clipPath: 'inset(0 0% 0 0)', x: 0, duration: 0.6, ease: 'expo.out' }, 1.7);
+    tl.fromTo('#s7-cta', { opacity: 0, filter: 'blur(8px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.2, ease: 'power4.out' }, 2.9);
+    // Pip hops in: a small squash before the jump, a landing with a little give.
+    tl.fromTo('#s7-pip', { y: 260, scaleY: 1, opacity: 0 }, { y: 0, opacity: 1, duration: 0.42, ease: 'back.out(1.4)' }, 2.55);
+    tl.fromTo('#s7-pip', { scaleY: 1, scaleX: 1 }, { immediateRender: false, scaleY: 0.92, scaleX: 1.05, duration: 0.08, ease: 'power2.out', transformOrigin: '50% 100%' }, 2.97);
+    tl.fromTo('#s7-pip', { scaleY: 0.92, scaleX: 1.05 }, { immediateRender: false, scaleY: 1, scaleX: 1, duration: 0.2, ease: 'power2.out', transformOrigin: '50% 100%' }, 3.05);
+    window.fillLogo(ring, 0.7);
+    window.__timelines['s7'] = tl;
+  </script>
+</template>

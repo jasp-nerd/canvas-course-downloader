@@ -1,0 +1,80 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: var(--mist);
+      overflow: hidden;
+    }
+    #s4-title {
+      position: absolute;
+      left: 160px;
+      top: 410px;
+      width: 640px;
+    }
+    #s4-sub {
+      position: absolute;
+      left: 160px;
+      top: 590px;
+      width: 600px;
+      font-size: 30px;
+      line-height: 1.4;
+      color: var(--ink-2);
+    }
+    /* The real course picker on the dashboard, at 1.4x: the 2x capture drawn at 0.7. */
+    #s4-pane {
+      position: absolute;
+      left: 880px;
+      top: 92px;
+      width: 896px;
+      height: 896px;
+      border-radius: 34px;
+      background: #fff url('assets/ui/picker.webp') -560px -182px / 2016px auto no-repeat;
+      overflow: hidden;
+    }
+    #s4-press {
+      position: absolute;
+      left: 578px;
+      top: 809px;
+      width: 289px;
+      height: 62px;
+      border-radius: 999px;
+      background: #14202f;
+      opacity: 0;
+    }
+    #s4-cursor {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    #s4-dip {
+      position: absolute;
+      inset: 0;
+      background: #000;
+      opacity: 0;
+    }
+  </style>
+  <div id="root" data-composition-id="s4" data-width="1920" data-height="1080">
+    <p id="s4-title" class="title">Several courses at once.</p>
+    <p id="s4-sub">Current or past, picked on your dashboard. Each gets its own folder or ZIP.</p>
+    <div id="s4-pane"><div id="s4-press"></div></div>
+    <svg id="s4-cursor" class="cursor" viewBox="0 0 28 28"><path d="M5 3l17 9.5-7.6 1.7L10.8 21z" fill="#14202f" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"></path></svg>
+    <div id="s4-dip"></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // Whips in from the right and sharpens as it lands.
+    tl.fromTo('#s4-pane', { x: 260, filter: 'blur(16px)', opacity: 0.4 }, { x: 0, filter: 'blur(0px)', opacity: 1, duration: 0.35, ease: 'power4.out' }, 0);
+    tl.fromTo('#s4-title', { opacity: 0, filter: 'blur(8px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.18, ease: 'power4.out' }, 0.45);
+    tl.fromTo('#s4-sub', { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'power2.out' }, 0.8);
+    // The cursor goes to Download 3 courses and presses it.
+    tl.fromTo('#s4-cursor', { x: 1980, y: 1120 }, { x: 1591, y: 926, duration: 1.2, ease: 'power3.out' }, 3.2);
+    tl.fromTo('#s4-cursor', { scale: 1 }, { immediateRender: false, scale: 0.86, duration: 0.08 }, 4.56);
+    tl.fromTo('#s4-cursor', { scale: 0.86 }, { immediateRender: false, scale: 1, duration: 0.16 }, 4.64);
+    tl.fromTo('#s4-press', { opacity: 0 }, { opacity: 0.2, duration: 0.06 }, 4.56);
+    tl.fromTo('#s4-press', { opacity: 0.2 }, { immediateRender: false, opacity: 0, duration: 0.2 }, 4.68);
+    // A dip before the cut, so the cut reads as meant.
+    tl.fromTo('#s4-dip', { opacity: 0 }, { opacity: 0.4, duration: 0.1 }, 6.08);
+    window.__timelines['s4'] = tl;
+  </script>
+</template>

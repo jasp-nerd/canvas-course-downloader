@@ -31,6 +31,13 @@ e2e/.certs/
 website/dist/
 website/.astro/
 video/out/
+video/renders/
+video/assets/fonts/
+video/assets/pip/
+video/assets/logo.js
+video/assets/sfx/
+video/.thumbnails/
+video/.hyperframes/
 
 # Marketing material lives outside the repo (it once held a browser profile)
 marketing/

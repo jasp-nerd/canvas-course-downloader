@@ -1,0 +1,68 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: var(--mist);
+      overflow: hidden;
+    }
+    #s5-cam {
+      position: absolute;
+      inset: 0;
+      transform-origin: 600px 400px;
+    }
+    /* The real study-pack receipt: its yellow band at 1.25x and its first steps at 1.1x. */
+    #s5-band {
+      position: absolute;
+      left: 110px;
+      top: 96px;
+      width: 1700px;
+      height: 280px;
+      border-radius: 40px;
+      background: url('assets/ui/study.webp') -50px -100px / 1800px auto no-repeat;
+    }
+    #s5-steps {
+      position: absolute;
+      left: 110px;
+      top: 420px;
+      width: 884px;
+      height: 585px;
+      border-radius: 34px;
+      background: #fff url('assets/ui/study.webp') -44px -356px / 1584px auto no-repeat;
+    }
+    #s5-title {
+      position: absolute;
+      left: 1070px;
+      top: 520px;
+      width: 720px;
+    }
+    #s5-sub {
+      position: absolute;
+      left: 1070px;
+      top: 700px;
+      width: 680px;
+      font-size: 30px;
+      line-height: 1.4;
+      color: var(--ink-2);
+    }
+  </style>
+  <div id="root" data-composition-id="s5" data-width="1920" data-height="1080">
+    <div id="s5-cam" data-layout-allow-overflow>
+      <div id="s5-band"></div>
+      <div id="s5-steps"></div>
+    </div>
+    <p id="s5-title" class="title"><span class="w">A</span> <span class="w">study</span> <span class="w">pack</span> <span class="w">for</span> <span class="w">your</span> <span class="w">AI</span> <span class="w">tool.</span></p>
+    <p id="s5-sub">Sized for NotebookLM, ChatGPT or Claude, with a guide to the course and one file per module.</p>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // After the dip cut the new screen comes in slightly large and settles.
+    tl.fromTo('#s5-cam', { scale: 1.04 }, { scale: 1, duration: 0.6, ease: 'expo.out' }, 0);
+    tl.fromTo('#s5-steps', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'expo.out' }, 0.35);
+    tl.fromTo('#s5-title .w', { opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.13, stagger: 0.067, ease: 'power4.out' }, 0.9);
+    tl.fromTo('#s5-sub', { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'power2.out' }, 1.6);
+    // A slow move inside the UI while it's read.
+    tl.fromTo('#s5-cam', { y: 0 }, { y: -36, duration: 5, ease: 'power2.inOut' }, 0.6);
+    window.__timelines['s5'] = tl;
+  </script>
+</template>

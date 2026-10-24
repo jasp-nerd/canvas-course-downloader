@@ -1,0 +1,6 @@
+# Its own pnpm project, so the extension's lockfile never changes for the videos.
+# Same supply-chain guard as the root: new versions wait a week; only these may run install scripts.
+minimumReleaseAge: 10080
+allowBuilds:
+  esbuild: true
+  sharp: false

@@ -1,0 +1,19 @@
+{
+  "name": "coursedownloader-video",
+  "description": "The 3.0 release film and the what's-possible film, made with HyperFrames from the extension's own UI.",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.13.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "sync": "node scripts/sync.mjs",
+    "preview": "node scripts/sync.mjs && HYPERFRAMES_NO_TELEMETRY=1 hyperframes preview",
+    "check": "node scripts/sync.mjs && HYPERFRAMES_NO_TELEMETRY=1 hyperframes check",
+    "render": "node scripts/sync.mjs && HYPERFRAMES_NO_TELEMETRY=1 hyperframes render --quality high --fps 60"
+  },
+  "devDependencies": {
+    "hyperframes": "0.8.168"
+  }
+}

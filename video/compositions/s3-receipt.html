@@ -1,0 +1,150 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: var(--mist);
+      overflow: hidden;
+    }
+    /* Pushes in on the failed file, which stays where it is on screen. */
+    #s3-cam {
+      position: absolute;
+      inset: 0;
+      transform-origin: 500px 640px;
+    }
+    /* The receipt, rebuilt from the extension's CSS at 1.5x. */
+    #s3-receipt {
+      position: absolute;
+      left: 160px;
+      top: 110px;
+      width: 960px;
+      transform-origin: 0 0;
+    }
+    .s3-band {
+      padding: 40px 44px;
+      border-radius: 32px;
+      background: var(--sun-wash);
+    }
+    .s3-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 44px;
+      padding: 0 20px;
+      border-radius: 999px;
+      background: #fff;
+      font: 700 21px Figtree, sans-serif;
+      color: var(--sun-ink);
+    }
+    .s3-chip svg,
+    .s3-row svg {
+      width: 26px;
+      height: 26px;
+    }
+    .s3-title {
+      margin-top: 14px;
+      font: 800 60px/1.05 Gabarito, sans-serif;
+      letter-spacing: -0.035em;
+    }
+    .s3-meta {
+      margin-top: 10px;
+      font-size: 26px;
+      color: var(--ink-2);
+    }
+    .s3-card {
+      margin-top: 18px;
+      padding: 30px 40px;
+      border-radius: 32px;
+      background: #fff;
+    }
+    .s3-head {
+      display: flex;
+      justify-content: space-between;
+      font-size: 24px;
+      color: var(--ink-3);
+    }
+    .s3-head b {
+      font: 700 28px Gabarito, sans-serif;
+      color: var(--ink);
+    }
+    .s3-row {
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      gap: 14px;
+      align-items: center;
+      height: 64px;
+      font-size: 26px;
+      border-top: 2px solid var(--line);
+    }
+    .s3-row.first {
+      border-top: 0;
+    }
+    .s3-row svg {
+      color: var(--mint-ink);
+    }
+    .s3-row.warn svg {
+      color: var(--sun-ink);
+    }
+    .s3-row u {
+      margin-left: 10px;
+      color: var(--ink-3);
+      text-underline-offset: 5px;
+    }
+    .s3-row b span {
+      font-weight: 400;
+      color: var(--ink-3);
+    }
+    #s3-fail {
+      margin: 0 0 12px 50px;
+      padding: 16px 22px;
+      border-radius: 18px;
+      background: var(--sun-wash);
+      font-size: 24px;
+    }
+    #s3-fail small {
+      display: block;
+      margin-top: 4px;
+      font-size: 22px;
+      color: var(--ink-3);
+    }
+    #s3-title {
+      position: absolute;
+      left: 1250px;
+      top: 430px;
+      width: 560px;
+    }
+    #s3-title .w {
+      color: var(--mist-2);
+    }
+  </style>
+  <div id="root" data-composition-id="s3" data-width="1920" data-height="1080">
+    <div id="s3-cam" data-layout-allow-overflow>
+      <div id="s3-receipt">
+        <div class="s3-band">
+          <span class="s3-chip"><svg viewBox="0 0 24 24"><path d="M10.3 3.9 2.4 17.6A2 2 0 0 0 4.1 20.6h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Some files missing</span>
+          <p class="s3-title">Academic Writing is saved</p>
+          <p class="s3-meta">26 MB, saved as Downloads/Academic Writing.zip</p>
+        </div>
+        <div class="s3-card">
+          <p class="s3-head"><b>What's inside</b><span>53 files</span></p>
+          <p class="s3-row warn first"><svg viewBox="0 0 24 24"><path d="M10.3 3.9 2.4 17.6A2 2 0 0 0 4.1 20.6h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Files<u>1 couldn't be downloaded</u></span><b>23 <span>of 24</span></b></p>
+          <p id="s3-fail">Lectures / Lecture 02 - Academic Writing week 2.pdf<small>Not found in Canvas (HTTP 404)</small></p>
+          <p class="s3-row"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Pages</span><b>4</b></p>
+          <p class="s3-row"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Assignments</span><b>5</b></p>
+          <p class="s3-row"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Quizzes</span><b>2</b></p>
+        </div>
+      </div>
+    </div>
+    <p id="s3-title" class="title"><span class="w">Nothing</span> <span class="w">goes</span> <span class="w">missing</span> <span class="w">quietly.</span></p>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // The progress card carries across into the receipt it becomes.
+    tl.fromTo('#s3-receipt', { scale: 0.79, x: 0, y: 120, opacity: 0.6, filter: 'blur(6px)' }, { scale: 1, x: 0, y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.6, ease: 'expo.out' }, 0);
+    // The camera eases in on the file that failed, then holds while it's read.
+    tl.fromTo('#s3-cam', { scale: 1 }, { scale: 1.1, duration: 1.6, ease: 'power2.inOut' }, 1.1);
+    // The title turns from grey to ink, word by word, and then stays still.
+    tl.fromTo('#s3-title .w', { color: '#e9edf2' }, { color: '#14202f', duration: 0.2, stagger: 0.09, ease: 'power2.out' }, 0.9);
+    window.__timelines['s3'] = tl;
+  </script>
+</template>
