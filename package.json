@@ -18,6 +18,7 @@
     "build:all": "wxt build && wxt build -b firefox && wxt build -b edge",
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
+    "zip:edge": "wxt zip -b edge",
     "postinstall": "wxt prepare",
     "typecheck": "tsc --noEmit && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
     "lint": "eslint . --max-warnings 0",
@@ -31,7 +32,7 @@
     "mock:canvas": "node e2e/mock-canvas/cli.ts",
     "e2e": "wxt build && playwright test --project e2e",
     "golden:capture": "wxt build && playwright test --project golden",
-    "prepare": "git config core.hooksPath .githooks",
+    "prepare": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true",
     "test:firefox": "wxt build -b firefox && vitest run --config vitest.firefox.config.ts"
   },
   "dependencies": {
