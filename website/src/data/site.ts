@@ -1,6 +1,18 @@
 // Facts the pages repeat. Numbers are real and dated: update them, never round them up.
 
 export const PRODUCT = 'Canvas Course Downloader';
+
+/** Until 3.0 is in the stores, the site describes features the store version lacks, so search
+ * engines are asked not to index it. Set to true on the day 3.0 is published. */
+export const LAUNCHED = false;
+
+/** Visit counts, on our own Umami (stats.coursedownloader.com): no cookies, shared with no one.
+ * The tag only counts visits on coursedownloader.com itself, so previews and forks add nothing. */
+export const ANALYTICS = {
+  src: 'https://stats.coursedownloader.com/v.js',
+  websiteId: 'c6f994a6-2253-4121-93bf-87377078ff47',
+  domain: 'coursedownloader.com',
+};
 export const SHORT = 'Course Downloader';
 
 export const STORE = {

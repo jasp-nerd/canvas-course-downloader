@@ -10,7 +10,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "deploy": "sh scripts/deploy.sh"
   },
   "dependencies": {
     "astro": "7.4.0"

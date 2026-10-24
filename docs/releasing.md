@@ -7,7 +7,7 @@ How a version goes from a tag to the stores, and how the website goes live. CI b
 The workflow files are in `docs/releasing/` because `.github/workflows/` is human-owned (`.claude/hooks/protect-paths.sh`). To use them:
 
 ```bash
-git mv docs/releasing/release.yml docs/releasing/submit.yml docs/releasing/website.yml .github/workflows/
+git mv docs/releasing/release.yml docs/releasing/submit.yml .github/workflows/
 ```
 
 Also add `paths-ignore: [website/**, video/**, media/**, docs/**]` to both triggers in `.github/workflows/ci.yml`, so website-only changes don't run the extension's tests.
@@ -16,7 +16,6 @@ Also add `paths-ignore: [website/**, video/**, media/**, docs/**]` to both trigg
 | --- | --- | --- |
 | `release.yml` | a `v*.*.*` tag (or by hand, as a dry run) | `pnpm verify`; checks the tag matches `package.json`, the commit is on `main` and `CHANGELOG.md` has a dated section; builds the Chrome, Edge, Firefox and sources zips; rebuilds Firefox from the sources zip without git and compares it; attests the zips; drafts a GitHub release with the changelog section as notes |
 | `submit.yml` | publishing that draft (or by hand, dry run by default) | after approval on the `store-submit` environment, checks the checksums and attestations, then `wxt submit` to the Chrome Web Store and Firefox Add-ons |
-| `website.yml` | changes to `website/`, `PRIVACY.md`, `CHANGELOG.md` or the shared design files on `main` | builds `website/` and deploys it to GitHub Pages |
 
 Every release has the same four files, so these links always point at the newest one:
 
@@ -27,7 +26,6 @@ The website sends people to the stores first: a hand-loaded copy doesn't update 
 
 ## Settings to add in GitHub (once)
 
-- **Pages:** Settings › Pages › Source: GitHub Actions. Until the domain exists, add repository variables `SITE_URL=https://jasp-nerd.github.io` and `BASE_PATH=/canvas-course-downloader/`. With the domain: delete those, add `website/public/CNAME` containing `coursedownloader.com`, and set the domain in Settings › Pages.
 - **Releases:** turn on immutable releases. Turn on private vulnerability reporting (Settings › Security).
 - **Environment `store-submit`:** required reviewer jasp; deployment branches and tags: `v*` only.
 
@@ -56,3 +54,11 @@ Before the first real submission, run `submit.yml` by hand with `dry_run` on.
 2. Merge to `main`, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
 3. Read the draft release and its files on GitHub, then publish it.
 4. Approve `store-submit`. Once Chrome approves the update, press Publish there if staged publishing is on.
+
+## The website
+
+coursedownloader.com runs on the Hetzner server, in Coolify's project `coursedownloader`: the service `site` (nginx serving `/data/coursedownloader/site`) and `umami` (visit counts at stats.coursedownloader.com, no cookies, only for us). DNS is at Porkbun: the apex, `www` and `stats` point at the server; `www` redirects to the apex.
+
+To publish a change, from `website/`: `pnpm run deploy` (builds, then rsyncs over the `hetzner` SSH host). It also picks up changes to `PRIVACY.md`, `CHANGELOG.md` and the shared design files, so run it after a release too.
+
+On the day 3.0 is in the stores, set `LAUNCHED = true` in `website/src/data/site.ts` and deploy: until then every page asks search engines not to index it. Then verify the domain in Google Search Console and set it as the store listing's website and privacy link.

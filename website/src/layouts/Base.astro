@@ -5,7 +5,7 @@ import '../styles/site.css';
 import gabarito from '../../../public/fonts/gabarito-latin.woff2?url';
 import Icons from '../components/Icons.astro';
 import Logo from '../components/Logo.astro';
-import { href, LINKS, mailToSelf, SHORT, STORE, tracked } from '../data/site';
+import { ANALYTICS, href, LAUNCHED, LINKS, mailToSelf, SHORT, STORE, tracked } from '../data/site';
 
 interface Props {
   /** The full <title>. */
@@ -39,7 +39,7 @@ const nav = [
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex" />}
+    {(noindex || !LAUNCHED) && <meta name="robots" content="noindex" />}
     <link rel="preload" href={gabarito} as="font" type="font/woff2" crossorigin />
     <link rel="icon" href={href('/favicon.ico')} sizes="48x48" />
     <link rel="icon" href={href('/favicon.svg')} type="image/svg+xml" />
@@ -58,6 +58,18 @@ const nav = [
     <meta name="twitter:card" content="summary_large_image" />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
     <script is:inline>document.documentElement.classList.add('js');</script>
+    {
+      import.meta.env.PROD && (
+        <script
+          is:inline
+          defer
+          src={ANALYTICS.src}
+          data-website-id={ANALYTICS.websiteId}
+          data-domains={ANALYTICS.domain}
+          data-do-not-track="true"
+        />
+      )
+    }
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
