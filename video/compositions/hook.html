@@ -12,15 +12,16 @@
       inset: 0;
       transform-origin: 0 0;
     }
+    /* Both push-ins keep the top edge still, so the tab strip is never cut. */
     #h-hold {
       position: absolute;
       inset: 0;
-      transform-origin: 600px 560px;
+      transform-origin: 560px 0;
     }
     #h-push {
       position: absolute;
       inset: 0;
-      transform-origin: 520px 620px;
+      transform-origin: 560px 0;
     }
     #h-browser {
       left: 0;
@@ -168,10 +169,6 @@
       width: 180px;
       height: 180px;
     }
-    #h-ring-w .dot,
-    #h-ring-w .arrow {
-      fill: #fff;
-    }
     /* The receipt the card becomes. */
     #h-band {
       position: absolute;
@@ -238,6 +235,12 @@
     .h-r.first {
       border-top: 0;
     }
+    /* The other kinds in two columns, as the receipt lays them out on a wide tab. */
+    .h-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 48px;
+    }
     .h-r svg {
       color: var(--mint-ink);
     }
@@ -298,18 +301,13 @@
                 <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                 <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                 <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                <div class="url"><span id="h-url-a">canvas.yourschool.edu/courses/104/modules</span><span id="h-url-b">Course Downloader</span></div>
+                <div class="url"><span id="h-url-a">school.instructure.com/courses/104/modules</span><span id="h-url-b">Course Downloader</span></div>
               </div>
             </div>
             <div class="page">
               <div id="h-canvas" class="capture"><div id="h-press"></div></div>
               <div id="h-export">
                 <div id="h-head"><svg id="h-logo" class="ring"></svg>Course Downloader</div>
-                <div id="h-band">
-                  <span class="h-chip"><svg viewBox="0 0 24 24"><path d="M10.3 3.9 2.4 17.6A2 2 0 0 0 4.1 20.6h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Some files missing</span>
-                  <p class="h-rtitle">Academic Writing is saved</p>
-                  <p class="h-meta">26 MB, saved as Downloads/Academic Writing.zip</p>
-                </div>
                 <div id="h-card">
                   <div id="h-prog">
                     <div class="h-top">
@@ -329,13 +327,15 @@
                     <p class="h-rhead"><b>What's inside</b><span>53 files</span></p>
                     <p class="h-r warn first"><svg viewBox="0 0 24 24"><path d="M10.3 3.9 2.4 17.6A2 2 0 0 0 4.1 20.6h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Files<u>1 couldn't be downloaded</u></span><b>23 <span>of 24</span></b></p>
                     <p id="h-fail">Lectures / Lecture 02 - Academic Writing week 2.pdf<small>Not found in Canvas (HTTP 404)</small></p>
-                    <p class="h-r"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Pages</span><b>4</b></p>
-                    <p class="h-r"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Assignments</span><b>5</b></p>
-                    <p class="h-r"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Quizzes</span><b>2</b></p>
-                    <p class="h-r"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Discussions</span><b>3</b></p>
+                    <div class="h-grid" id="h-grid"></div>
                   </div>
                 </div>
-                <div id="h-ring"><svg id="h-ring-r" class="ring"></svg><svg id="h-ring-w"></svg></div>
+                <div id="h-band">
+                  <span class="h-chip"><svg viewBox="0 0 24 24"><path d="M10.3 3.9 2.4 17.6A2 2 0 0 0 4.1 20.6h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Some files missing</span>
+                  <p class="h-rtitle">Academic Writing is saved</p>
+                  <p class="h-meta">26 MB, saved as Downloads/Academic Writing.zip</p>
+                </div>
+                <div id="h-ring"><svg id="h-ring-r" class="ring"></svg></div>
               </div>
             </div>
           </div>
@@ -350,9 +350,12 @@
     const $ = (s) => document.querySelector(s);
     const ring = $('#h-ring-r');
     const fav = $('#h-fav');
-    for (const svg of [ring, $('#h-ring-w'), fav, $('#h-logo')]) window.drawLogo(svg);
+    for (const svg of [ring, fav, $('#h-logo')]) window.drawLogo(svg);
     window.fillLogo($('#h-logo'), 1);
-    window.fillLogo($('#h-ring-w'), 1);
+    // 23 files + these = the receipt's 53.
+    const KINDS = [['Pages', 4], ['Assignments', 5], ['Quizzes', 2], ['Discussions', 3], ['Announcements', 3], ['Submissions', 4], ['Overview and course info', 9]];
+    const tick = '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+    $('#h-grid').innerHTML = KINDS.map(([label, n]) => `<p class="h-r">${tick}<span>${label}</span><b>${n}</b></p>`).join('');
 
     // Every name once: 54 files, a new row every third file, 18 rows.
     const FILES = [
@@ -398,14 +401,14 @@
     tl.fromTo('#h-cursor', { opacity: 1 }, { immediateRender: false, opacity: 0, duration: 0.2 }, 1.85);
     // The new tab opens beside the course and takes over.
     tl.fromTo('#h-tab-b', { width: 0, padding: '0px 0px' }, { width: 360, padding: '0px 18px', duration: 0.35, ease: 'power3.out' }, 1.6);
-    tl.fromTo('#h-tab-a', { backgroundColor: '#ffffff' }, { backgroundColor: 'rgba(255,255,255,0)', duration: 0.12 }, 1.95);
-    tl.fromTo('#h-tab-b', { backgroundColor: 'rgba(255,255,255,0)' }, { backgroundColor: '#ffffff', duration: 0.12 }, 1.95);
-    tl.fromTo('#h-url-a', { opacity: 1 }, { opacity: 0, duration: 0.12 }, 1.95);
-    tl.fromTo('#h-url-b', { opacity: 0 }, { opacity: 1, duration: 0.12 }, 1.95);
-    tl.fromTo('#h-export', { opacity: 0 }, { opacity: 1, duration: 0.18 }, 1.95);
-    // The button's ring grows into the progress ring, turning from white to the brand's red.
+    tl.fromTo('#h-tab-a', { backgroundColor: '#ffffff' }, { backgroundColor: 'rgba(255,255,255,0)', duration: 0.01 }, 1.95);
+    tl.fromTo('#h-tab-b', { backgroundColor: 'rgba(255,255,255,0)' }, { backgroundColor: '#ffffff', duration: 0.01 }, 1.95);
+    // A browser switches tabs at once, so the switch is a cut.
+    tl.fromTo('#h-url-a', { opacity: 1 }, { opacity: 0, duration: 0.01 }, 1.95);
+    tl.fromTo('#h-url-b', { opacity: 0 }, { opacity: 1, duration: 0.01 }, 1.95);
+    tl.fromTo('#h-export', { opacity: 0 }, { opacity: 1, duration: 0.01 }, 1.95);
+    // The button's ring grows, from where the button was, into the progress ring.
     tl.fromTo('#h-ring', { x: 214, y: -273, scale: 25 / 180 }, { x: 0, y: 0, scale: 1, duration: 0.6, ease: 'power4.out' }, 1.95);
-    tl.fromTo('#h-ring-w', { opacity: 1 }, { opacity: 0, duration: 0.35, ease: 'power1.in' }, 2.05);
     tl.fromTo('#h-card', { opacity: 0, scale: 0.97 }, { opacity: 1, scale: 1, duration: 0.45, ease: 'power3.out', transformOrigin: '138px 134px' }, 2.3);
     // 2.5–5.0: the course saves; 100% lands on the downbeat at 5.0.
     tl.fromTo(progress, { p: 0 }, { p: 1, duration: 2.5, ease: 'power1.inOut', onUpdate: paint }, 2.5);
@@ -414,14 +417,16 @@
     window.pushIn(tl, '#h-hold', 2.6, 3.3);
     window.exitTitle(tl, '#h-t1', 5.7);
     // 5.9–6.6: the card becomes the receipt; the yellow band drops in above it.
-    tl.fromTo('#h-prog', { opacity: 1 }, { immediateRender: false, opacity: 0, duration: 0.18 }, 5.9);
+    tl.fromTo('#h-prog', { opacity: 1 }, { immediateRender: false, opacity: 0, duration: 0.2 }, 5.9);
     tl.fromTo('#h-ring', { opacity: 1 }, { immediateRender: false, opacity: 0, duration: 0.18 }, 5.9);
-    tl.fromTo('#h-card', { y: 0, width: 760, height: 484, borderRadius: 40 }, { immediateRender: false, y: 166, width: 960, height: 720, borderRadius: 32, duration: 0.6, ease: 'power3.inOut' }, 5.95);
-    tl.fromTo('#h-band', { opacity: 0, y: -28 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 6.1);
-    tl.fromTo('#h-rcpt', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 6.35);
+    tl.fromTo('#h-card', { y: 0, width: 760, height: 484, borderRadius: 40 }, { immediateRender: false, y: 166, width: 960, height: 540, borderRadius: 32, duration: 0.6, ease: 'power3.inOut' }, 5.95);
+    // The band is opaque almost at once and sits above the card, so nothing shows through it.
+    tl.fromTo('#h-band', { opacity: 0 }, { opacity: 1, duration: 0.1 }, 6.15);
+    tl.fromTo('#h-band', { y: -28 }, { y: 0, duration: 0.45, ease: 'power3.out' }, 6.15);
+    tl.fromTo('#h-rcpt', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 6.08);
     window.enterTitle(tl, '#h-t2', 6.75);
     // The camera eases in on the file that failed and holds while it's read.
-    tl.fromTo('#h-push', { scale: 1 }, { scale: 1.1, duration: 1.8, ease: 'sine.inOut' }, 7.1);
+    tl.fromTo('#h-push', { scale: 1 }, { scale: 1.04, duration: 2.6, ease: 'sine.inOut' }, 7.1);
     paint();
     window.__timelines['hook'] = tl;
   </script>

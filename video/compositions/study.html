@@ -16,7 +16,7 @@
       position: absolute;
       inset: 0;
       background: #f4f6fa;
-      transform-origin: 300px 560px;
+      transform-origin: 960px 420px;
     }
     /* The real study-pack tab, in layers: header, banner, steps, and what's in the pack. */
     #st-head {
@@ -67,7 +67,7 @@
     <div id="st-browser" class="browser">
       <div class="chrome">
         <div class="tabs">
-          <div class="tab"><span class="fav" style="border-radius: 6px; background: #2e6fae"></span>Academic Writing: Modules</div>
+          <div class="tab"><span class="fav" style="display: grid; place-items: center; border-radius: 6px; background: #2e6fae; font: 800 15px/1 Figtree, sans-serif; color: #fff">S</span>Dashboard</div>
           <div class="tab on"><svg id="st-fav" class="fav ring"></svg>Your study pack is ready</div>
         </div>
         <div class="toolbar">
@@ -94,14 +94,14 @@
     window.fillLogo(fav, 1);
     const tl = gsap.timeline({ paused: true });
     // The chip in the header opens (from behind itself) into the yellow banner, which then shows its words and Pip.
-    tl.fromTo('#st-grow', { x: 1418, y: -75, width: 266, height: 32, borderRadius: 16, backgroundColor: '#fff5d6' }, { x: 0, y: 0, width: 1814, height: 299, borderRadius: 43, backgroundColor: '#ffc43d', duration: 0.6, ease: 'power3.inOut' }, 0.12);
-    tl.fromTo('#st-banner', { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'power1.out' }, 0.67);
-    tl.fromTo('#st-banner', { scale: 0.985 }, { scale: 1, duration: 0.5, ease: 'power3.out' }, 0.67);
+    tl.fromTo('#st-grow', { x: 1418, y: -75, width: 266, height: 32, borderRadius: 16, backgroundColor: '#fff5d6' }, { x: 0, y: 0, width: 1814, height: 299, borderRadius: 43, backgroundColor: '#ffc43d', duration: 0.55, ease: 'power3.out' }, 0);
+    tl.fromTo('#st-banner', { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'power1.out' }, 0.45);
+    tl.fromTo('#st-banner', { scale: 0.985 }, { scale: 1, duration: 0.5, ease: 'power3.out' }, 0.45);
     // The next steps rise in under it.
-    tl.fromTo('#st-steps', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 1.0);
-    tl.fromTo('#st-pack', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 1.12);
+    tl.fromTo('#st-steps', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 0.75);
+    tl.fromTo('#st-pack', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 0.87);
     // A slow move toward the first steps while they're read.
-    tl.fromTo('#st-cam', { scale: 1, y: 0 }, { scale: 1.07, y: -40, duration: 4.4, ease: 'sine.inOut' }, 1.5);
+    tl.fromTo('#st-cam', { scale: 1 }, { scale: 1.035, duration: 4.8, ease: 'sine.inOut' }, 1.2);
     window.__timelines['study'] = tl;
   </script>
 </template>

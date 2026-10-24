@@ -154,9 +154,9 @@
     tl.fromTo('#pk-press', { opacity: 0.2 }, { immediateRender: false, opacity: 0, duration: 0.2 }, 4.06);
     tl.fromTo('#pk-cursor', { opacity: 1 }, { immediateRender: false, opacity: 0, duration: 0.2 }, 4.15);
     // The picker becomes the list of courses saving, each ring filling in turn.
-    tl.fromTo('.pk-pop', { scale: 1, opacity: 1 }, { immediateRender: false, scale: 0.94, opacity: 0, duration: 0.3, ease: 'power2.in' }, 4.1);
-    tl.fromTo('#pk-list', { y: 40, opacity: 0, scale: 0.97 }, { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: 'power3.out' }, 4.25);
-    tl.fromTo(progress, { p: 0 }, { p: 1, duration: 1.45, ease: 'none', onUpdate: paint }, 4.45);
+    tl.fromTo('.pk-pop', { scale: 1, opacity: 1 }, { immediateRender: false, scale: 0.94, opacity: 0, duration: 0.2, ease: 'power2.in' }, 4.1);
+    tl.fromTo('#pk-list', { y: 40, opacity: 0, scale: 0.97 }, { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'power3.out' }, 4.3);
+    tl.fromTo(progress, { p: 0 }, { p: 1, duration: 0.75, ease: 'none', onUpdate: paint }, 4.45);
     paint();
     window.__timelines['picker'] = tl;
   </script>

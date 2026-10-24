@@ -31,7 +31,8 @@
       width: 1920px;
       height: 1600px;
       background-image: url('assets/ui/open-me.webp');
-      background-position: -333px 0;
+      background-size: 1728px auto;
+      background-position: -300px 0;
     }
     #o-wifi {
       position: relative;
@@ -47,6 +48,9 @@
     }
     #o-slash {
       color: var(--red);
+    }
+    #o-browser .toolbar {
+      padding-right: 90px;
     }
     .url svg {
       width: 22px;
@@ -80,11 +84,11 @@
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.fromTo('#o-win', { x: 80, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 0);
+    tl.fromTo('#o-win', { x: 80, opacity: 0.4 }, { x: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, 0);
     window.enterTitle(tl, '#o-t', 0.2);
     // The Wi-Fi goes off, and the page still reads, scrolled as a reader would.
     tl.fromTo('#o-slash-line', { strokeDashoffset: 26 }, { strokeDashoffset: 0, duration: 0.3, ease: 'power2.out' }, 0.7);
-    tl.fromTo('#o-page', { y: 0 }, { y: -360, duration: 2.8, ease: 'power2.inOut' }, 1.0);
+    tl.fromTo('#o-page', { y: 0 }, { y: -220, duration: 2.8, ease: 'power2.inOut' }, 1.0);
     window.pushIn(tl, '#o-win', 0.5, 3.5, 1.03);
     window.__timelines['offline'] = tl;
   </script>

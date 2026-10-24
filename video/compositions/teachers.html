@@ -89,10 +89,10 @@
     }
     .te-out {
       position: relative;
-      padding: 14px 26px;
+      padding: 16px 30px;
       border-radius: 999px;
       background: var(--mist-2);
-      font: 600 27px/1 Figtree, sans-serif;
+      font: 600 30px/1 Figtree, sans-serif;
       color: var(--ink-3);
     }
     .te-out i {
@@ -129,12 +129,12 @@
   <script>
     const tl = gsap.timeline({ paused: true });
     window.enterTitle(tl, '#te-t', 0.15);
-    tl.fromTo('.te-band', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, 0.05);
+    tl.fromTo('.te-band', { y: 24 }, { y: 0, duration: 0.5, ease: 'power3.out' }, 0);
     // The note slides out from under the receipt; then each kind of student data is struck out.
     tl.fromTo('#te-note', { y: -50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 0.7);
     tl.fromTo('.te-out', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.08, ease: 'power3.out' }, 1.15);
     tl.fromTo('.te-out i', { scaleX: 0 }, { scaleX: 1, duration: 0.25, stagger: 0.14, ease: 'power2.inOut' }, 1.75);
-    tl.fromTo('.te-out', { opacity: 1 }, { immediateRender: false, opacity: 0.55, duration: 0.25, stagger: 0.14 }, 1.95);
+    tl.fromTo('.te-out', { opacity: 1 }, { immediateRender: false, opacity: 0.7, duration: 0.25, stagger: 0.14 }, 1.95);
     window.pushIn(tl, '#te-cam', 0, 4, 1.03);
     window.__timelines['teachers'] = tl;
   </script>

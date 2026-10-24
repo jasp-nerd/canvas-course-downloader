@@ -190,7 +190,7 @@
             <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
             <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
             <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-            <div class="url"><span id="d-url-a">canvas.yourschool.edu</span><span id="d-url-b">Course Downloader</span></div>
+            <div class="url"><span id="d-url-a">school.instructure.com</span><span id="d-url-b">Course Downloader</span></div>
           </div>
         </div>
         <div class="page">
@@ -209,7 +209,7 @@
               <div>
                 <div id="d-pct">0%</div>
                 <div id="d-name">Saving Academic Writing</div>
-                <div id="d-count">0 of 1 new file</div>
+                <div id="d-count">1 new file</div>
               </div>
             </div>
           </div>
@@ -233,7 +233,7 @@
       $('#d-pct').style.color = done ? 'var(--mint-ink)' : 'var(--red)';
       $('#d-name').textContent = done ? 'Academic Writing is saved' : 'Saving Academic Writing';
       $('#d-tab-title').textContent = done ? 'Academic Writing is saved' : 'Saving Academic Writing';
-      $('#d-count').textContent = done ? '1 new file. The 53 you already had were skipped.' : '0 of 1 new file';
+      $('#d-count').textContent = done ? '1 new file. The 53 you already had were skipped.' : '1 new file';
     };
 
     const tl = gsap.timeline({ paused: true });
@@ -250,11 +250,11 @@
     tl.fromTo('#d-cursor', { opacity: 1 }, { immediateRender: false, opacity: 0, duration: 0.2 }, 3.25);
     // Its own tab opens and saves just that file.
     tl.fromTo('#d-tab-b', { width: 0, padding: '0px 0px' }, { width: 360, padding: '0px 18px', duration: 0.35, ease: 'power3.out' }, 3.1);
-    tl.fromTo('#d-tab-a', { backgroundColor: '#ffffff' }, { backgroundColor: 'rgba(255,255,255,0)', duration: 0.12 }, 3.45);
-    tl.fromTo('#d-tab-b', { backgroundColor: 'rgba(255,255,255,0)' }, { backgroundColor: '#ffffff', duration: 0.12 }, 3.45);
-    tl.fromTo('#d-url-a', { opacity: 1 }, { opacity: 0, duration: 0.12 }, 3.45);
-    tl.fromTo('#d-url-b', { opacity: 0 }, { opacity: 1, duration: 0.12 }, 3.45);
-    tl.fromTo('#d-export', { opacity: 0 }, { opacity: 1, duration: 0.18 }, 3.45);
+    tl.fromTo('#d-tab-a', { backgroundColor: '#ffffff' }, { backgroundColor: 'rgba(255,255,255,0)', duration: 0.01 }, 3.45);
+    tl.fromTo('#d-tab-b', { backgroundColor: 'rgba(255,255,255,0)' }, { backgroundColor: '#ffffff', duration: 0.01 }, 3.45);
+    tl.fromTo('#d-url-a', { opacity: 1 }, { opacity: 0, duration: 0.01 }, 3.45);
+    tl.fromTo('#d-url-b', { opacity: 0 }, { opacity: 1, duration: 0.01 }, 3.45);
+    tl.fromTo('#d-export', { opacity: 0 }, { opacity: 1, duration: 0.01 }, 3.45);
     tl.fromTo('#d-card', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, 3.5);
     tl.fromTo(progress, { p: 0 }, { p: 1, duration: 0.9, ease: 'power2.inOut', onUpdate: paint }, 3.75);
     paint();
