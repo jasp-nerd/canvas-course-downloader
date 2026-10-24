@@ -30,7 +30,7 @@
   <div class="band-text">
     <h1 class="display">{course.name} is archived</h1>
     <p class="band-meta num">
-      {joined(included ? 'Content and student work' : 'Course content only', size)} ·
+      {joined(included ? 'Content and student work' : 'Course content only', size)}, saved as
       <span>{course.savedAs}</span>
     </p>
     <div class="row band-actions">

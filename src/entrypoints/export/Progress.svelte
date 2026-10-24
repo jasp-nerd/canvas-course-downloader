@@ -38,7 +38,7 @@
           secondsLeft === null ? '' : timeLeftText(secondsLeft),
         ]
           .filter(Boolean)
-          .join(' · ')
+          .join(', ')
       : '',
   );
   const how = $derived(
@@ -48,7 +48,7 @@
           active.how.updates ? 'only new files next time' : '',
         ]
           .filter(Boolean)
-          .join(' · ')
+          .join(', ')
       : '',
   );
 
@@ -117,7 +117,8 @@
             <li>
               <span class="ok"><Icon name="check" /></span>
               <span class="ellipsis"
-                >{shown.name}{#if shown.kind}<span class="small"> · {shown.kind}</span>{/if}</span
+                >{shown.name}{#if shown.kind}
+                  <span class="small hint">{shown.kind}</span>{/if}</span
               >
               {#if file.size}<span class="small num">{formatBytes(file.size)}</span>{/if}
             </li>

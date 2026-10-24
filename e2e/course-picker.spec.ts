@@ -134,8 +134,11 @@ test('rows show the Canvas colour, what is new or saved, and the courses the use
   await expect(dialog.getByRole('checkbox', { name: /Machine Learning/ })).not.toHaveAccessibleName(
     /new|Saved|teach/,
   );
-  // MATH 221 · Fall 2026, in the course's colour from the user's Canvas.
-  await expect(dialog.getByText('MATH 221 · Fall 2026')).toBeVisible();
+  // Code and term, in the course's colour from the user's Canvas, without "·" separators.
+  const algebra = dialog.getByRole('checkbox', { name: /^Linear Algebra/ }).locator('..');
+  await expect(algebra.getByText('MATH 221', { exact: true })).toBeVisible();
+  await expect(algebra.getByText('Fall 2026', { exact: true })).toBeVisible();
+  await expect(dialog.getByText(/·/)).toHaveCount(0);
   expect(await dotColor(dialog, 'Linear Algebra')).toBe('rgb(194, 65, 12)');
 });
 

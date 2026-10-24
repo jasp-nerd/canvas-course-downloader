@@ -146,7 +146,7 @@
     const color = colors[`course_${c.id}`];
     return color && HEX.test(color) ? color : 'var(--control)';
   };
-  const meta = (c: CourseSummary) => [c.course_code, c.term?.name].filter(Boolean).join(' · ');
+  const meta = (c: CourseSummary) => [c.course_code, c.term?.name].filter(Boolean) as string[];
 </script>
 
 <!-- Escape fires "cancel"; a click on the backdrop lands on the dialog element itself. -->
@@ -279,7 +279,12 @@
               <span class="dot" style:background={dotColor(course)}></span>
               <span class="text">
                 <strong>{course.name}</strong>
-                {#if meta(course)}<small>{meta(course)}</small>{/if}
+                {#if meta(course).length}
+                  <small class="meta">
+                    {#each meta(course) as part (part)}<span>{part}</span>
+                    {/each}
+                  </small>
+                {/if}
               </span>
               <span class="chips">
                 {#if newFiles}
@@ -470,7 +475,9 @@
     line-height: 1.3;
   }
   .text small {
-    display: block;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 10px;
     font-size: 13px;
     color: var(--ink-3);
   }

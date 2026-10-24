@@ -49,7 +49,7 @@
     </div>
     {#if saved}
       <p class="small num meta">
-        {joined(`${files} ${files === 1 ? 'file' : 'files'}`, sizeOf(course))} ·
+        {joined(`${files} ${files === 1 ? 'file' : 'files'}`, sizeOf(course))}, saved as
         <span>{course.savedAs}</span>
       </p>
       <ul class="kinds" aria-label="What's inside {course.name}">

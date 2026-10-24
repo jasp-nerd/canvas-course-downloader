@@ -170,7 +170,10 @@
     <section class="course" aria-label="This course">
       <h2 class="course-name">{course?.name ?? page.saved?.courseName ?? 'This course'}</h2>
       {#if course && (course.code || course.term)}
-        <span class="small">{[course.code, course.term].filter(Boolean).join(' · ')}</span>
+        <span class="small meta">
+          {#each [course.code, course.term].filter(Boolean) as part (part)}<span>{part}</span>
+          {/each}
+        </span>
       {/if}
       {#if page.saved && hasNew}
         <span class="chip chip-mint num">
@@ -351,6 +354,11 @@
     margin: 0;
     font: 700 17px/1.25 var(--font-display);
     letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 10px;
   }
   .course .chip {
     margin-top: 4px;

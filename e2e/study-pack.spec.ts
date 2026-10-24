@@ -30,7 +30,7 @@ test('makes a NotebookLM pack: a guide, one Markdown file per module and the sli
   await resetExtensionStorage(serviceWorker, { profile: 'study', aiTarget: 'notebooklm' });
   const tab = await exportCourse(page, 104);
   await expect(
-    tab.getByText(/^Academic Writing · \d+ sources · fits in one notebook$/),
+    tab.getByText(/^\d+ sources from Academic Writing, all in one notebook$/),
   ).toBeVisible();
   const steps = tab.getByRole('list', { name: 'Three steps to start studying' });
   await expect(steps.getByRole('listitem')).toHaveCount(3);
@@ -93,7 +93,7 @@ test('splits a course into projects that each fit in Claude', async ({
   await resetExtensionStorage(serviceWorker, { profile: 'study', aiTarget: 'claude' });
   const tab = await exportCourse(page, 104);
   await expect(
-    tab.getByText(/^Academic Writing · \d+ sources · split into \d+ projects$/),
+    tab.getByText(/^\d+ sources from Academic Writing, split into \d+ projects$/),
   ).toBeVisible();
   const steps = tab.getByRole('list', { name: 'Three steps to start studying' });
   await expect(steps.getByRole('link', { name: 'Open Claude' })).toHaveAttribute(

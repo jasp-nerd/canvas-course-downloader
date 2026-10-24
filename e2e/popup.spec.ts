@@ -62,7 +62,11 @@ test('on a course page, the popup shows the course and downloads it', async ({
   const { popup, close } = await openActionPopup(serviceWorker, cdpPort);
   try {
     await expect(popup.getByText('Introduction to Psychology')).toBeVisible();
-    await expect(popup.getByText('PSY 101 · Fall 2026')).toBeVisible();
+    // Code and term side by side, without a "·" between them.
+    const course = popup.getByRole('region', { name: 'This course' });
+    await expect(course.getByText('PSY 101', { exact: true })).toBeVisible();
+    await expect(course.getByText('Fall 2026', { exact: true })).toBeVisible();
+    await expect(course.getByText(/·/)).toHaveCount(0);
     await expect(popup.getByText('One ZIP per course in Downloads')).toBeVisible();
     await expect(popup.getByText('Not saved yet')).toBeVisible();
     await expect(popup.getByRole('button', { name: 'Download new files' })).toHaveCount(0);

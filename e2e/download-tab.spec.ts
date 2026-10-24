@@ -52,7 +52,9 @@ test('the receipt counts what was saved by kind and shows the ZIP in its folder'
     /^\s*Files\s*24$/,
     /^\s*Overview and course info\s*4$/,
   ]);
-  await expect(tab.getByText(/^Saved today at .+ · took .+$/)).toBeVisible();
+  await expect(tab.getByText(/^Saved today at .+, took .+$/)).toBeVisible();
+  // The receipt reads as sentences: no "·" separators anywhere on it.
+  await expect(tab.locator('body').getByText(/·/)).toHaveCount(0);
 
   // Show in folder asks the browser to show the ZIP it saved, and nothing else.
   await waitForDownloads(downloadsDir);

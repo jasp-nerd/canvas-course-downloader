@@ -208,8 +208,9 @@
   const chip = $derived.by(() => {
     if (!how) return undefined;
     if (how.profile === 'study') {
-      const tool = AI_TARGETS[how.aiTarget].url ? AI_TARGETS[how.aiTarget].tool : 'Markdown';
-      return { tone: 'chip-sun', icon: 'ai', text: `Study pack · ${tool}` } as const;
+      const target = AI_TARGETS[how.aiTarget];
+      const text = target.url ? `Study pack for ${target.tool}` : 'Study pack in Markdown';
+      return { tone: 'chip-sun', icon: 'ai', text } as const;
     }
     if (how.profile === 'agents')
       return { tone: 'chip-navy', icon: 'code', text: 'Files for code' } as const;

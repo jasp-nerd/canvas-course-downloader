@@ -86,6 +86,10 @@
   line-height: 1.45;
   color: var(--ink-3);
 }
+/* A short note after a label, set apart by space instead of a "·". */
+.hint {
+  margin-left: 6px;
+}
 .label {
   font-size: 13px;
   font-weight: 600;

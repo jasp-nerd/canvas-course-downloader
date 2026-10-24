@@ -30,7 +30,8 @@
           <summary class="receipt-row">
             <span class="warn"><Icon name="alert" /></span>
             <span
-              >{kind.label} <span class="small">· {kind.failed} couldn't be downloaded</span></span
+              >{kind.label}
+              <span class="small hint">{kind.failed} couldn't be downloaded</span></span
             >
             <span class="n num">{kind.done} <span class="of">of {kind.total}</span></span>
           </summary>
@@ -50,7 +51,8 @@
     <li class="receipt-row">
       <span class="warn"><Icon name="alert" /></span>
       <span
-        >Linked files Canvas didn't give <span class="small">· listed in the overview</span></span
+        >Linked files Canvas didn't give <span class="small hint">listed in the overview</span
+        ></span
       >
       <span class="n num">{course.notCaptured}</span>
     </li>
@@ -58,7 +60,8 @@
   {#if course.filteredOut}
     <li class="receipt-row">
       <span class="muted"><Icon name="info" /></span>
-      <span>Left out by your settings <span class="small">· videos or the size limit</span></span>
+      <span>Left out by your settings <span class="small hint">videos or the size limit</span></span
+      >
       <span class="n num">{course.filteredOut}</span>
     </li>
   {/if}

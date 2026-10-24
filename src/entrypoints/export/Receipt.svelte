@@ -39,7 +39,9 @@
       <span class="chip chip-mint band-chip"><Icon name="check" />Saved</span>
     {/if}
     <h1 class="display">{course.name} is saved</h1>
-    <p class="band-meta num">{size ? `${size} · ` : ''}<span>{course.savedAs}</span></p>
+    <p class="band-meta num">
+      {size ? `${size}, saved as` : 'Saved as'} <span>{course.savedAs}</span>
+    </p>
     <div class="row band-actions">
       <ShowInFolder {course} />
       {#if zip && !agents}

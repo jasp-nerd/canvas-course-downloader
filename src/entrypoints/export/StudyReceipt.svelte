@@ -20,9 +20,9 @@
   const sources = $derived(done('guide') + done('notes') + done('packFiles'));
   const fits = $derived(
     parts > 1
-      ? ` · split into ${parts} ${unit}s`
+      ? `, split into ${parts} ${unit}s`
       : Number.isFinite(target.maxFiles)
-        ? ` · fits in one ${unit}`
+        ? `, all in one ${unit}`
         : '',
   );
   const zip = $derived(course.how.zip);
@@ -47,8 +47,8 @@
 <section class="band field-sun">
   <div class="band-text">
     <h1 class="display">Your study pack is ready</h1>
-    <p class="lede num">{course.name} · {sources} sources{fits}</p>
-    <p class="where num"><span>{course.savedAs}</span>{size ? ` · ${size}` : ''}</p>
+    <p class="lede num">{sources} sources from {course.name}{fits}</p>
+    <p class="where num"><span>{course.savedAs}</span>{size ? ` (${size})` : ''}</p>
   </div>
   <Pip pose="laptop" height={200} class="band-pip" />
 </section>
@@ -135,14 +135,14 @@
         {#if done('guide')}
           <li>
             <Icon name="fileText" size={18} /><span
-              >Course guide <span class="small">· deadlines, grading, what's where</span></span
+              >Course guide <span class="small hint">deadlines, grading, what's where</span></span
             ><span class="n num">{done('guide')}</span>
           </li>
         {/if}
         {#if done('notes')}
           <li>
             <Icon name="fileText" size={18} /><span
-              >Notes per module <span class="small">· pages, assignments</span></span
+              >Notes per module <span class="small hint">pages, assignments</span></span
             ><span class="n num">{done('notes')}</span>
           </li>
         {/if}
