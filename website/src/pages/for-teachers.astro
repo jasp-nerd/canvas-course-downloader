@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
-import { href, LINKS, STORE, tracked } from '../data/site';
+import { href, LINKS } from '../data/site';
+import InstallCta from '../components/InstallCta.astro';
 import TeacherMock from '../components/TeacherMock.astro';
 
 const url = new URL(Astro.url.pathname, Astro.site).toString();
@@ -33,7 +34,7 @@ const jsonLd = {
       made stays readable on your own computer, and students' work stays out unless you choose it.
     </p>
     <p style="margin-top: 24px">
-      <a class="btn btn-primary btn-lg" href={tracked(STORE.chrome, 'teachers')} data-install data-fallback={href('/download/')}>Add to Chrome, it's free</a>
+      <InstallCta campaign="teachers" large />
     </p>
   </section>
 

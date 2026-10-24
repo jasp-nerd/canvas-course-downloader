@@ -552,6 +552,14 @@ ol {
 .shot img {
   width: 100%;
 }
+/* The picker as it opens over the dashboard, on a plate of its own. */
+.shot.popup {
+  padding: clamp(16px, 3vw, 40px);
+}
+.shot.popup img {
+  border-radius: clamp(10px, 1.4vw, 20px);
+  box-shadow: 0 18px 50px rgba(20, 32, 47, 0.18);
+}
 /* A crop of a bigger window: it sits on a plate, cut at the right and bottom edges. */
 .shot.crop {
   padding: clamp(16px, 2.4vw, 32px) 0 0 clamp(16px, 2.4vw, 32px);
@@ -666,6 +674,8 @@ ol {
   display: grid;
   gap: 20px;
   align-content: start;
+  position: sticky;
+  top: 96px;
 }
 .ev-text .lead {
   color: #c9d2de;
@@ -673,7 +683,7 @@ ol {
 }
 .kinds {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin: 8px 0 0;
   padding: 0;
@@ -694,6 +704,7 @@ ol {
 .kind span {
   display: flex;
   align-items: center;
+  height: 100%;
   min-height: 52px;
   padding: 10px 16px;
   border-radius: var(--r-choice);
@@ -779,10 +790,22 @@ ol {
   transition: opacity 0.25s;
 }
 .tree .name {
+  display: flex;
+  min-width: 0;
+  white-space: nowrap;
+}
+.tree .head {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+}
+.tree .tail {
+  flex: none;
+  white-space: pre;
+}
+/* On phones the ring rides along at the top of the tree. */
+.tree-bar {
+  display: none;
 }
 .tree .icon {
   width: 16px;
@@ -1197,6 +1220,7 @@ ol {
 /* Text pages: one centred reading column, the same margins on both sides. */
 .wrap.narrow {
   width: min(760px, 100% - 2 * var(--gutter));
+  max-width: none;
 }
 .head-split {
   display: grid;
@@ -1262,7 +1286,7 @@ ol {
   overflow-x: auto;
 }
 .prose td {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 .table-scroll {
   overflow-x: auto;
@@ -1286,7 +1310,12 @@ ol {
 }
 .prose .policy-table,
 .policy-table {
+  display: table;
   table-layout: fixed;
+}
+.policy-table td[data-label='Source'] a {
+  white-space: nowrap;
+  font-size: var(--t-small);
 }
 .policy-table .ends {
   font-weight: 800;
@@ -1317,8 +1346,11 @@ ol {
 }
 .install-card {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   align-content: start;
+  justify-items: start;
+  min-width: 0;
   padding: 24px;
   border-radius: var(--r-card);
   background: var(--mist);
@@ -1326,6 +1358,9 @@ ol {
 .install-card h2 {
   margin: 0;
   font-size: 26px;
+}
+.install-card .btn {
+  max-width: 100%;
 }
 .not-found {
   display: grid;
@@ -1372,10 +1407,46 @@ ol {
   .kind-desc {
     min-height: 0;
   }
+  .ev-text {
+    position: static;
+  }
+  .ev-ring {
+    display: none;
+  }
+  .tree-bar {
+    position: sticky;
+    top: 64px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: -8px -8px 12px;
+    padding: 8px;
+    border-radius: 14px;
+    background: #0e1824;
+    font: 800 20px/1 var(--font-display);
+    font-variant-numeric: tabular-nums;
+  }
+  .tree-bar .logo {
+    width: 44px;
+    height: 44px;
+  }
+  .tree-bar .ring .dot {
+    fill: #2b3b52;
+  }
+  .tree-bar .ring .dot.on,
+  .tree-bar .ring .arrow {
+    fill: var(--red);
+  }
+  /* The headline before the receipt it describes. */
+  .receipt-text {
+    order: -1;
+  }
 }
 @media (max-width: 640px) {
   .nav-inner {
     height: 56px;
+    gap: 12px;
   }
   .brand {
     font-size: 17px;
@@ -1427,12 +1498,43 @@ ol {
   .tree .note {
     display: none;
   }
+  .tree-bar {
+    top: 56px;
+  }
+  /* Folders inside Files stay closed on a phone. */
+  .tree > ul > li > ul > li > ul {
+    display: none;
+  }
   .faq {
     columns: 1;
   }
 }
+/* Phones: the privacy tables as a list, each name on its own line above its reason. */
+@media (max-width: 640px) {
+  .doc table,
+  .doc tbody,
+  .doc tr,
+  .doc td {
+    display: block;
+  }
+  .doc thead {
+    display: none;
+  }
+  .doc tr {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .doc td {
+    padding: 0;
+    border: 0;
+  }
+  .doc td:first-child {
+    font-weight: 700;
+  }
+}
 /* Phones: every university as a card, its fields labelled. */
 @media (max-width: 700px) {
+  .prose .policy-table,
   .policy-table,
   .policy-table tbody,
   .policy-table tr,

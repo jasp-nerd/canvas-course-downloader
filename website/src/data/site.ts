@@ -41,3 +41,10 @@ export function href(path: string): string {
   const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   return `${base}${path}`;
 }
+
+/** Phones can't run the extension, so their button writes the visitor an email with the install link. */
+export function mailToSelf(site: URL): string {
+  const subject = encodeURIComponent(PRODUCT);
+  const body = encodeURIComponent(`Install it on my laptop: ${new URL(href('/download/'), site)}`);
+  return `mailto:?subject=${subject}&body=${body}`;
+}

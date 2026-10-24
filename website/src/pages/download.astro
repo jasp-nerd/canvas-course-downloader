@@ -1,10 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
-import { href, LINKS, STORE, tracked } from '../data/site';
+import { href, LINKS, mailToSelf, STORE, tracked } from '../data/site';
 
-const mail = `mailto:?subject=${encodeURIComponent('Course Downloader')}&body=${encodeURIComponent(
-  `Install it on my laptop: ${new URL(href('/download/'), Astro.site)}`,
-)}`;
+const mail = mailToSelf(Astro.site!);
 ---
 
 <Base
@@ -36,7 +34,7 @@ const mail = `mailto:?subject=${encodeURIComponent('Course Downloader')}&body=${
         Edge installs it from the Chrome Web Store too. Choose "Allow extensions from other stores"
         when Edge asks, then Add to Chrome.
       </p>
-      <p><a class="btn btn-light" href={tracked(STORE.chrome, 'download-edge')}>Open the Chrome Web Store</a></p>
+      <p><a class="btn btn-light" href={tracked(STORE.chrome, 'download-edge')}>Open the store</a></p>
     </div>
     <div class="install-card">
       <h2>Firefox</h2>

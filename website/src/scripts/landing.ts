@@ -52,7 +52,11 @@ async function demo() {
     stage.classList.add('carded');
     el('name').textContent = 'Academic Writing is saved';
     el('count').textContent = '54 files, 27 MB, in Downloads';
-    el('recent').innerHTML = ['Files 24', 'Pages and assignments 9', 'Quizzes and discussions 5']
+    el('recent').innerHTML = [
+      'Files, pages and assignments',
+      'Quizzes, discussions and announcements',
+      'Your grades and every deadline',
+    ]
       .map((t) => `<li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>${t}</li>`)
       .join('');
     replay.hidden = false;
@@ -115,16 +119,22 @@ if (stage) {
 // the folder fills in, row by row.
 const ev = document.querySelector<HTMLElement>('[data-everything]');
 if (ev) {
-  const ring = ev.querySelector('[data-ring="everything"]');
-  const status = ev.querySelector<HTMLElement>('[data-ev-pct]')!;
+  // The ring beside the text, and on phones the one in the bar that stays on top of the tree.
+  const rings = ev.querySelectorAll('[data-ring="everything"]');
+  const statuses = ev.querySelectorAll<HTMLElement>('[data-ev-pct]');
   let progress = reduced ? 1 : 0;
-  const rows = () => [...ev.querySelectorAll<HTMLElement>('[data-tree]:not([hidden]) [data-row]')];
+  // Rows a phone folds away don't take a share of the progress.
+  const rows = () =>
+    [...ev.querySelectorAll<HTMLElement>('[data-tree]:not([hidden]) [data-row]')].filter(
+      (r) => r.getClientRects().length > 0,
+    );
   const paint = () => {
-    fill(ring, progress);
+    rings.forEach((ring) => fill(ring, progress));
     const list = rows();
     const shown = Math.round(progress * list.length);
     list.forEach((r, i) => r.classList.toggle('pending', i >= shown));
-    status.textContent = progress >= 1 ? 'Saved' : `${Math.round(progress * 100)}%`;
+    const text = progress >= 1 ? 'Saved' : `${Math.round(progress * 100)}%`;
+    statuses.forEach((s) => (s.textContent = text));
   };
   for (const input of ev.querySelectorAll<HTMLInputElement>('input[name="kind"]')) {
     input.addEventListener('change', () => {

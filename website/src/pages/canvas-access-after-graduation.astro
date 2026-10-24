@@ -2,7 +2,8 @@
 import Base from '../layouts/Base.astro';
 import Closer from '../components/Closer.astro';
 import { CHECKED, POLICIES } from '../data/policies';
-import { href, STORE, tracked } from '../data/site';
+import InstallCta from '../components/InstallCta.astro';
+import { href } from '../data/site';
 
 const reviewed = new Date(CHECKED).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 const countries = [...new Set(POLICIES.map((p) => p.country))];
@@ -18,7 +19,12 @@ const jsonLd = {
   mainEntityOfPage: url,
   publisher: { '@id': new URL('/#org', Astro.site).toString() },
 };
-const host = (u: string) => new URL(u).hostname.replace(/^www\./, '');
+// The site's own name, without the help desk in front: "services.northwestern.edu" is "northwestern.edu".
+const site = (u: string) => {
+  const parts = new URL(u).hostname.split('.');
+  const keep = /^(ac|edu|co)$/.test(parts.at(-2)!) ? 3 : 2;
+  return parts.slice(-keep).join('.');
+};
 ---
 
 <Base
@@ -80,13 +86,20 @@ const host = (u: string) => new URL(u).hostname.replace(/^www\./, '');
           <h3>{country}</h3>
           <div class="table-scroll">
             <table class="policy-table">
+              <colgroup>
+                <col style="width: 18%" />
+                <col style="width: 15%" />
+                <col />
+                <col />
+                <col style="width: 15%" />
+              </colgroup>
               <thead>
                 <tr>
-                  <th scope="col" style="width: 18%">University</th>
-                  <th scope="col" style="width: 16%">Access ends</th>
+                  <th scope="col">University</th>
+                  <th scope="col">Access ends</th>
                   <th scope="col">After a course ends</th>
                   <th scope="col">After you graduate or leave</th>
-                  <th scope="col" style="width: 12%">Source</th>
+                  <th scope="col">Source</th>
                 </tr>
               </thead>
               <tbody>
@@ -99,7 +112,7 @@ const host = (u: string) => new URL(u).hostname.replace(/^www\./, '');
                     <td data-label="Source">
                       {p.sources.map((s, i) => (
                         <p>
-                          <a href={s}>{p.sources.length > 1 ? `${host(s)} (${i + 1})` : host(s)}</a>
+                          <a href={s}>{i ? `${site(s)} (${i + 1})` : site(s)}</a>
                         </p>
                       ))}
                     </td>
@@ -122,7 +135,7 @@ const host = (u: string) => new URL(u).hostname.replace(/^www\./, '');
       <h2>Save a course in one click</h2>
       <p>Canvas Course Downloader saves a whole course, files and pages and your own submissions, before your access ends.</p>
       <p style="margin-top: 20px">
-        <a class="btn btn-primary" href={tracked(STORE.chrome, 'guide-access')} data-install data-fallback={href('/download/')}>Add to Chrome, it's free</a>
+        <InstallCta campaign="guide-access" />
       </p>
     </div>
   </article>

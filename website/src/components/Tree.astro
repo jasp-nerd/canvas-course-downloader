@@ -6,6 +6,14 @@ interface Props {
   nodes: Node[];
 }
 const { nodes } = Astro.props;
+
+// Long names lose their middle on a narrow screen, so "week 1.pdf" stays readable.
+function split(name: string): [string, string] {
+  if (name.length <= 22) return [name, ''];
+  const words = name.split(' ');
+  const take = words.at(-1)!.length < 8 ? 2 : 1;
+  return [words.slice(0, -take).join(' '), ` ${words.slice(-take).join(' ')}`];
+}
 ---
 
 <ul>
@@ -16,7 +24,10 @@ const { nodes } = Astro.props;
           <svg class="icon" aria-hidden="true">
             <use href={n.children ? '#i-folder' : '#i-file'} />
           </svg>
-          <span class="name">{n.name}</span>
+          <span class="name">
+            <span class="head">{split(n.name)[0]}</span>
+            {split(n.name)[1] && <span class="tail">{split(n.name)[1]}</span>}
+          </span>
           {n.note && <span class="note">{n.note}</span>}
         </span>
         {n.children && <Astro.self nodes={n.children} />}

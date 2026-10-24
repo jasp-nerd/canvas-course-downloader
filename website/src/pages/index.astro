@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import Logo from '../components/Logo.astro';
 import Tree from '../components/Tree.astro';
 import Closer from '../components/Closer.astro';
+import InstallCta from '../components/InstallCta.astro';
 import ReceiptMock from '../components/ReceiptMock.astro';
 import TeacherMock from '../components/TeacherMock.astro';
 import { KINDS } from '../data/kinds';
@@ -10,14 +11,10 @@ import { POLICIES } from '../data/policies';
 import { href, LINKS, STATS, STORE, tracked } from '../data/site';
 import coursePage from '../assets/shots/course-page.webp';
 import picker from '../assets/shots/picker.webp';
-import pickerPhone from '../assets/shots/picker-phone.webp';
 import wave from '../../../public/pip/wave.webp';
 import { version } from '../../../package.json';
 
 const site = Astro.site!;
-const mail = `mailto:?subject=${encodeURIComponent('Canvas Course Downloader')}&body=${encodeURIComponent(
-  `Install it on my laptop: ${new URL(href('/download/'), site)}`,
-)}`;
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -78,15 +75,7 @@ const jsonLd = {
           file, page, assignment and grade, before your access ends.
         </p>
         <div class="cta-row">
-          <a
-            class="btn btn-primary btn-lg only-desktop"
-            href={tracked(STORE.chrome, 'hero')}
-            data-install
-            data-fallback={href('/download/')}
-          >
-            <svg class="icon" aria-hidden="true"><use href="#i-chrome"></use></svg>Add to Chrome, it's free
-          </a>
-          <a class="btn btn-primary btn-lg only-phone" href={mail}>Email myself the link</a>
+          <InstallCta campaign="hero" large />
           <span class="cta-note only-phone">It runs on a laptop or desktop.</span>
           <span class="cta-note only-desktop">Also on Edge and Brave</span>
         </div>
@@ -94,7 +83,7 @@ const jsonLd = {
           <span class="stars" aria-hidden="true"
             >{[1, 2, 3, 4, 5].map(() => <svg class="icon"><use href="#i-star"></use></svg>)}</span
           >
-          <a href={tracked(`${STORE.chrome}/reviews`, 'hero-rating')}><strong>{STATS.rating}</strong> on the Chrome Web Store</a>
+          <a href={tracked(`${STORE.chrome}/reviews`, 'hero-rating')}><strong>{STATS.rating}</strong> from {STATS.ratings} ratings on the Chrome Web Store</a>
           <span>used by {STATS.users} students and teachers</span>
         </p>
       </div>
@@ -125,9 +114,9 @@ const jsonLd = {
             </div>
             <div class="bar"><i data-bar style="width: 100%"></i></div>
             <ul class="saved-list" data-recent>
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Files 24</li>
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Pages and assignments 9</li>
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Quizzes and discussions 5</li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Files, pages and assignments</li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Quizzes, discussions and announcements</li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Your grades and every deadline</li>
             </ul>
           </div>
         </div>
@@ -169,18 +158,15 @@ const jsonLd = {
           <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><span>Works with any Canvas, also on your school's own web address.</span></li>
         </ul>
       </div>
-      <figure class="shot rise">
-        <picture>
-          <source media="(max-width: 640px)" srcset={pickerPhone.src} width={pickerPhone.width} height={pickerPhone.height} />
-          <img
+      <figure class="shot popup rise">
+        <img
           src={picker.src}
           width={picker.width}
           height={picker.height}
           loading="lazy"
           decoding="async"
           alt="The course picker on the Canvas dashboard: courses grouped by term, three ticked, and a Download 3 courses button"
-          />
-        </picture>
+        />
       </figure>
     </div>
   </section>
@@ -211,6 +197,10 @@ const jsonLd = {
         </div>
       </div>
       <div class="tree-panel" data-ui>
+        <div class="tree-bar" aria-hidden="true">
+          <Logo class="ring" ring="everything" />
+          <span data-ev-pct>Saved</span>
+        </div>
         {
           KINDS.map((k, i) => (
             <div class="tree" data-tree data-kind={k.id} hidden={i !== 0}>
@@ -301,7 +291,7 @@ const jsonLd = {
           </div>
           <div>
             <dt>Display notifications</dt>
-            <dd>To tell you when a long download has finished.</dd>
+            <dd>To tell you when an automatic download of new files has finished.</dd>
           </div>
         </dl>
       </div>
@@ -311,7 +301,7 @@ const jsonLd = {
   <section class="section" id="people" aria-labelledby="people-title">
     <div class="wrap people-grid">
       <div class="text-col">
-        <h2 id="people-title" class="rise">Used by {STATS.users} students and teachers</h2>
+        <h2 id="people-title" class="rise">In their words</h2>
         <div class="quotes rise">
           <blockquote>
             <p>“This has saved me countless hours and I just barely started using it!”</p>
@@ -320,10 +310,6 @@ const jsonLd = {
           <blockquote>
             <p>“Helped me download all of the resources I wanted to re-read and save from previous semesters!”</p>
             <footer>Marie G., Chrome Web Store review</footer>
-          </blockquote>
-          <blockquote>
-            <p>“This is such a timesaver and exactly what I needed as an instructor in Canvas.”</p>
-            <footer>Rachel M., instructor</footer>
           </blockquote>
         </div>
       </div>
@@ -337,8 +323,7 @@ const jsonLd = {
         </div>
         <p>
           I built it in March 2026, when I wanted to keep my own courses after a term ended. 30
-          releases later it's still free, without ads, and it stays that way. Pip the squirrel stashes
-          courses the way squirrels stash food: before winter.
+          releases later it's still free, without ads, and it stays that way.
         </p>
         <div class="row">
           <a class="btn btn-light" href={LINKS.github}><svg class="icon" aria-hidden="true"><use href="#i-github"></use></svg>GitHub</a>
@@ -371,11 +356,9 @@ const jsonLd = {
   <section aria-labelledby="closing-title">
     <div class="wrap closing">
       <h2 id="closing-title">Save your courses before they close</h2>
-      <a class="btn btn-primary btn-lg only-desktop" href={tracked(STORE.chrome, 'closing')} data-install data-fallback={href('/download/')}
-        ><svg class="icon" aria-hidden="true"><use href="#i-chrome"></use></svg>Add to Chrome, it's free</a
-      >
-      <a class="btn btn-primary btn-lg only-phone" href={mail}>Email myself the link</a>
-      <p class="cta-note">Also on Edge and Brave. A Firefox version is coming.</p>
+      <InstallCta campaign="closing" large />
+      <p class="cta-note only-desktop">Also on Edge and Brave</p>
+      <p class="cta-note only-phone">It runs on a laptop or desktop.</p>
     </div>
   </section>
 

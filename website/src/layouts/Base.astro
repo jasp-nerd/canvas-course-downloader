@@ -5,7 +5,7 @@ import '../styles/site.css';
 import gabarito from '../../../public/fonts/gabarito-latin.woff2?url';
 import Icons from '../components/Icons.astro';
 import Logo from '../components/Logo.astro';
-import { href, LINKS, SHORT, STORE, tracked } from '../data/site';
+import { href, LINKS, mailToSelf, SHORT, STORE, tracked } from '../data/site';
 
 interface Props {
   /** The full <title>. */
@@ -82,7 +82,7 @@ const nav = [
           </ul>
         </nav>
         <a class="btn btn-primary only-desktop" href={tracked(STORE.chrome, 'nav')} data-install>Add to Chrome</a>
-        <a class="btn btn-primary only-phone" href={href('/download/')}>Get it</a>
+        <a class="btn btn-primary only-phone" href={mailToSelf(Astro.site!)}>Get the link</a>
       </div>
     </header>
 

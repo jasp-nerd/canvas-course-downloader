@@ -1,4 +1,4 @@
-// The four kinds of download, each with the folder tree it really makes. The trees come from
+// The three kinds of download, each with the folder tree it really makes. The trees come from
 // exports of the sample course "Academic Writing" in the test Canvas (invented data), shortened
 // where a folder repeats ("11 more").
 
@@ -9,10 +9,9 @@ export interface Node {
 }
 
 export interface Kind {
-  id: 'copy' | 'study' | 'agents' | 'teacher';
+  id: 'copy' | 'study' | 'teacher';
   label: string;
   text: string;
-  pose: string;
   zip: string;
   tree: Node[];
   foot?: string;
@@ -25,7 +24,6 @@ export const KINDS: Kind[] = [
     id: 'copy',
     label: 'A copy to keep',
     text: 'The course as it is in Canvas, as pages that open in any browser without internet. Start with the Open me page.',
-    pose: 'folder',
     zip: 'Academic Writing.zip',
     tree: [
       f('Open me - Academic Writing.html', undefined, 'start here'),
@@ -50,7 +48,6 @@ export const KINDS: Kind[] = [
     id: 'study',
     label: 'A study pack for AI',
     text: 'A course guide with deadlines and grading, one file per module, and the slides and PDFs. Sized for NotebookLM, ChatGPT or Claude, and split when a course is too big.',
-    pose: 'laptop',
     zip: 'Academic Writing - AI study pack.zip',
     tree: [
       f('00 Course guide.md', undefined, 'deadlines, grading'),
@@ -64,29 +61,9 @@ export const KINDS: Kind[] = [
     foot: '31 sources, all in one notebook',
   },
   {
-    id: 'agents',
-    label: 'For coding tools',
-    text: 'The course in Markdown with front matter, plus AGENTS.md, llms.txt and course.json, for Claude Code, Codex or Cursor.',
-    pose: 'point',
-    zip: 'Academic Writing.zip',
-    tree: [
-      f('AGENTS.md', undefined, 'how the course is laid out'),
-      f('llms.txt'),
-      f('course.json', undefined, 'structure and deadlines'),
-      f('Modules.md'),
-      f('Syllabus.md'),
-      f('Pages', [f('4 pages in Markdown')]),
-      f('Assignments', [f('5 assignments in Markdown')]),
-      f('Files', [f('24 files')]),
-      f('Grades.csv'),
-      f('Deadlines.ics'),
-    ],
-  },
-  {
     id: 'teacher',
     label: "A teacher's archive",
     text: "The course you teach, without students' work unless you turn it on. Add the course package Canvas makes, to import the course again later.",
-    pose: 'read',
     zip: 'Teaching Practicum.zip',
     tree: [
       f('Open me - Teaching Practicum.html', undefined, 'start here'),
