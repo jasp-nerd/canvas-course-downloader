@@ -32,6 +32,7 @@ export const KINDS: Kind[] = [
       f('Files', [
         f('Lectures', [f('Lecture 01 - Academic Writing week 1.pdf'), f('11 more')]),
         f('Readings', [f('4 PDFs')]),
+        f('Assignments', [f('4 PDFs')]),
         f('Exam prep', [f('3 PDFs')]),
         f('Syllabus.pdf'),
       ]),
@@ -64,7 +65,7 @@ export const KINDS: Kind[] = [
   },
   {
     id: 'agents',
-    label: 'Files for code',
+    label: 'For coding tools',
     text: 'The course in Markdown with front matter, plus AGENTS.md, llms.txt and course.json, for Claude Code, Codex or Cursor.',
     pose: 'point',
     zip: 'Academic Writing.zip',

@@ -1,4 +1,4 @@
-# Privacy Policy — Canvas Course Downloader
+# Privacy policy
 
 **Last updated:** October 2026 (version 3.0)
 
@@ -6,11 +6,11 @@
 
 Canvas Course Downloader is a free, open-source browser extension. This policy explains what data the extension accesses and how it's handled.
 
-## Data Collection
+## Data collection
 
 **Canvas Course Downloader does not collect, transmit, or share any user data.** It has no analytics, tracking, or telemetry, and no server of its own. Nothing about you or your courses is ever sent to the developer.
 
-## How the Extension Works
+## How the extension works
 
 - The extension runs entirely in your browser.
 - It talks **only** to the Canvas site you are logged into (and Canvas's own file server for the files themselves), using your existing browser session. It never asks for your password or an access token.
@@ -20,7 +20,7 @@ Canvas Course Downloader is a free, open-source browser extension. This policy e
 - If you teach a course and turn on "Also save Canvas's course package" (off by default), the extension asks your Canvas to build the course's own export file (.imscc) and downloads it. This is the only time it asks Canvas to create anything. Canvas lists that export under the course's Settings › Export Course Content, where your co-teachers can see it, and keeps it for 30 days. The security token Canvas puts in the page is used for that one request, kept only in memory, and never stored or sent anywhere else.
 - "Download new files automatically" is off unless you turn it on in the settings.
 
-## What Is Stored on Your Computer
+## What is stored on your computer
 
 Everything below stays in your browser, in storage that only this extension can read. Uninstalling the extension removes it.
 
@@ -49,11 +49,11 @@ After some successful downloads, the extension may show a small card asking how 
 | `declarativeNetRequest` | Adds one header to responses from Canvas's file server (`canvas-user-content.com`) so files from there can be put into a ZIP |
 | Optional: `*://*.canvas-user-content.com/*` | Only asked for when you click "Allow access" in the settings, for schools that serve submitted files from that server |
 
-## Third-Party Services
+## Third-party services
 
 The extension does not send data to any third-party service. The links described above open third-party websites only when you click them.
 
-## Open Source
+## Open source
 
 The full source code is publicly available at [github.com/jasp-nerd/canvas-course-downloader](https://github.com/jasp-nerd/canvas-course-downloader). You can check exactly what the extension does.
 

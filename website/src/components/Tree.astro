@@ -16,7 +16,7 @@ const { nodes } = Astro.props;
           <svg class="icon" aria-hidden="true">
             <use href={n.children ? '#i-folder' : '#i-file'} />
           </svg>
-          {n.name}
+          <span class="name">{n.name}</span>
           {n.note && <span class="note">{n.note}</span>}
         </span>
         {n.children && <Astro.self nodes={n.children} />}

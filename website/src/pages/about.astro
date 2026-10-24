@@ -26,7 +26,7 @@ const jsonLd = {
   jsonLd={jsonLd}
   current="/about/"
 >
-  <section class="wrap page-head">
+  <section class="wrap narrow page-head">
     <img src={wave.src} width="140" height={Math.round((140 * wave.height) / wave.width)} alt="Pip, the extension's squirrel, waving" style="margin-bottom: 16px" />
     <h1>About Canvas Course Downloader</h1>
     <p class="lead">
@@ -35,11 +35,10 @@ const jsonLd = {
     </p>
   </section>
 
-  <article class="wrap prose">
+  <article class="wrap narrow prose">
     <h2>Who makes it</h2>
     <p>
-      I'm Jasper (<a href="https://github.com/jasp-nerd">jasp-nerd</a> on GitHub), a student in
-      Amsterdam. I built the first version in March 2026 because downloading a course file by file
+      I'm Jasper (<a href="https://github.com/jasp-nerd">jasp-nerd</a> on GitHub), a student in Amsterdam. I built the first version in March 2026 because downloading a course file by file
       took an evening, and courses close after the term. Since then it has had 30 releases, and
       about {STATS.users} students and teachers use it.
     </p>
@@ -47,7 +46,7 @@ const jsonLd = {
     <h2>How it's paid for</h2>
     <p>
       It isn't. There are no ads, no paid version, and nothing about you is collected or sold. If it
-      saved you an afternoon, you can <a href={tracked(LINKS.koFi, 'about')}>buy me a coffee</a> or
+      saved you an afternoon, you can <a href={tracked(LINKS.koFi, 'about')}>buy me a coffee</a> or{' '}
       <a href={LINKS.sponsors}>sponsor it on GitHub</a>. A review in the store helps other students
       find it too.
     </p>

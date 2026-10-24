@@ -1,0 +1,36 @@
+---
+// The end of a download as the extension shows it, rebuilt at page size so it stays readable:
+// the sample course with one lecture that was gone from Canvas.
+const rows = [
+  ['Pages', 4],
+  ['Assignments', 5],
+  ['Quizzes', 2],
+  ['Discussions', 3],
+  ['Announcements', 3],
+  ['Your submissions', 4],
+] as const;
+---
+
+<div class="mock" data-ui role="img" aria-label="A receipt marked Some files missing: Academic Writing is saved, 23 of 24 files, and the one that failed, Lecture 02, with the reason Not found in Canvas (HTTP 404)">
+  <div class="mock-band sun">
+    <span class="mock-chip"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>Some files missing</span>
+    <p class="mock-title">Academic Writing is saved</p>
+    <p class="mock-meta">26 MB, saved as Downloads/Academic Writing.zip</p>
+  </div>
+  <div class="mock-card">
+    <p class="mock-head"><strong>What's inside</strong><span>53 files</span></p>
+    <p class="mock-row warn">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg><span>Files <u>1 couldn't be downloaded</u></span><b>23 <span>of 24</span></b>
+    </p>
+    <p class="mock-fail">Lectures / Lecture 02 - Academic Writing week 2.pdf<small>Not found in Canvas (HTTP 404)</small></p>
+    {
+      rows.map(([label, n]) => (
+        <p class="mock-row">
+          <svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>
+          <span>{label}</span>
+          <b>{n}</b>
+        </p>
+      ))
+    }
+  </div>
+</div>

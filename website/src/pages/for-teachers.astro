@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { href, LINKS, STORE, tracked } from '../data/site';
-import teacher from '../assets/shots/receipt-teacher.webp';
+import TeacherMock from '../components/TeacherMock.astro';
 
 const url = new URL(Astro.url.pathname, Astro.site).toString();
 const jsonLd = {
@@ -26,7 +26,7 @@ const jsonLd = {
   jsonLd={jsonLd}
   current="/for-teachers/"
 >
-  <section class="wrap page-head">
+  <section class="wrap narrow page-head">
     <h1>Archive the Canvas courses you teach</h1>
     <p class="lead">
       Save a course before the term closes or your school moves to another system. Everything you
@@ -37,11 +37,11 @@ const jsonLd = {
     </p>
   </section>
 
-  <figure class="wrap shot" style="margin-block: 8px 56px">
-    <img src={teacher.src} width={teacher.width} height={teacher.height} decoding="async" alt="A teacher's receipt: Teaching Practicum is archived, course content only, and Student data: none included" />
-  </figure>
+  <div class="wrap narrow not-print" style="margin-bottom: 56px">
+    <div style="max-width: 760px"><TeacherMock /></div>
+  </div>
 
-  <article class="wrap prose">
+  <article class="wrap narrow prose">
     <h2>What your copy holds</h2>
     <p>The extension sees that you teach the course and saves what you made:</p>
     <ul>
@@ -72,6 +72,11 @@ const jsonLd = {
       this package on its servers, lists it under the course's Settings › Export Course Content,
       where your co-teachers can see it, and keeps it there for 30 days.
     </p>
+    <p>
+      The package is a Common Cartridge file, a standard format. Moodle, Brightspace and Blackboard
+      can import Common Cartridge too, though how much of a course comes across differs per system,
+      so try one course before moving many.
+    </p>
 
     <h2>Many courses at once</h2>
     <p>
@@ -80,7 +85,8 @@ const jsonLd = {
       its own receipt.
     </p>
 
-    <h2>A note for IT and privacy staff</h2>
+    <h2 id="it">A note for IT and privacy staff</h2>
+    <p class="muted">You can print this page or save it as a PDF to forward it.</p>
     <ul>
       <li>No server: the extension runs in the browser and talks only to your Canvas, with the teacher's own login. No API token, no account.</li>
       <li>Nothing is sent to the developer. No analytics or tracking in the extension.</li>

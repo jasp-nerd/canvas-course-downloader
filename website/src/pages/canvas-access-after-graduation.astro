@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import Closer from '../components/Closer.astro';
 import { CHECKED, POLICIES } from '../data/policies';
 import { href, STORE, tracked } from '../data/site';
 
@@ -28,24 +29,28 @@ const host = (u: string) => new URL(u).hostname.replace(/^www\./, '');
   jsonLd={jsonLd}
   current="/canvas-access-after-graduation/"
 >
-  <section class="wrap page-head">
-    <h1>How long do you keep access to Canvas after graduation?</h1>
-    <p class="lead">
-      It depends on your school: anywhere from the day you graduate to years later. Two things
-      decide it, the course's own dates and your login. You keep a course only while both last.
-    </p>
-    <p class="byline">By the maker of Canvas Course Downloader. Policies checked on {reviewed}.</p>
+  <section class="wrap page-head head-split">
+    <div>
+      <h1>Canvas access after graduation</h1>
+      <p class="lead">
+        How long you keep your courses depends on your school: from the day you graduate to years
+        later. Two things decide it, the course's own dates and your login. You keep a course only
+        while both last.
+      </p>
+      <p class="byline">By the maker of Canvas Course Downloader. Policies checked on {reviewed}.</p>
+    </div>
+    <Closer />
   </section>
 
-  <article class="wrap prose" style="max-width: 72em">
+  <article class="wrap prose" style="max-width: none">
     <div style="max-width: 44em">
       <h2>Two clocks</h2>
       <p>
         <strong>The course.</strong> When a term ends, Canvas puts its courses in a read-only state by default:
         you can still look, but not submit. A teacher or the school can also hide a course from students
-        once it ends, and many schools delete old courses after a few years. Instructure explains how
-        <a href="https://community.instructure.com/en/kb/articles/662735-how-do-term-dates-course-dates-and-section-dates-work-in-canvas">term, course and section dates</a>
-        work and how teachers can
+        once it ends, and many schools delete old courses after a few years. Instructure explains how{' '}
+        <a href="https://community.instructure.com/en/kb/articles/662735-how-do-term-dates-course-dates-and-section-dates-work-in-canvas">term, course and section dates</a>{' '}
+        work and how teachers can{' '}
         <a href="https://community.instructure.com/en/kb/articles/661118-how-do-i-restrict-student-access-to-a-course-before-or-after-the-course-dates">restrict access after a course ends</a>.
       </p>
       <p>
@@ -62,10 +67,6 @@ const host = (u: string) => new URL(u).hostname.replace(/^www\./, '');
         <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><span>Recordings on Panopto, Kaltura or Canvas Studio, and library e-books, expire on their own schedules. Ask your teacher or library about those.</span></li>
         <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><span>Keep the copy somewhere that lasts: your own drive and a backup.</span></li>
       </ul>
-      <p style="margin-top: 20px">
-        <a class="btn btn-primary" href={tracked(STORE.chrome, 'guide-access')} data-install data-fallback={href('/download/')}>Add to Chrome, it's free</a>
-      </p>
-
       <h2>What {POLICIES.length} universities say</h2>
       <p>
         Each row quotes the university's own help or IT pages; follow the link for the full text.
@@ -92,13 +93,13 @@ const host = (u: string) => new URL(u).hostname.replace(/^www\./, '');
                 {POLICIES.filter((p) => p.country === country).map((p) => (
                   <tr>
                     <th scope="row">{p.name}</th>
-                    <td class="ends">{p.ends}</td>
-                    <td>{p.course}</td>
-                    <td>{p.account}</td>
-                    <td>
-                      {p.sources.map((s) => (
+                    <td class="ends" data-label="Access ends">{p.ends}</td>
+                    <td data-label="After a course ends">{p.course}</td>
+                    <td data-label="After you graduate or leave">{p.account}</td>
+                    <td data-label="Source">
+                      {p.sources.map((s, i) => (
                         <p>
-                          <a href={s}>{host(s)}</a>
+                          <a href={s}>{p.sources.length > 1 ? `${host(s)} (${i + 1})` : host(s)}</a>
                         </p>
                       ))}
                     </td>
@@ -117,6 +118,11 @@ const host = (u: string) => new URL(u).hostname.replace(/^www\./, '');
         Search your school's IT help pages for "Canvas after graduation" or "account after leaving". The
         schools above range from closing access on graduation day (RMIT) to keeping it for 21 years
         (Georgetown), so don't assume.
+      </p>
+      <h2>Save a course in one click</h2>
+      <p>Canvas Course Downloader saves a whole course, files and pages and your own submissions, before your access ends.</p>
+      <p style="margin-top: 20px">
+        <a class="btn btn-primary" href={tracked(STORE.chrome, 'guide-access')} data-install data-fallback={href('/download/')}>Add to Chrome, it's free</a>
       </p>
     </div>
   </article>

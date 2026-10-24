@@ -1,0 +1,47 @@
+---
+// "When does your Canvas close?": pick a university, see its rule in its own words, with the source.
+import { CHECKED, POLICIES } from '../data/policies';
+
+const first = POLICIES.find((p) => p.name === 'RMIT University')!;
+const quote = (p: (typeof POLICIES)[number]) => p.account.match(/"([^"]+)"/)?.[1] ?? p.account;
+const schools = [...POLICIES].sort((a, b) => a.name.localeCompare(b.name));
+const checkedDay = new Date(CHECKED).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<div class="closer">
+  <h3 id="closer-title">When does your Canvas close?</h3>
+  <label class="sr-only" for="school">Your university</label>
+  <select id="school" data-school aria-describedby="closer-title">
+    {
+      schools.map((p) => (
+        <option selected={p === first} data-ends={p.ends} data-text={`“${quote(p)}”`} data-source={p.sources[0]}>
+          {p.name}
+        </option>
+      ))
+    }
+  </select>
+  <div class="result" data-result aria-live="polite">
+    <span class="ends" data-r-ends>{first.ends}</span>
+    <span class="school" data-r-school>{first.name}</span>
+    <p data-r-text>“{quote(first)}”</p>
+    <a href={first.sources[0]} data-r-source>From the university's own help page</a>
+  </div>
+  <p class="closer-note">
+    From each school's own pages, checked on {checkedDay}. Not listed? The {POLICIES.length} we checked range from the day you
+    graduate to never.
+  </p>
+</div>
+
+<script>
+  // Each <option> carries its school's answer.
+  const select = document.querySelector<HTMLSelectElement>('[data-school]');
+  const result = document.querySelector<HTMLElement>('[data-result]');
+  select?.addEventListener('change', () => {
+    const o = select.selectedOptions[0];
+    if (!o || !result) return;
+    result.querySelector('[data-r-ends]')!.textContent = o.dataset.ends ?? '';
+    result.querySelector('[data-r-school]')!.textContent = o.textContent;
+    result.querySelector('[data-r-text]')!.textContent = o.dataset.text ?? '';
+    result.querySelector<HTMLAnchorElement>('[data-r-source]')!.href = o.dataset.source ?? '#';
+  });
+</script>

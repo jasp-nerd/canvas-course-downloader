@@ -13,7 +13,7 @@ const mail = `mailto:?subject=${encodeURIComponent('Course Downloader')}&body=${
   ogTitle="Install Canvas Course Downloader"
   current="/download/"
 >
-  <section class="wrap page-head">
+  <section class="wrap narrow page-head">
     <h1>Install Course Downloader</h1>
     <p class="lead">
       It's free, and it runs in the browser on your laptop or desktop. Pick your browser; it takes
@@ -24,7 +24,7 @@ const mail = `mailto:?subject=${encodeURIComponent('Course Downloader')}&body=${
     </p>
   </section>
 
-  <section class="wrap install-grid" aria-label="Browsers">
+  <section class="wrap narrow install-grid" aria-label="Browsers">
     <div class="install-card">
       <h2>Chrome or Brave</h2>
       <p class="muted">From the Chrome Web Store. Updates come by themselves.</p>
@@ -48,15 +48,15 @@ const mail = `mailto:?subject=${encodeURIComponent('Course Downloader')}&body=${
           </>
         ) : (
           <p class="muted">
-            The Firefox version is ready and waiting for its store listing. Follow the{' '}
-            <a href={LINKS.releases}>releases on GitHub</a> to hear when it's out.
+            A Firefox version is coming. Follow the <a href={LINKS.releases}>releases on GitHub</a> to
+            hear when it's out.
           </p>
         )
       }
     </div>
   </section>
 
-  <section class="wrap prose" aria-labelledby="after">
+  <section class="wrap narrow prose" aria-labelledby="after">
     <h2 id="after">After installing</h2>
     <ol>
       <li>Open a course in Canvas. A <strong>Download course</strong> button appears next to its name.</li>
@@ -71,9 +71,9 @@ const mail = `mailto:?subject=${encodeURIComponent('Course Downloader')}&body=${
     <h2>Chrome says it can "read and change all your data"</h2>
     <p>
       That line is there because schools run Canvas on their own web addresses, so the extension
-      has to look at a page to know whether it's Canvas. On every other site it stops right away
-      and reads nothing. The <a href={href('/privacy/')}>privacy page</a> lists every permission and
-      why it's needed.
+      has to look at a page to know whether it's Canvas. The <a href={href('/privacy/')}>privacy page</a>{' '}
+      lists every permission and why it's needed. On every other site it stops right away and reads
+      nothing.
     </p>
 
     <h2>A specific version, or the code</h2>

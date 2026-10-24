@@ -35,7 +35,7 @@ async function demo() {
   const card = stage.querySelector<HTMLElement>('.export-card')!;
   const cursor = stage.querySelector<SVGElement>('.cursor');
   const ring = stage.querySelector('[data-ring="hero"]');
-  const replay = stage.querySelector<HTMLButtonElement>('[data-replay]')!;
+  const replay = document.querySelector<HTMLButtonElement>('[data-replay]')!;
   const el = (name: string) => stage.querySelector<HTMLElement>(`[data-${name}]`)!;
   const id = ++run;
   const total = 54;
@@ -49,6 +49,7 @@ async function demo() {
   const finish = () => {
     set(total);
     card.classList.add('shown', 'done');
+    stage.classList.add('carded');
     el('name').textContent = 'Academic Writing is saved';
     el('count').textContent = '54 files, 27 MB, in Downloads';
     el('recent').innerHTML = ['Files 24', 'Pages and assignments 9', 'Quizzes and discussions 5']
@@ -57,6 +58,7 @@ async function demo() {
     replay.hidden = false;
   };
   stage.classList.add('demo-ready');
+  stage.classList.remove('carded');
   card.classList.remove('shown', 'done');
   replay.hidden = true;
   el('name').textContent = 'Saving Academic Writing';
@@ -81,6 +83,7 @@ async function demo() {
   }
   await wait(220);
   card.classList.add('shown');
+  stage.classList.add('carded');
   for (let done = 1; done <= total; done++) {
     await wait(done < 6 ? 110 : 55);
     if (id !== run) return;
@@ -98,7 +101,7 @@ async function demo() {
   if (id === run) finish();
 }
 if (stage) {
-  stage.querySelector('[data-replay]')!.addEventListener('click', () => void demo());
+  document.querySelector('[data-replay]')!.addEventListener('click', () => void demo());
   stage.querySelector('.target')!.addEventListener('click', () => void demo());
   // Start when the stage is on screen, once.
   new IntersectionObserver((entries, io) => {
@@ -107,19 +110,6 @@ if (stage) {
     void demo();
   }).observe(stage);
 }
-
-// When does your Canvas close: each <option> carries its school's answer.
-const select = document.querySelector<HTMLSelectElement>('[data-school]');
-const result = document.querySelector<HTMLElement>('[data-result]');
-select?.addEventListener('change', () => {
-  const o = select.selectedOptions[0];
-  if (!o || !result) return;
-  result.querySelector('[data-r-ends]')!.textContent = o.dataset.ends ?? '';
-  result.querySelector('[data-r-school]')!.textContent = o.textContent;
-  result.querySelector('[data-r-text]')!.textContent = o.dataset.text ?? '';
-  const link = result.querySelector<HTMLAnchorElement>('[data-r-source]')!;
-  link.href = o.dataset.source ?? '#';
-});
 
 // Everything in the course: pick a kind, and while the section is on screen the ring fills and
 // the folder fills in, row by row.
