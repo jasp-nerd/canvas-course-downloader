@@ -1,0 +1,415 @@
+---
+import Base from '../layouts/Base.astro';
+import Logo from '../components/Logo.astro';
+import Tree from '../components/Tree.astro';
+import { KINDS } from '../data/kinds';
+import { POLICIES, CHECKED } from '../data/policies';
+import { href, LINKS, STATS, STORE, tracked } from '../data/site';
+import coursePage from '../assets/shots/course-page.webp';
+import picker from '../assets/shots/picker.webp';
+import receipt from '../assets/shots/receipt-partial.webp';
+import teacher from '../assets/shots/receipt-teacher.webp';
+import pickerPhone from '../assets/shots/picker-phone.webp';
+import receiptPhone from '../assets/shots/receipt-phone.webp';
+import wave from '../../../public/pip/wave.webp';
+import { version } from '../../../package.json';
+
+const site = Astro.site!;
+const first = POLICIES.find((p) => p.name === 'RMIT University')!;
+const quote = (p: (typeof POLICIES)[number]) => p.account.match(/"([^"]+)"/)?.[1] ?? p.account;
+const schools = [...POLICIES].sort((a, b) => a.name.localeCompare(b.name));
+const checkedMonth = new Date(CHECKED).toLocaleString('en', { month: 'long', year: 'numeric' });
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': new URL('/#website', site).toString(),
+      url: site.toString(),
+      name: 'Canvas Course Downloader',
+      alternateName: ['Course Downloader'],
+      inLanguage: 'en',
+      publisher: { '@id': new URL('/#org', site).toString() },
+    },
+    {
+      '@type': 'Organization',
+      '@id': new URL('/#org', site).toString(),
+      name: 'Canvas Course Downloader',
+      url: site.toString(),
+      logo: new URL(href('/logo-512.png'), site).toString(),
+      description: 'An independent open-source project. Not affiliated with or endorsed by Instructure.',
+      sameAs: [LINKS.github, STORE.chrome],
+    },
+    {
+      '@type': 'SoftwareApplication',
+      '@id': new URL('/#app', site).toString(),
+      name: 'Canvas Course Downloader',
+      description:
+        'Browser extension that downloads your Canvas LMS courses (files, pages, assignments, grades and more) into organized folders or a ZIP you can open offline. Teachers can also archive their courses.',
+      url: site.toString(),
+      applicationCategory: 'EducationalApplication',
+      applicationSubCategory: 'Browser extension',
+      operatingSystem: 'Windows, macOS, Linux, ChromeOS',
+      softwareRequirements: 'Desktop Chrome, Edge or Brave',
+      softwareVersion: version,
+      releaseNotes: new URL(href('/changelog/'), site).toString(),
+      license: 'https://opensource.org/licenses/MIT',
+      isAccessibleForFree: true,
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      installUrl: STORE.chrome,
+      sameAs: [LINKS.github],
+    },
+  ],
+};
+---
+
+<Base
+  title="Canvas Course Downloader – download and back up your Canvas courses"
+  description="Free, open-source browser extension that saves your Canvas courses to your computer: files, pages, assignments and grades, as folders or a ZIP. No API token."
+  ogTitle="Download your Canvas courses"
+  jsonLd={jsonLd}
+>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap hero-grid">
+      <div class="hero-text">
+        <h1 id="hero-title">Download your Canvas courses</h1>
+        <p class="lead">
+          A free browser extension that saves a whole course to your computer in one click: every
+          file, page, assignment and grade, in folders that make sense.
+        </p>
+        <div class="cta-row">
+          <a
+            class="btn btn-primary btn-lg only-desktop"
+            href={tracked(STORE.chrome, 'hero')}
+            data-install
+            data-fallback={href('/download/')}
+          >
+            <svg class="icon" aria-hidden="true"><use href="#i-chrome"></use></svg>Add to Chrome, it's free
+          </a>
+          <a class="btn btn-primary btn-lg only-phone" href={href('/download/')}>
+            Get it for your laptop
+          </a>
+          <span class="cta-note only-desktop">Also on Edge and Brave</span>
+        </div>
+        <p class="trust">
+          <span class="stars" aria-hidden="true"
+            >{[1, 2, 3, 4, 5].map(() => <svg class="icon"><use href="#i-star"></use></svg>)}</span
+          >
+          <span><strong>{STATS.rating}</strong> from {STATS.ratings} ratings on the Chrome Web Store, used by {STATS.users} students and teachers</span>
+        </p>
+      </div>
+
+      <div class="stage" data-stage data-ui>
+        <div class="window">
+          <div class="window-bar" aria-hidden="true"><i></i><span>canvas.yourschool.edu/courses/104</span></div>
+          <div
+            class="window-page"
+            style={`background-image: url('${coursePage.src}')`}
+            role="img"
+            aria-label="A Canvas course page with the extension's Download course button next to the course name"
+          >
+            <button class="target" type="button" aria-label="Download course (play the demo)"></button>
+          </div>
+          <svg class="cursor" viewBox="0 0 28 28" aria-hidden="true"
+            ><path d="M5 3l17 9.5-7.6 1.7L10.8 21z" fill="#14202f" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"></path></svg
+          >
+          <div class="export-card shown done" aria-hidden="true">
+            <div class="export-top">
+              <Logo class="ring" ring="hero" />
+              <div>
+                <div class="pct" data-pct>100%</div>
+                <div class="export-name" data-name>Academic Writing is saved</div>
+                <div class="export-count" data-count>54 files, 27 MB, in Downloads</div>
+              </div>
+            </div>
+            <div class="bar"><i data-bar style="width: 100%"></i></div>
+            <ul class="saved-list" data-recent>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Files 24</li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Pages and assignments 9</li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>Quizzes and discussions 5</li>
+            </ul>
+          </div>
+          <button class="btn btn-light replay" type="button" data-replay hidden>Play again</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="deadlines" aria-labelledby="deadlines-title">
+    <div class="wrap deadline-grid">
+      <div class="text-col rise">
+        <h2 id="deadlines-title">Courses don't stay open</h2>
+        <p class="lead">
+          When a term ends, a course turns read-only or disappears. When you graduate, your login
+          goes too, sometimes on the same day.
+        </p>
+        <a class="link-plain" href={href('/canvas-access-after-graduation/')}
+          >What {POLICIES.length} universities do<svg class="icon" aria-hidden="true"><use href="#i-arrow"></use></svg></a
+        >
+      </div>
+      <div class="closer rise">
+        <h3 id="closer-title">When does your Canvas close?</h3>
+        <label class="sr-only" for="school">Your university</label>
+        <select id="school" data-school aria-describedby="closer-title">
+            {
+              schools.map((p) => (
+                <option
+                  selected={p === first}
+                  data-ends={p.ends}
+                  data-text={`"${quote(p)}"`}
+                  data-source={p.sources[0]}
+                >
+                  {p.name}
+                </option>
+              ))
+            }
+          </select>
+        <div class="result" data-result aria-live="polite">
+          <span class="ends" data-r-ends>{first.ends}</span>
+          <span class="school" data-r-school>{first.name}</span>
+          <p data-r-text>"{quote(first)}"</p>
+          <a href={first.sources[0]} data-r-source>From the university's own help page</a>
+        </div>
+        <p class="closer-note">
+          From each school's own pages, checked in {checkedMonth}. Not listed? The {POLICIES.length} we checked
+          range from the day you graduate to never.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how" aria-labelledby="how-title">
+    <div class="wrap split">
+      <div class="text-col rise">
+        <h2 id="how-title">One click, or all at once</h2>
+        <p class="lead">
+          A Download course button appears on every course page, in your school's own colour. On your
+          dashboard, pick as many courses as you like, current or past.
+        </p>
+        <ul class="facts">
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><span>Uses the Canvas you're already logged in to. No API token, no account.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><span>Keeps going in its own tab, so you can close Canvas.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><span>Works with any Canvas, also on your school's own web address.</span></li>
+        </ul>
+      </div>
+      <figure class="shot rise">
+        <picture>
+          <source media="(max-width: 640px)" srcset={pickerPhone.src} width={pickerPhone.width} height={pickerPhone.height} />
+          <img
+          src={picker.src}
+          width={picker.width}
+          height={picker.height}
+          loading="lazy"
+          decoding="async"
+          alt="The course picker on the Canvas dashboard: courses grouped by term, three ticked, and a Download 3 courses button"
+          />
+        </picture>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section everything" id="everything" aria-labelledby="everything-title" data-everything>
+    <div class="wrap ev-grid">
+      <div class="ev-text">
+        <h2 id="everything-title">Everything in the course</h2>
+        <p class="lead">
+          Files, pages, assignments, quizzes, discussions, announcements, your own submissions and
+          grades. Links between them keep working offline. Pick how you want it:
+        </p>
+        <fieldset class="kinds">
+          <legend class="sr-only">Kind of download</legend>
+          {
+            KINDS.map((k, i) => (
+              <label class="kind">
+                <input type="radio" name="kind" value={k.id} checked={i === 0} />
+                <span>{k.label}</span>
+              </label>
+            ))
+          }
+        </fieldset>
+        {KINDS.map((k, i) => <p class="kind-desc" data-kind={k.id} hidden={i !== 0}>{k.text}</p>)}
+        <div class="ev-ring" aria-hidden="true">
+          <Logo class="ring" ring="everything" />
+          <p class="ev-status"><span data-ev-pct>Saved</span><small>Sample course, invented content</small></p>
+        </div>
+      </div>
+      <div class="tree-panel" data-ui>
+        {
+          KINDS.map((k, i) => (
+            <div class="tree" data-tree data-kind={k.id} hidden={i !== 0}>
+              <p class="tree-title">
+                <svg class="icon" aria-hidden="true"><use href="#i-folder"></use></svg>
+                {k.zip}
+              </p>
+              <Tree nodes={k.tree} />
+              {k.foot && <p class="tree-foot">{k.foot}</p>}
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="receipt" aria-labelledby="receipt-title">
+    <div class="wrap split flip">
+      <figure class="shot crop rise">
+        <picture>
+          <source media="(max-width: 640px)" srcset={receiptPhone.src} width={receiptPhone.width} height={receiptPhone.height} />
+          <img
+          src={receipt.src}
+          width={receipt.width}
+          height={receipt.height}
+          loading="lazy"
+          decoding="async"
+          alt="A receipt marked Some files missing: 23 of 24 files saved, and the one that failed, Lecture 02, with the reason Not found in Canvas"
+          />
+        </picture>
+      </figure>
+      <div class="text-col receipt-text rise">
+        <h2 id="receipt-title">Nothing goes missing quietly</h2>
+        <p class="lead">
+          Every download ends with a receipt: what's inside, and if a file couldn't be saved, which
+          one and why. Here, one lecture was gone from Canvas.
+        </p>
+        <p class="muted">
+          Each copy also has an overview page that opens without internet, with the course laid out
+          by module, and a calendar file with every deadline.
+        </p>
+        <a class="link-plain" href={href('/sample/academic-writing/Open%20me%20-%20Academic%20Writing.html')}
+          >Open a sample copy<svg class="icon" aria-hidden="true"><use href="#i-arrow"></use></svg></a
+        >
+      </div>
+    </div>
+  </section>
+
+  <section class="section field-sun" id="teachers" aria-labelledby="teachers-title">
+    <div class="wrap split">
+      <div class="text-col rise">
+        <h2 id="teachers-title">For teachers, too</h2>
+        <p class="lead">
+          Archive the courses you teach before a term closes or your school changes systems. Your
+          copy leaves students' work out unless you include it.
+        </p>
+        <ul class="facts">
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><span>Pages, files, assignments, quizzes with their questions, and a calendar of deadlines.</span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><span>Optionally the course package Canvas makes (.imscc), to import the course again later.</span></li>
+        </ul>
+        <a class="link-plain" href={href('/for-teachers/')}
+          >What a teacher's copy holds<svg class="icon" aria-hidden="true"><use href="#i-arrow"></use></svg></a
+        >
+      </div>
+      <figure class="shot rise only-desktop-block">
+        <img
+          src={teacher.src}
+          width={teacher.width}
+          height={teacher.height}
+          loading="lazy"
+          decoding="async"
+          alt="A teacher's receipt: Teaching Practicum is archived, course content only, and Student data: none included"
+        />
+      </figure>
+    </div>
+  </section>
+
+  <section class="section privacy" id="privacy" aria-labelledby="privacy-title">
+    <div class="wrap privacy-grid">
+      <div class="text-col rise">
+        <h2 id="privacy-title">Your courses stay with you</h2>
+        <ul class="promises">
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><p><strong>Nothing is sent to us.</strong> <span>No account, no tracking, no server of ours. The extension talks only to your Canvas.</span></p></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><p><strong>No password, no token.</strong> <span>It uses the Canvas you're logged in to, the way your browser opens a file.</span></p></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><p><strong>Anyone can check.</strong> <span>Every line is open source under the MIT license.</span></p></li>
+        </ul>
+        <div class="cta-row">
+          <a class="btn on-navy" href={LINKS.github}><svg class="icon" aria-hidden="true"><use href="#i-github"></use></svg>Read the code</a>
+          <a class="link-plain" style="color:#fff" href={href('/privacy/')}>Privacy policy</a>
+        </div>
+      </div>
+      <div class="asks rise">
+        <h3>What Chrome asks when you install it</h3>
+        <p>Chrome shows these lines. Here's why each one is there.</p>
+        <dl>
+          <dt>Read and change all your data on all websites</dt>
+          <dd>Schools run Canvas on their own addresses, so the extension looks at a page to see whether it's Canvas. Everywhere else it stops at once and reads nothing.</dd>
+          <dt>Manage your downloads</dt>
+          <dd>To save the course files and the ZIP into your Downloads folder.</dd>
+          <dt>Block content on any page</dt>
+          <dd>Lets it fetch your course files from Canvas's file server. It blocks nothing.</dd>
+          <dt>Display notifications</dt>
+          <dd>To tell you when a long download has finished.</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="people" aria-labelledby="people-title">
+    <div class="wrap people-grid">
+      <div class="text-col">
+        <h2 id="people-title" class="rise">Made by a student</h2>
+        <div class="quotes rise">
+          <blockquote>
+            <p>"This has saved me countless hours and I just barely started using it!"</p>
+            <footer>Matthew C., Chrome Web Store review</footer>
+          </blockquote>
+          <blockquote>
+            <p>"Helped me download all of the resources I wanted to re-read and save from previous semesters!"</p>
+            <footer>Marie G., Chrome Web Store review</footer>
+          </blockquote>
+          <blockquote>
+            <p>"This is such a timesaver and exactly what I needed as an instructor in Canvas."</p>
+            <footer>Rachel M., instructor</footer>
+          </blockquote>
+        </div>
+      </div>
+      <div class="maker rise">
+        <div class="maker-top">
+          <img src={wave.src} width={wave.width} height={wave.height} loading="lazy" alt="Pip, the extension's squirrel, waving" />
+          <h3>Hi, I'm Jasper</h3>
+        </div>
+        <p>
+          I study in Amsterdam and built this in March 2026, when I wanted to keep my own courses
+          after a term ended. 30 releases later it's still free, without ads, and it stays that way.
+          Pip the squirrel stashes courses the way squirrels stash food: before winter.
+        </p>
+        <div class="row">
+          <a class="btn btn-light" href={LINKS.github}><svg class="icon" aria-hidden="true"><use href="#i-github"></use></svg>GitHub</a>
+          <a class="btn btn-light" href={href('/about/')}>About the project</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq" aria-labelledby="faq-title" style="background: var(--mist)">
+    <div class="wrap faq-grid">
+      <h2 id="faq-title" class="rise">Questions</h2>
+      <div class="faq">
+        <div><h3>Is it free?</h3><p>Yes. No ads, no account, no paid version. It's open source under the MIT license.</p></div>
+        <div>
+          <h3>Can my teacher see that I downloaded it?</h3>
+          <p>Possibly. Canvas keeps an access report that teachers can open for each student, with the pages and files viewed and when. The extension opens everything with your own login, so a download can show up there as many items viewed at once.</p>
+          <p>The extension itself tells no one. <a href="https://kb.wisc.edu/103854">How access reports work</a></p>
+        </div>
+        <div><h3>Is it allowed?</h3><p>It saves only what you can already open in Canvas with your own login. The copy is for you; your school's rules on sharing course material still apply.</p></div>
+        <div><h3>Does it save videos?</h3><p>Videos uploaded to Canvas, yes. Recordings on Panopto, Kaltura or Canvas Studio aren't included, and the receipt lists them so you know.</p></div>
+        <div><h3>Which browsers?</h3><p>Chrome, Edge, Brave and other Chromium browsers on a laptop or desktop, from the Chrome Web Store. A Firefox version is coming. Phones and Safari aren't supported.</p></div>
+        <div><h3>Does it work with my school?</h3><p>Yes, with any Canvas, also when your school runs it on its own web address.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="closing-title">
+    <div class="wrap closing">
+      <h2 id="closing-title">Save your courses before they close</h2>
+      <ul class="browsers" aria-label="Install">
+        <li><a href={tracked(STORE.chrome, 'closing')} data-install data-fallback={href('/download/')}><svg class="icon" aria-hidden="true"><use href="#i-chrome"></use></svg>Add to Chrome</a></li>
+        <li><a href={tracked(STORE.chrome, 'closing-edge')}>Edge and Brave: from the Chrome Web Store</a></li>
+        <li><span>Firefox: coming soon</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <script>
+    import '../scripts/landing';
+  </script>
+</Base>
