@@ -376,6 +376,57 @@ test('people who updated from v2 see what is new once, in the popup only', async
   }
 });
 
+test("the v3 note opens a What's new page, with the changes and a way to support them", async ({
+  page,
+  serviceWorker,
+  cdpPort,
+  extensionId,
+}) => {
+  await serviceWorker.evaluate(() =>
+    (
+      globalThis as unknown as { chrome: { storage: { local: { set(v: object): Promise<void> } } } }
+    ).chrome.storage.local.set({ whatsNew: '3.0' }),
+  );
+  await page.goto(`${CANVAS}/courses/101`);
+  await page.bringToFront();
+  const { popup, close } = await openActionPopup(serviceWorker, cdpPort);
+  const opened = page.context().waitForEvent('page');
+  try {
+    await popup.getByRole('button', { name: "See what's new" }).click();
+  } finally {
+    await close();
+  }
+  const news = await opened;
+  const errors: string[] = [];
+  news.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+  expect(news.url()).toBe(`chrome-extension://${extensionId}/whats-new.html`);
+  await expect(news.getByRole('heading', { level: 1, name: "What's new in 3.0" })).toBeVisible();
+  await expect(news.getByRole('heading', { name: 'Exports run in their own tab' })).toBeVisible();
+  const support = news.getByRole('region', { name: 'Help keep it free' });
+  await expect(support.getByRole('link', { name: /^€3 / })).toHaveAttribute(
+    'href',
+    'https://ko-fi.com/jaspnerd?utm_source=extension&utm_medium=whats-new',
+  );
+  await expect(news.getByRole('link', { name: 'Every change on GitHub' })).toHaveAttribute(
+    'href',
+    'https://github.com/jasp-nerd/canvas-course-downloader/releases',
+  );
+  // Opening the page counts as having seen the note.
+  await expect
+    .poll(() =>
+      serviceWorker.evaluate(() =>
+        (
+          globalThis as unknown as {
+            chrome: { storage: { local: { get(k: string): Promise<Record<string, unknown>> } } };
+          }
+        ).chrome.storage.local.get('whatsNew'),
+      ),
+    )
+    .toEqual({});
+  expect(errors).toEqual([]);
+  await news.close();
+});
+
 test("a new user's first download asks what downloads should be, once", async ({
   page,
   serviceWorker,

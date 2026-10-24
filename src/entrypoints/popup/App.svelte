@@ -118,6 +118,12 @@
     window.close();
   }
 
+  async function seeWhatsNew() {
+    await browser.storage.local.remove('whatsNew');
+    await browser.tabs.create({ url: browser.runtime.getURL('/whats-new.html') });
+    window.close();
+  }
+
   async function openSettings(view = '') {
     if (view) await browser.tabs.create({ url: browser.runtime.getURL(`/options.html#${view}`) });
     else await browser.runtime.openOptionsPage();
@@ -143,6 +149,7 @@
       <Icon name="info" />
       <p>
         {WHATS_NEW_3}
+        <button type="button" class="link" onclick={seeWhatsNew}>See what's new</button>
         <button
           type="button"
           class="link"
