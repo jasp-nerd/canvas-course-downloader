@@ -319,14 +319,28 @@ test('the sidebar and Help keep the support links, the shortcut and the version'
   await open(page, extensionId, '#help');
   const main = page.getByRole('main');
   await expect(main.getByText('right-click it and choose Extract All')).toBeVisible();
-  await expect(main.getByRole('link', { name: 'Write a review' })).toHaveAttribute(
+  // The donation ask: suggested amounts, each opening Ko-fi, with free ways to help beside it.
+  const support = main.getByRole('region', { name: 'Help keep it free' });
+  for (const amount of ['€3', '€5', '€10']) {
+    await expect(support.getByRole('link', { name: new RegExp(`^${amount} `) })).toHaveAttribute(
+      'href',
+      'https://ko-fi.com/jaspnerd?utm_source=extension&utm_medium=options',
+    );
+  }
+  await expect(support.getByText('These open Ko-fi, where you choose the amount.')).toBeVisible();
+  await expect(support.getByRole('link', { name: 'Write a review' })).toHaveAttribute(
     'href',
     /chromewebstore\.google\.com.*utm_medium=options/,
   );
-  await expect(main.getByRole('link', { name: 'Star it on GitHub' })).toHaveAttribute(
+  await expect(
+    support.getByRole('link', { name: 'Star Course Downloader on GitHub, 297 stars' }),
+  ).toHaveAttribute(
     'href',
-    /github\.com\/jasp-nerd\/canvas-course-downloader\?utm_source=extension&utm_medium=options/,
+    'https://github.com/jasp-nerd/canvas-course-downloader?utm_source=extension&utm_medium=options',
   );
+  // Each way to help is offered once on the page.
+  await expect(main.getByRole('link', { name: /review/i })).toHaveCount(1);
+  await expect(main.getByRole('link', { name: 'Buy me a coffee' })).toHaveCount(0);
   await expect(main.getByRole('link', { name: 'Sponsor on GitHub' })).toHaveAttribute(
     'href',
     /github\.com\/sponsors\/jasp-nerd\?utm_source=extension&utm_medium=options/,

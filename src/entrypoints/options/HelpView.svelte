@@ -1,18 +1,20 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { browser } from 'wxt/browser';
-  import { LINKS, feedbackUrl, reviewUrl, tracked } from '../../app/links';
-  import { PRODUCT_NAME } from '../../ui/brand';
+  import { githubStars } from '../../app/github';
+  import { LINKS, feedbackUrl, tracked } from '../../app/links';
   import Icon from '../../ui/Icon.svelte';
   import type { IconName } from '../../ui/icons';
-  import Pip from '../../ui/Pip.svelte';
+  import SupportBlock from '../../ui/SupportBlock.svelte';
   import Setting from './Setting.svelte';
   import { folderAccess, options } from './state.svelte';
 
   const version = browser.runtime.getManifest().version;
   let shortcut = $state<string | null>(null);
+  let stars = $state<number | null>(null);
 
   onMount(async () => {
+    void githubStars().then((count) => (stars = count));
     const commands = await browser.commands.getAll();
     shortcut = commands.find((c) => c.name === 'download-current')?.shortcut ?? '';
   });
@@ -33,22 +35,13 @@
         href: feedbackUrl(version, import.meta.env.BROWSER),
         icon: 'alert',
       },
-      { label: 'Write a review', href: tracked(reviewUrl(), 'options'), icon: 'star' },
-      { label: 'Star it on GitHub', href: tracked(LINKS.github, 'options'), icon: 'code' },
       { label: 'Sponsor on GitHub', href: tracked(LINKS.sponsors, 'options'), icon: 'heart' },
-      { label: 'Buy me a coffee', href: tracked(LINKS.koFi, 'options'), icon: 'heart' },
       { label: 'Privacy', href: LINKS.privacy, icon: 'shield' },
     ] satisfies { label: string; href: string; icon: IconName }[]
   ).filter((link) => link.href);
 </script>
 
-<div class="intro">
-  <p>
-    {PRODUCT_NAME} saves your Canvas courses to your computer. It's free and open source; a review or
-    a star helps other students find it.
-  </p>
-  <Pip pose="think" height={104} />
-</div>
+<SupportBlock place="options" {stars} />
 
 <Setting id="h-start" title="Start a download">
   <p>
@@ -92,19 +85,6 @@
 </Setting>
 
 <style>
-  .intro {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    max-width: 960px;
-  }
-  .intro p {
-    margin: 0;
-    max-width: 560px;
-    font-size: 17px;
-    color: var(--ink-2);
-  }
   p {
     margin: 0;
     max-width: 620px;
@@ -151,11 +131,5 @@
   }
   .links :global(svg) {
     color: var(--ink-3);
-  }
-  @media (max-width: 760px) {
-    .intro {
-      flex-direction: column-reverse;
-      align-items: start;
-    }
   }
 </style>
