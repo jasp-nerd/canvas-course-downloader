@@ -1,7 +1,9 @@
 <script lang="ts">
   // What a receipt needs to say besides the counts: files that couldn't be
   // downloaded, a folder that couldn't be used, and how updates work.
+  import { browser } from 'wxt/browser';
   import type { CourseState } from '../../app/export-job';
+  import { feedbackUrl } from '../../app/links';
   import Icon from '../../ui/Icon.svelte';
 
   let { course }: { course: CourseState } = $props();
@@ -38,7 +40,13 @@
     <Icon name="alert" />
     <span
       >{failed === 1 ? "1 file couldn't be downloaded." : `${failed} files couldn't be downloaded.`}
-      {failed === 1 ? "It's" : "They're"} marked in the list and named in _download_errors.csv.</span
+      {failed === 1 ? "It's" : "They're"} marked in the list and named in _download_errors.csv.
+      <a
+        class="report"
+        href={feedbackUrl(browser.runtime.getManifest().version, import.meta.env.BROWSER)}
+        target="_blank"
+        rel="noopener">Report a problem</a
+      ></span
     >
   </div>
 {/if}
@@ -67,3 +75,12 @@
     >
   </div>
 {/if}
+
+<style>
+  .report {
+    color: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>
