@@ -38,7 +38,7 @@
     </div>
   </div>
   {#if stopped}
-    <Pip pose="think" height={210} class="band-pip" />
+    <Pip pose="sleep" height={220} class="band-pip" />
   {:else}
     <Pip pose="worried" height={220} alt={`${MASCOT_NAME}, worried`} class="band-pip" />
   {/if}

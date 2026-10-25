@@ -16,5 +16,6 @@ export const PIP_POSES = [
   'cheer',
   'magnify',
   'worried',
+  'sleep',
 ] as const;
 export type PipPose = (typeof PIP_POSES)[number];
