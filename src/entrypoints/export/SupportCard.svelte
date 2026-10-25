@@ -5,6 +5,7 @@
   import { LINKS, feedbackUrl, reviewUrl, tracked } from '../../app/links';
   import { finishSupportCard } from '../../app/support';
   import Icon from '../../ui/Icon.svelte';
+  import KofiCup from '../../ui/KofiCup.svelte';
   import Logo from '../../ui/Logo.svelte';
 
   const review = tracked(reviewUrl(), 'support-card');
@@ -48,15 +49,11 @@
       {:else if step === 'thanks'}
         <h2 id="support-title">Thank you!</h2>
         {#if LINKS.koFi}
-          <p>
-            If it saved you an afternoon, you can
-            <a
-              class="coffee"
-              href={tracked(LINKS.koFi, 'support-card')}
-              target="_blank"
-              rel="noopener"><Icon name="coffee" size={16} />buy me a coffee</a
-            >.
-          </p>
+          <p>If it saved you an afternoon, a coffee helps keep it going.</p>
+          <!-- Shaped like Ko-fi's own button, which people know, in its blue. -->
+          <a class="kofi" href={tracked(LINKS.koFi, 'support-card')} target="_blank" rel="noopener"
+            ><KofiCup size={26} />Buy me a coffee<span class="sr-only"> on Ko-fi</span></a
+          >
         {/if}
       {:else}
         <h2 id="support-title">Thanks for telling me</h2>
@@ -100,11 +97,28 @@
   .quiet {
     font-size: 13px;
   }
-  .coffee {
+  .kofi {
+    justify-self: start;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    color: var(--red-ink);
-    font-weight: 600;
+    gap: 10px;
+    height: 44px;
+    padding: 0 18px 0 12px;
+    border-radius: 12px;
+    background: #72a4f2;
+    box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12);
+    color: #14171f;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    transition: transform 0.12s;
+  }
+  .kofi:hover {
+    transform: translateY(-1px);
+    background: #85b1f4;
+  }
+  .kofi:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 2px;
   }
 </style>

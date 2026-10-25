@@ -77,7 +77,7 @@ test('asks everyone the same, a day after the first good export, and never again
   await review.click();
   await (await store).close();
   await expect(later.getByRole('heading', { name: 'Thank you!' })).toBeVisible();
-  await expect(later.getByRole('link', { name: 'buy me a coffee' })).toHaveAttribute(
+  await expect(later.getByRole('link', { name: 'Buy me a coffee on Ko-fi' })).toHaveAttribute(
     'href',
     /^https:\/\/ko-fi\.com\/jaspnerd\?utm_source=extension&utm_medium=support-card$/,
   );

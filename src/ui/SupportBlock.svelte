@@ -1,7 +1,8 @@
 <script lang="ts">
   // The donation ask on pages people open themselves (Settings › Help, What's new),
   // never in a pop-up. A few suggested amounts make giving easier than an empty
-  // field; Ko-fi has no link that fills in an amount, so each one says you choose it there.
+  // field. Ko-fi has no link that fills in an amount, so the note says you choose there; the
+  // labels match the monthly tiers on the Ko-fi page.
   import { LINKS, reviewUrl, tracked } from '../app/links';
   import CopyButton from './CopyButton.svelte';
   import GitHubStars from './GitHubStars.svelte';
@@ -11,9 +12,9 @@
   let { place, stars }: { place: string; stars: number | null } = $props();
 
   const TIERS = [
-    { amount: '€3', label: 'A coffee' },
-    { amount: '€5', label: 'Coffee and a stroopwafel' },
-    { amount: '€10', label: 'A late night of fixes' },
+    { amount: 'Any', label: 'Choose your own amount' },
+    { amount: '€5', label: 'Keeps the servers on' },
+    { amount: '€10', label: 'Keeps it getting better' },
   ];
   const review = $derived(tracked(reviewUrl(), place));
 </script>
@@ -42,7 +43,7 @@
         </li>
       {/each}
     </ul>
-    <p class="small">These open Ko-fi, where you choose the amount.</p>
+    <p class="small">These open Ko-fi, where you can give once or monthly.</p>
   {/if}
 
   <div class="other">

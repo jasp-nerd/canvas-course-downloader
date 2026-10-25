@@ -403,7 +403,7 @@ test("the v3 note opens a What's new page, with the changes and a way to support
   await expect(news.getByRole('heading', { level: 1, name: "What's new in 3.0" })).toBeVisible();
   await expect(news.getByRole('heading', { name: 'Exports run in their own tab' })).toBeVisible();
   const support = news.getByRole('region', { name: 'Help keep it free' });
-  await expect(support.getByRole('link', { name: /^€3 / })).toHaveAttribute(
+  await expect(support.getByRole('link', { name: /^Any Choose your own amount/ })).toHaveAttribute(
     'href',
     'https://ko-fi.com/jaspnerd?utm_source=extension&utm_medium=whats-new',
   );

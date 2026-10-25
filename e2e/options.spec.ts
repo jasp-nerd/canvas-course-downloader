@@ -321,13 +321,15 @@ test('the sidebar and Help keep the support links, the shortcut and the version'
   await expect(main.getByText('right-click it and choose Extract All')).toBeVisible();
   // The donation ask: suggested amounts, each opening Ko-fi, with free ways to help beside it.
   const support = main.getByRole('region', { name: 'Help keep it free' });
-  for (const amount of ['€3', '€5', '€10']) {
-    await expect(support.getByRole('link', { name: new RegExp(`^${amount} `) })).toHaveAttribute(
+  for (const name of [/^Any Choose your own amount/, /^€5 Keeps the servers on/, /^€10 /]) {
+    await expect(support.getByRole('link', { name })).toHaveAttribute(
       'href',
       'https://ko-fi.com/jaspnerd?utm_source=extension&utm_medium=options',
     );
   }
-  await expect(support.getByText('These open Ko-fi, where you choose the amount.')).toBeVisible();
+  await expect(
+    support.getByText('These open Ko-fi, where you can give once or monthly.'),
+  ).toBeVisible();
   await expect(support.getByRole('link', { name: 'Write a review' })).toHaveAttribute(
     'href',
     /chromewebstore\.google\.com.*utm_medium=options/,
@@ -347,7 +349,7 @@ test('the sidebar and Help keep the support links, the shortcut and the version'
   );
   await expect(main.getByRole('link', { name: 'Report a problem' })).toHaveAttribute(
     'href',
-    /github\.com\/jasp-nerd\/canvas-course-downloader\/issues\/new\?title=Problem/,
+    /^https:\/\/docs\.google\.com\/forms\/.*entry\.626675324=chrome&entry\.900642309=\d+\.\d+\.\d+$/,
   );
   await expect(main.getByRole('link', { name: 'Privacy' })).toHaveAttribute(
     'href',

@@ -79,7 +79,9 @@ The website lives in [`website/`](website/) and the release film in [`video/`](v
 
 ## Support
 
-It's free, without ads, and it stays that way. If it saved you an afternoon, you can [buy me a coffee](https://ko-fi.com/jaspnerd) or [sponsor it on GitHub](https://github.com/sponsors/jasp-nerd). A star or a store review helps other students find it.
+It's free, without ads, and it stays that way. If it saved you an afternoon, you can buy me a coffee or [sponsor it on GitHub](https://github.com/sponsors/jasp-nerd). A star or a store review helps other students find it.
+
+[![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/jaspnerd)
 
 ## License
 
