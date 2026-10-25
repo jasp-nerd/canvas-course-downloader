@@ -71,7 +71,11 @@ test('asks everyone the same, a day after the first good export, and never again
     'href',
     /issues\/new|docs\.google\.com\/forms/,
   );
+  // The review link opens the store in a new tab. Close it, or the next export's tab can be
+  // mistaken for it on a slow machine.
+  const store = later.context().waitForEvent('page');
   await review.click();
+  await (await store).close();
   await expect(later.getByRole('heading', { name: 'Thank you!' })).toBeVisible();
   await expect(later.getByRole('link', { name: 'buy me a coffee' })).toHaveAttribute(
     'href',

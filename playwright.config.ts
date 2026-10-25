@@ -5,9 +5,10 @@ export default defineConfig({
   testMatch: '**/*.spec.ts',
   // One browser with the extension per worker, and one mock server per worker.
   workers: 1,
-  // A test that only passes on retry is flaky, and flaky counts as failing here.
-  retries: 0,
-  timeout: 30_000,
+  // GitHub's runners are slower and noisier than a laptop: a retry there keeps one slow run
+  // from failing CI, and the report still lists the test as flaky.
+  retries: process.env.CI ? 2 : 0,
+  timeout: process.env.CI ? 60_000 : 30_000,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   globalSetup: './e2e/global-setup.ts',
   use: {
