@@ -8,8 +8,9 @@ export const LINKS = {
   github: 'https://github.com/jasp-nerd/canvas-course-downloader',
   sponsors: 'https://github.com/sponsors/jasp-nerd',
   koFi: 'https://ko-fi.com/jaspnerd',
-  /** Google Form for "something's wrong" feedback, once created. */
-  feedbackForm: '',
+  /** Google Form for "something's wrong" feedback; entry ids are its browser and version questions. */
+  feedbackForm:
+    'https://docs.google.com/forms/d/e/1FAIpQLScL8oNgjJ2KCYJGA3jxvQqy_Q2Ej9eYQ1C15p-7s4gDWBdzyQ/viewform?usp=pp_url&entry.626675324={browser}&entry.900642309={version}',
   privacy: `${WEBSITE}/privacy/`,
   changelog: `${WEBSITE}/changelog/`,
   /** The For teachers page's note for IT and privacy staff, who often have to approve tools. */
