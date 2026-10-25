@@ -20,6 +20,7 @@ Browser extension (Chrome, Edge, Firefox) that exports Canvas LMS courses. v3 is
 8. Never read `.env*`, publish to a store, or push without being asked.
 9. Test data is invented. No real course or student data.
 10. No Co-Authored-By lines in commits.
+11. An update never opens a tab or interrupts. Only a major version (like 2 to 3) gets a one-time note in the popup, seen when people open it themselves.
 
 
 
