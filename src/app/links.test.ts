@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { LINKS, feedbackUrl, reviewUrl, tracked } from './links';
+import { LINKS, feedbackUrl, reviewLabel, reviewUrl, tracked } from './links';
 
 describe('links', () => {
   it('points each browser at its own store', () => {
     expect(reviewUrl('chrome')).toContain('chromewebstore.google.com');
     expect(reviewUrl('firefox')).toContain('addons.mozilla.org');
     expect(reviewUrl('edge')).toBe('');
+  });
+
+  it('names the store the rating goes to', () => {
+    expect(reviewLabel('chrome')).toBe('Rate it on Chrome');
+    expect(reviewLabel('firefox')).toBe('Rate it on Firefox');
+    expect(reviewLabel('edge')).toBe('');
   });
 
   it('sends people who want to read more to the website', () => {

@@ -1,64 +1,79 @@
 <script lang="ts">
-  // The one ask for a store review, the same for everyone, with "tell me what's
-  // missing" beside it. A coffee is offered only after someone chose to help.
+  // Shown beside the receipt after a good export, when someone just saved their time. A coffee
+  // and a rating sit side by side for everyone; using one keeps the card, with a thank-you, and
+  // only "Don't show again" stops it. Compact (one row, no pitch) when it showed shortly before.
   import { browser } from 'wxt/browser';
-  import { LINKS, feedbackUrl, reviewUrl, tracked } from '../../app/links';
-  import { finishSupportCard } from '../../app/support';
+  import { LINKS, feedbackUrl, reviewLabel, reviewUrl, tracked } from '../../app/links';
+  import { hideSupportCard, type SupportCardMode } from '../../app/support';
   import Icon from '../../ui/Icon.svelte';
   import KofiCup from '../../ui/KofiCup.svelte';
   import Logo from '../../ui/Logo.svelte';
 
-  const review = tracked(reviewUrl(), 'support-card');
-  const feedback = feedbackUrl(browser.runtime.getManifest().version, import.meta.env.BROWSER);
-  // Without a store page to review on (Edge, for now) there's nothing to ask.
-  let step = $state<'ask' | 'thanks' | 'told' | 'gone'>(review ? 'ask' : 'gone');
+  let { mode }: { mode: SupportCardMode } = $props();
 
-  function finish(next: typeof step) {
-    step = next;
-    void finishSupportCard();
+  const coffee = tracked(LINKS.koFi, 'support-card');
+  const review = tracked(reviewUrl(), 'support-card');
+  const rate = reviewLabel();
+  const feedback = feedbackUrl(browser.runtime.getManifest().version, import.meta.env.BROWSER);
+  let clicked = $state<'coffee' | 'review' | null>(null);
+  let hidden = $state(false);
+
+  const heading = $derived(
+    clicked === 'coffee'
+      ? 'Thank you!'
+      : clicked === 'review'
+        ? 'Thanks for rating it!'
+        : 'Did it save you some time?',
+  );
+  const pitch = $derived(
+    clicked === 'coffee'
+      ? "That means a lot. It's what keeps it free for everyone."
+      : clicked === 'review'
+        ? "If you'd like to do more, a coffee helps too."
+        : "I'm Jasper, a student, and I build this in my spare time. It's free and stays free. A coffee keeps me going, and a rating helps other students find it.",
+  );
+
+  function hide() {
+    hidden = true;
+    void hideSupportCard();
   }
 </script>
 
-{#if step !== 'gone'}
+{#if mode && !hidden && (coffee || review)}
   <!-- The logo, not the mascot: every receipt already has the mascot on it. -->
-  <aside class="card support" aria-labelledby="support-title">
-    <Logo size={56} />
+  <aside class="card support" class:compact={mode === 'compact'} aria-labelledby="support-title">
+    {#if mode === 'full'}<Logo size={40} />{/if}
     <div class="body">
-      {#if step === 'ask'}
-        <h2 id="support-title">Could you leave a short review?</h2>
-        <p>It's free and made by a student. Reviews help other students find it.</p>
-        <div class="row actions">
+      <h2 class="heading" id="support-title">{heading}</h2>
+      {#if mode === 'full' || clicked}<p>{pitch}</p>{/if}
+      <div class="row actions">
+        {#if coffee}
+          <!-- Ko-fi's blue and cup, which people know, in the app's button shape. -->
           <a
-            class="btn btn-primary btn-sm"
+            class="btn kofi"
+            href={coffee}
+            target="_blank"
+            rel="noopener"
+            onclick={() => (clicked = 'coffee')}
+            ><KofiCup size={24} />Buy me a coffee<span class="sr-only"> on Ko-fi</span></a
+          >
+        {/if}
+        {#if review && rate}
+          <a
+            class="btn btn-light"
             href={review}
             target="_blank"
             rel="noopener"
-            onclick={() => finish('thanks')}><Icon name="star" size={16} />Write a review</a
-          >
-          <a
-            class="btn btn-text btn-sm"
-            href={feedback}
-            target="_blank"
-            rel="noopener"
-            onclick={() => finish('told')}>Something missing? Tell me</a
-          >
-          <button type="button" class="btn btn-text btn-sm quiet" onclick={() => finish('gone')}
-            >Don't ask again</button
-          >
-        </div>
-      {:else if step === 'thanks'}
-        <h2 id="support-title">Thank you!</h2>
-        {#if LINKS.koFi}
-          <p>If it saved you an afternoon, a coffee helps keep it going.</p>
-          <!-- Shaped like Ko-fi's own button, which people know, in its blue. -->
-          <a class="kofi" href={tracked(LINKS.koFi, 'support-card')} target="_blank" rel="noopener"
-            ><KofiCup size={26} />Buy me a coffee<span class="sr-only"> on Ko-fi</span></a
+            onclick={() => (clicked = 'review')}><Icon name="star" size={16} />{rate}</a
           >
         {/if}
-      {:else}
-        <h2 id="support-title">Thanks for telling me</h2>
-        <p>I read every report and fix what I can.</p>
-      {/if}
+      </div>
+      <div class="row quiet">
+        {#if mode === 'full'}
+          <a href={feedback} target="_blank" rel="noopener">Something missing? Tell me</a>
+        {/if}
+        <button type="button" class="link" onclick={hide}>Don't show again</button>
+      </div>
     </div>
   </aside>
 {/if}
@@ -66,59 +81,81 @@
 <style>
   .support {
     display: grid;
-    grid-template-columns: 72px minmax(0, 1fr);
-    gap: 14px;
-    align-items: center;
-    padding: 16px 20px;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+    padding: 22px 28px;
     border-radius: 24px;
   }
   .support > :global(svg) {
-    justify-self: center;
+    margin-top: 2px;
+  }
+  .compact {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 18px 28px;
   }
   .body {
     display: grid;
-    gap: 10px;
   }
   h2 {
     margin: 0;
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 17px;
     line-height: 1.3;
   }
   p {
-    margin: 0;
+    margin: 6px 0 0;
     font-size: 14px;
     color: var(--ink-2);
+    text-wrap: pretty;
   }
   .actions {
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .compact .actions {
+    margin-top: 12px;
   }
   .quiet {
+    gap: 0 20px;
+    flex-wrap: wrap;
+    margin-top: 6px;
     font-size: 13px;
   }
-  .kofi {
-    justify-self: start;
+  .quiet a,
+  .quiet .link {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    height: 44px;
-    padding: 0 18px 0 12px;
-    border-radius: 12px;
+    min-height: 32px;
+    color: var(--ink-2);
+    text-underline-offset: 3px;
+  }
+  .quiet a:hover {
+    color: var(--ink);
+  }
+  .kofi {
+    padding: 0 20px 0 14px;
     background: #72a4f2;
-    box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12);
     color: #14171f;
     font-weight: 700;
-    font-size: 15px;
-    text-decoration: none;
-    transition: transform 0.12s;
+    box-shadow: 0 3px 0 #4a7fd0;
   }
   .kofi:hover {
-    transform: translateY(-1px);
-    background: #85b1f4;
+    background: #6598ea;
   }
-  .kofi:focus-visible {
-    outline: 3px solid var(--ink);
-    outline-offset: 2px;
+  .kofi:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #4a7fd0;
+  }
+  @media (max-width: 520px) {
+    .support {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .support > :global(svg) {
+      display: none;
+    }
+    .actions > * {
+      flex: 1 1 100%;
+    }
   }
 </style>

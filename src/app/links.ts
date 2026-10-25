@@ -26,6 +26,15 @@ const REVIEW_PAGES: Record<string, string> = {
   edge: '',
 };
 
+const STORE_NAMES: Record<string, string> = { chrome: 'Chrome', firefox: 'Firefox' };
+
+/** "Rate it on Chrome": naming the store says where the click lands. "" without a review page. */
+export function reviewLabel(browserName: string = import.meta.env.BROWSER): string {
+  return reviewUrl(browserName) && STORE_NAMES[browserName]
+    ? `Rate it on ${STORE_NAMES[browserName]}`
+    : '';
+}
+
 /** The store review page for the browser this build is for; "" when there is none yet. */
 export function reviewUrl(browserName: string = import.meta.env.BROWSER): string {
   return REVIEW_PAGES[browserName] ?? '';

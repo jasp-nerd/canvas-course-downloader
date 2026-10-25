@@ -11,13 +11,14 @@
   import OpeningIt from './OpeningIt.svelte';
   import PackageRow from './PackageRow.svelte';
   import ShowInFolder from './ShowInFolder.svelte';
+  import type { SupportCardMode } from '../../app/support';
   import SupportCard from './SupportCard.svelte';
 
   let {
     course,
     isWindows,
     showSupport,
-  }: { course: CourseState; isWindows: boolean; showSupport: boolean } = $props();
+  }: { course: CourseState; isWindows: boolean; showSupport: SupportCardMode } = $props();
 
   const included = $derived(course.studentWork?.included ?? false);
   const files = $derived(course.kinds.reduce((n, k) => n + k.done, 0));
@@ -83,7 +84,7 @@
   {#if (course.how.zip && explain) || showSupport}
     <div class="below">
       {#if course.how.zip && explain}<OpeningIt {course} {isWindows} />{/if}
-      {#if showSupport}<SupportCard />{/if}
+      {#if showSupport}<SupportCard mode={showSupport} />{/if}
     </div>
   {/if}
 </main>

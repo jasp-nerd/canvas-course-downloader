@@ -3,7 +3,7 @@
   // downloaded, a folder that couldn't be used, and how updates work.
   import { browser } from 'wxt/browser';
   import type { CourseState } from '../../app/export-job';
-  import { feedbackUrl } from '../../app/links';
+  import { feedbackUrl, reviewLabel, reviewUrl, tracked } from '../../app/links';
   import Icon from '../../ui/Icon.svelte';
 
   let { course }: { course: CourseState } = $props();
@@ -46,7 +46,13 @@
         href={feedbackUrl(browser.runtime.getManifest().version, import.meta.env.BROWSER)}
         target="_blank"
         rel="noopener">Report a problem</a
-      ></span
+      >
+      <!-- Offered here as well as after a full save, so the store ask doesn't go only to happy users. -->
+      {#if reviewLabel()}
+        <a class="report" href={tracked(reviewUrl(), 'partial')} target="_blank" rel="noopener"
+          >{reviewLabel()}</a
+        >
+      {/if}</span
     >
   </div>
 {/if}
@@ -82,5 +88,8 @@
     font-weight: 600;
     text-decoration: underline;
     text-underline-offset: 3px;
+  }
+  .report + .report {
+    margin-left: 12px;
   }
 </style>

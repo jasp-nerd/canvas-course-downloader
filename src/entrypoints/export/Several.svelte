@@ -7,9 +7,10 @@
   import Pip from '../../ui/Pip.svelte';
   import { tryAgain } from './actions';
   import CompactReceipt from './CompactReceipt.svelte';
+  import type { SupportCardMode } from '../../app/support';
   import SupportCard from './SupportCard.svelte';
 
-  let { courses, showSupport }: { courses: CourseState[]; showSupport: boolean } = $props();
+  let { courses, showSupport }: { courses: CourseState[]; showSupport: SupportCardMode } = $props();
 
   const saved = $derived(courses.filter((c) => c.outcome === 'success' || c.outcome === 'partial'));
   const stopped = $derived(courses.some((c) => c.outcome === 'cancelled'));
@@ -66,7 +67,7 @@
       <span>Next time only new files are added to each course.</span>
     </div>
   {/if}
-  {#if showSupport}<SupportCard />{/if}
+  {#if showSupport}<SupportCard mode={showSupport} />{/if}
 </main>
 
 <style>

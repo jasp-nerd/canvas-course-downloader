@@ -9,13 +9,14 @@
   import Notices from './Notices.svelte';
   import OpeningIt from './OpeningIt.svelte';
   import ShowInFolder from './ShowInFolder.svelte';
+  import type { SupportCardMode } from '../../app/support';
   import SupportCard from './SupportCard.svelte';
 
   let {
     course,
     isWindows,
     showSupport,
-  }: { course: CourseState; isWindows: boolean; showSupport: boolean } = $props();
+  }: { course: CourseState; isWindows: boolean; showSupport: SupportCardMode } = $props();
 
   const partial = $derived(course.outcome === 'partial');
   const agents = $derived(course.how.profile === 'agents');
@@ -104,7 +105,7 @@
       <OpeningIt {course} {isWindows} />
     {/if}
     {#if showSupport}
-      <SupportCard />
+      <SupportCard mode={showSupport} />
     {/if}
   </div>
 </main>

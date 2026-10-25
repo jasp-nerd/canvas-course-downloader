@@ -9,9 +9,10 @@
   import { sizeOf } from './lines';
   import Notices from './Notices.svelte';
   import ShowInFolder from './ShowInFolder.svelte';
+  import type { SupportCardMode } from '../../app/support';
   import SupportCard from './SupportCard.svelte';
 
-  let { course, showSupport }: { course: CourseState; showSupport: boolean } = $props();
+  let { course, showSupport }: { course: CourseState; showSupport: SupportCardMode } = $props();
 
   const target = $derived(AI_TARGETS[course.studyPack ?? course.how.aiTarget]);
   const parts = $derived(course.packParts ?? 1);
@@ -175,7 +176,7 @@
         >Also want it for Claude Code or Cursor? Download the course again as Files for code.</span
       >
     </div>
-    {#if showSupport}<SupportCard />{/if}
+    {#if showSupport}<SupportCard mode={showSupport} />{/if}
   </div>
 </main>
 

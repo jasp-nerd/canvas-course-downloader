@@ -5,7 +5,7 @@
   import { browser } from 'wxt/browser';
   import { csrfKey } from '../../app/course-package';
   import { exportCourses, type CourseState } from '../../app/export-job';
-  import { supportCardAfterExport } from '../../app/support';
+  import { supportCardAfterExport, type SupportCardMode } from '../../app/support';
   import { TimeLeft } from '../../app/time-left';
   import { AI_TARGETS } from '../../export/study-pack';
   import { PRODUCT_NAME } from '../../ui/brand';
@@ -32,7 +32,7 @@
   let courses = $state.raw<CourseState[]>([]);
   let running = $state(true);
   let stopping = $state(false);
-  let showSupport = $state(false);
+  let showSupport = $state<SupportCardMode>(false);
   let isWindows = $state(false);
   let secondsLeft = $state<number | null>(null);
   let folderPrompt = $state<{ name: string; allow: () => void; skip: () => void } | null>(null);

@@ -1,4 +1,3 @@
-import type { Worker } from '@playwright/test';
 import type { browser } from 'wxt/browser';
 import { CANVAS, expect, resetExtensionStorage, test, waitForExport } from './fixtures';
 
@@ -19,7 +18,7 @@ const FILES_ONLY = {
     linkedFiles: false,
   },
 };
-const QUESTION = 'Could you leave a short review?';
+const QUESTION = 'Did it save you some time?';
 
 async function exportCourse(page: import('@playwright/test').Page) {
   await page.goto(`${CANVAS}/courses/104`);
@@ -30,20 +29,7 @@ async function exportCourse(page: import('@playwright/test').Page) {
   return tab;
 }
 
-/** As if the first export that worked was a day ago: the ask never comes the same day. */
-async function aDayLater(serviceWorker: Worker) {
-  await serviceWorker.evaluate(async () => {
-    const { storage } = (globalThis as unknown as Chrome).chrome;
-    const { supportCard } = await storage.local.get<{ supportCard: { firstSuccessAt: number } }>(
-      'supportCard',
-    );
-    await storage.local.set({
-      supportCard: { ...supportCard, firstSuccessAt: supportCard.firstSuccessAt - 25 * 3600_000 },
-    });
-  });
-}
-
-test('asks everyone the same, a day after the first good export, and never again after', async ({
+test('shows after every good export but the first, with a coffee and a review, and stays after either', async ({
   page,
   serviceWorker,
 }) => {
@@ -52,59 +38,58 @@ test('asks everyone the same, a day after the first good export, and never again
   await expect(first.getByText(QUESTION)).toHaveCount(0);
   await first.close();
 
-  // Not on the same day.
-  const sameDay = await exportCourse(page);
-  await expect(sameDay.getByText(QUESTION)).toHaveCount(0);
-  await sameDay.close();
-
-  await aDayLater(serviceWorker);
-  const later = await exportCourse(page);
-  await expect(later.getByRole('heading', { name: QUESTION })).toBeVisible();
-  // One ask for everyone: no "was it good?" question first.
-  await expect(later.getByRole('button', { name: /all there|missing/i })).toHaveCount(0);
-  const review = later.getByRole('link', { name: 'Write a review' });
+  const second = await exportCourse(page);
+  await expect(second.getByRole('heading', { name: QUESTION })).toBeVisible();
+  const coffee = second.getByRole('link', { name: 'Buy me a coffee on Ko-fi' });
+  await expect(coffee).toHaveAttribute(
+    'href',
+    /^https:\/\/ko-fi\.com\/jaspnerd\?utm_source=extension&utm_medium=support-card$/,
+  );
+  const review = second.getByRole('link', { name: 'Rate it on Chrome' });
   await expect(review).toHaveAttribute(
     'href',
     /chromewebstore\.google\.com\/detail\/canvas-course-downloader\/mmnmcnffbkcnhcjiidmdnaclpfeekiol\/reviews\?utm_source=extension&utm_medium=support-card/,
   );
-  await expect(later.getByRole('link', { name: 'Something missing? Tell me' })).toHaveAttribute(
+  await expect(second.getByRole('link', { name: 'Something missing? Tell me' })).toHaveAttribute(
     'href',
     /issues\/new|docs\.google\.com\/forms/,
   );
-  // The review link opens the store in a new tab. Close it, or the next export's tab can be
-  // mistaken for it on a slow machine.
-  const store = later.context().waitForEvent('page');
+  // The store opens in a new tab. Close it, or the next export's tab can be mistaken for it.
+  const store = second.context().waitForEvent('page');
   await review.click();
   await (await store).close();
-  await expect(later.getByRole('heading', { name: 'Thank you!' })).toBeVisible();
-  await expect(later.getByRole('link', { name: 'Buy me a coffee on Ko-fi' })).toHaveAttribute(
-    'href',
-    /^https:\/\/ko-fi\.com\/jaspnerd\?utm_source=extension&utm_medium=support-card$/,
-  );
-  await later.close();
+  // Thanked, with the other way to help still there.
+  await expect(second.getByRole('heading', { name: 'Thanks for rating it!' })).toBeVisible();
+  await expect(coffee).toBeVisible();
+  await second.close();
 
-  const after = await exportCourse(page);
-  await expect(after.getByText(QUESTION)).toHaveCount(0);
+  // Soon after, the card comes back compact: the same two buttons, without the pitch.
+  const third = await exportCourse(page);
+  await expect(third.getByRole('heading', { name: QUESTION })).toBeVisible();
+  await expect(third.getByRole('link', { name: 'Buy me a coffee on Ko-fi' })).toBeVisible();
+  await expect(third.getByRole('link', { name: 'Rate it on Chrome' })).toBeVisible();
+  await expect(third.getByText(/made by a student|spare time/)).toHaveCount(0);
 });
 
-test('"Don\'t ask again" hides it for good', async ({ page, serviceWorker }) => {
+test('"Don\'t show again" hides it for good', async ({ page, serviceWorker }) => {
   await resetExtensionStorage(serviceWorker, FILES_ONLY);
   await (await exportCourse(page)).close();
-  await aDayLater(serviceWorker);
   const tab = await exportCourse(page);
-  await tab.getByRole('button', { name: "Don't ask again" }).click();
+  await tab.getByRole('button', { name: "Don't show again" }).click();
   await expect(tab.getByText(QUESTION)).toHaveCount(0);
   const stored = await serviceWorker.evaluate(() =>
     (globalThis as unknown as Chrome).chrome.storage.local.get('supportCard'),
   );
-  expect(stored.supportCard).toMatchObject({ done: true });
+  expect(stored.supportCard).toMatchObject({ optedOut: true });
+  await tab.close();
+  const after = await exportCourse(page);
+  await expect(after.getByText(QUESTION)).toHaveCount(0);
 });
 
 test('never asks after a partial export', async ({ page, serviceWorker, mock }) => {
   await resetExtensionStorage(serviceWorker, FILES_ONLY);
   await (await exportCourse(page)).close();
   mock.addFault({ path: '^/files/104003/download', status: 404 });
-  await aDayLater(serviceWorker);
   const tab = await exportCourse(page);
   await expect(tab.getByText("1 file couldn't be downloaded.")).toBeVisible();
   await expect(tab.getByText(QUESTION)).toHaveCount(0);
@@ -114,4 +99,9 @@ test('never asks after a partial export', async ({ page, serviceWorker, mock }) 
     /issues\/new|docs\.google\.com\/forms/,
   );
   await expect(tab.getByText(/coffee/i)).toHaveCount(0);
+  // Rating is offered after a partial export too, so only happy users aren't the ones asked.
+  await expect(tab.getByRole('link', { name: 'Rate it on Chrome' })).toHaveAttribute(
+    'href',
+    /chromewebstore\.google\.com.*utm_medium=partial/,
+  );
 });
