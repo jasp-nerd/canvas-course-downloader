@@ -2,15 +2,7 @@
 
 How a version goes from a tag to the stores, and how the website goes live. CI builds and drafts; only a person publishes. There are three human steps: push the tag, publish the draft release, approve the store submission.
 
-## Turning it on
-
-The workflow files are in `docs/releasing/` because `.github/workflows/` is human-owned (`.claude/hooks/protect-paths.sh`). To use them:
-
-```bash
-git mv docs/releasing/release.yml docs/releasing/submit.yml .github/workflows/
-```
-
-Also add `paths-ignore: [website/**, video/**, media/**, docs/**]` to both triggers in `.github/workflows/ci.yml`, so website-only changes don't run the extension's tests.
+## The workflows
 
 | Workflow | Runs on | Does |
 | --- | --- | --- |
