@@ -5,7 +5,7 @@
   import { AI_TARGETS } from '../../export/study-pack';
   import Icon from '../../ui/Icon.svelte';
   import Pip from '../../ui/Pip.svelte';
-  import CopyButton from './CopyButton.svelte';
+  import CopyButton from '../../ui/CopyButton.svelte';
   import { sizeOf } from './lines';
   import Notices from './Notices.svelte';
   import ShowInFolder from './ShowInFolder.svelte';

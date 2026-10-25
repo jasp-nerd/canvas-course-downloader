@@ -1,10 +1,31 @@
 ---
 // "When does your Canvas close?": pick a university, see its rule in its own words, with the source.
-import { CHECKED, POLICIES } from '../data/policies';
+import { CHECKED, ON_CANVAS, POLICIES } from '../data/policies';
 
 const first = POLICIES.find((p) => p.name === 'RMIT University')!;
-const quote = (p: (typeof POLICIES)[number]) => p.account.match(/"([^"]+)"/)?.[1] ?? p.account;
-const schools = [...POLICIES].sort((a, b) => a.name.localeCompare(b.name));
+// The login rule when the school has one, else the course rule: many US pages only cover courses.
+const quote = (p: (typeof POLICIES)[number]) =>
+  p.account.match(/"([^"]+)"/)?.[1] ?? p.course.match(/"([^"]+)"/)?.[1] ?? p.account;
+// Schools on Canvas without a written rule are in the picker too, pointing at their own Canvas help.
+const options = [
+  ...POLICIES.map((p) => ({
+    name: p.name,
+    country: p.country,
+    ends: p.ends,
+    text: `“${quote(p)}”`,
+    source: p.sources[0],
+    label: "From the university's own help page",
+  })),
+  ...ON_CANVAS.map((s) => ({
+    name: s.name,
+    country: 'United States',
+    ends: 'No written rule found',
+    text: "We couldn't find a written rule on this school's own pages. Ask its IT help desk, and save your courses before you graduate.",
+    source: s.source,
+    label: "The university's Canvas page",
+  })),
+].sort((a, b) => a.name.localeCompare(b.name));
+const countries = [...new Set(POLICIES.map((p) => p.country))];
 const checkedDay = new Date(CHECKED).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 ---
 
@@ -13,10 +34,22 @@ const checkedDay = new Date(CHECKED).toLocaleDateString('en-GB', { day: 'numeric
   <label class="sr-only" for="school">Your university</label>
   <select id="school" data-school aria-describedby="closer-title">
     {
-      schools.map((p) => (
-        <option selected={p === first} data-ends={p.ends} data-text={`“${quote(p)}”`} data-source={p.sources[0]}>
-          {p.name}
-        </option>
+      countries.map((country) => (
+        <optgroup label={country}>
+          {options
+            .filter((o) => o.country === country)
+            .map((o) => (
+              <option
+                selected={o.name === first.name}
+                data-ends={o.ends}
+                data-text={o.text}
+                data-source={o.source}
+                data-label={o.label}
+              >
+                {o.name}
+              </option>
+            ))}
+        </optgroup>
       ))
     }
   </select>
@@ -27,8 +60,8 @@ const checkedDay = new Date(CHECKED).toLocaleDateString('en-GB', { day: 'numeric
     <a href={first.sources[0]} data-r-source>From the university's own help page</a>
   </div>
   <p class="closer-note">
-    From each school's own pages, checked on {checkedDay}. Not listed? The {POLICIES.length} we checked range from the day you
-    graduate to never.
+    From each school's own pages, checked on {checkedDay}. Not listed? The {POLICIES.length} rules we found range from the
+    day you graduate to never.
   </p>
 </div>
 
@@ -42,6 +75,8 @@ const checkedDay = new Date(CHECKED).toLocaleDateString('en-GB', { day: 'numeric
     result.querySelector('[data-r-ends]')!.textContent = o.dataset.ends ?? '';
     result.querySelector('[data-r-school]')!.textContent = o.textContent;
     result.querySelector('[data-r-text]')!.textContent = o.dataset.text ?? '';
-    result.querySelector<HTMLAnchorElement>('[data-r-source]')!.href = o.dataset.source ?? '#';
+    const link = result.querySelector<HTMLAnchorElement>('[data-r-source]')!;
+    link.href = o.dataset.source ?? '#';
+    link.textContent = o.dataset.label ?? '';
   });
 </script>

@@ -1336,6 +1336,24 @@ ol {
 .policy-table td p + p {
   margin-top: 6px;
 }
+.policy-table .state {
+  display: block;
+  margin-top: 2px;
+  font: 500 var(--t-small) var(--font-ui);
+  color: var(--ink-2);
+}
+.canvas-schools {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+.canvas-schools dt {
+  font-weight: 700;
+}
+.canvas-schools dd {
+  margin: 0;
+  color: var(--ink-2);
+}
 .checklist {
   display: grid;
   gap: 12px;

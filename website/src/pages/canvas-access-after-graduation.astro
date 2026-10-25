@@ -1,12 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
 import Closer from '../components/Closer.astro';
-import { CHECKED, POLICIES } from '../data/policies';
+import { CHECKED, ON_CANVAS, POLICIES } from '../data/policies';
 import InstallCta from '../components/InstallCta.astro';
 import { href } from '../data/site';
 
 const reviewed = new Date(CHECKED).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 const countries = [...new Set(POLICIES.map((p) => p.country))];
+const canvasStates = [...new Set(ON_CANVAS.map((s) => s.state))];
 const url = new URL(Astro.url.pathname, Astro.site).toString();
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -105,7 +106,10 @@ const site = (u: string) => {
               <tbody>
                 {POLICIES.filter((p) => p.country === country).map((p) => (
                   <tr>
-                    <th scope="row">{p.name}</th>
+                    <th scope="row">
+                      {p.name}
+                      {p.state && <span class="state">{p.state}</span>}
+                    </th>
                     <td class="ends" data-label="Access ends">{p.ends}</td>
                     <td data-label="After a course ends">{p.course}</td>
                     <td data-label="After you graduate or leave">{p.account}</td>
@@ -126,6 +130,29 @@ const site = (u: string) => {
     }
 
     <div style="max-width: 44em">
+      <h2>On Canvas, no written rule found</h2>
+      <p>
+        These {ON_CANVAS.length} US schools use Canvas, but we found no written rule on their own pages. That
+        doesn't mean access lasts: ask the IT help desk, and save your courses before you graduate. Each link
+        goes to the school's Canvas page.
+      </p>
+      <dl class="canvas-schools">
+        {
+          canvasStates.map((state) => (
+            <div>
+              <dt>{state}</dt>
+              <dd>
+                {ON_CANVAS.filter((s) => s.state === state).map((s, i) => (
+                  <>
+                    {i > 0 && ', '}
+                    <a href={s.source}>{s.name}</a>
+                  </>
+                ))}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
       <h2>Not in the list?</h2>
       <p>
         Search your school's IT help pages for "Canvas after graduation" or "account after leaving". The

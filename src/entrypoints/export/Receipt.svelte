@@ -3,7 +3,7 @@
   import type { CourseState } from '../../app/export-job';
   import Icon from '../../ui/Icon.svelte';
   import Pip from '../../ui/Pip.svelte';
-  import CopyButton from './CopyButton.svelte';
+  import CopyButton from '../../ui/CopyButton.svelte';
   import Inside from './Inside.svelte';
   import { sizeOf, whenLine } from './lines';
   import Notices from './Notices.svelte';
