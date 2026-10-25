@@ -321,15 +321,20 @@ test('the sidebar and Help keep the support links, the shortcut and the version'
   await expect(main.getByText('right-click it and choose Extract All')).toBeVisible();
   // The donation ask: suggested amounts, each opening Ko-fi, with free ways to help beside it.
   const support = main.getByRole('region', { name: 'Help keep it free' });
-  for (const name of [/^Any Choose your own amount/, /^€5 Keeps the servers on/, /^€10 /]) {
-    await expect(support.getByRole('link', { name })).toHaveAttribute(
+  // One-off gifts, each card with its picture, all opening Ko-fi's tip page.
+  for (const name of [
+    /^Any amount You choose/,
+    /^Keeps the servers on €5 once/,
+    /^Keeps it getting better €10 once/,
+  ]) {
+    const gift = support.getByRole('link', { name });
+    await expect(gift).toHaveAttribute(
       'href',
       'https://ko-fi.com/jaspnerd?utm_source=extension&utm_medium=options',
     );
+    await expect(gift.locator('img')).toHaveJSProperty('naturalWidth', 720);
   }
-  await expect(
-    support.getByText('These open Ko-fi, where you can give once or monthly.'),
-  ).toBeVisible();
+  await expect(support.getByText('These open Ko-fi, where you pick the amount.')).toBeVisible();
   await expect(support.getByRole('link', { name: 'Write a review' })).toHaveAttribute(
     'href',
     /chromewebstore\.google\.com.*utm_medium=options/,
@@ -383,7 +388,7 @@ test('the sidebar and Help keep the support links, the shortcut and the version'
   await expect(main.getByRole('region', { name: 'Keyboard shortcut' })).toContainText(
     /downloads the course you're on|No shortcut is set/,
   );
-  const pip = main.locator('img');
+  const pip = main.locator('img[src^="/pip/"]');
   await expect(pip).toHaveCount(1);
   expect(await pip.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(
     true,

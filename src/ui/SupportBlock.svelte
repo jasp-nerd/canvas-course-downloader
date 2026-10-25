@@ -1,8 +1,7 @@
 <script lang="ts">
   // The donation ask on pages people open themselves (Settings › Help, What's new),
-  // never in a pop-up. A few suggested amounts make giving easier than an empty
-  // field. Ko-fi has no link that fills in an amount, so the note says you choose there; the
-  // labels match the monthly tiers on the Ko-fi page.
+  // never in a pop-up. One-off gifts, which people give more readily than a monthly one. Ko-fi
+  // has no link that fills in an amount, so each card says the amount is chosen there.
   import { LINKS, reviewUrl, tracked } from '../app/links';
   import CopyButton from './CopyButton.svelte';
   import GitHubStars from './GitHubStars.svelte';
@@ -12,9 +11,9 @@
   let { place, stars }: { place: string; stars: number | null } = $props();
 
   const TIERS = [
-    { amount: 'Any', label: 'Choose your own amount' },
-    { amount: '€5', label: 'Keeps the servers on' },
-    { amount: '€10', label: 'Keeps it getting better' },
+    { name: 'Any amount', note: 'You choose', art: 'any' },
+    { name: 'Keeps the servers on', note: '€5 once', art: 'servers' },
+    { name: 'Keeps it getting better', note: '€10 once', art: 'better' },
   ];
   const review = $derived(tracked(reviewUrl(), place));
 </script>
@@ -33,17 +32,17 @@
 
   {#if LINKS.koFi}
     <ul class="tiers">
-      {#each TIERS as tier (tier.amount)}
+      {#each TIERS as tier (tier.art)}
         <li>
           <a href={tracked(LINKS.koFi, place)} target="_blank" rel="noopener">
-            <span class="amount num">{tier.amount}</span>
-            <span class="label">{tier.label}</span>
-            <Icon name="coffee" size={20} />
+            <img src="/support/{tier.art}.webp" alt="" width="720" height="360" />
+            <span class="name">{tier.name}</span>
+            <span class="amount num">{tier.note}</span>
           </a>
         </li>
       {/each}
     </ul>
-    <p class="small">These open Ko-fi, where you can give once or monthly.</p>
+    <p class="small">These open Ko-fi, where you pick the amount.</p>
   {/if}
 
   <div class="other">
@@ -100,12 +99,9 @@
   }
   .tiers a {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      'amount icon'
-      'label label';
-    gap: 2px 8px;
-    padding: 16px 18px;
+    gap: 2px;
+    padding: 0 0 14px;
+    overflow: hidden;
     border-radius: var(--r-card);
     background: #fff;
     box-shadow: inset 0 0 0 1.5px transparent;
@@ -123,20 +119,21 @@
     outline: 3px solid var(--ink);
     outline-offset: 2px;
   }
-  .amount {
-    grid-area: amount;
-    font: 700 28px/1.1 var(--font-display);
+  .tiers img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-bottom: 10px;
   }
-  .label {
-    grid-area: label;
+  .name {
+    padding: 0 16px;
+    font: 700 17px/1.25 var(--font-display);
+  }
+  .amount {
+    padding: 0 16px;
     font-size: 14px;
     font-weight: 600;
     color: var(--ink-2);
-  }
-  .tiers :global(svg) {
-    grid-area: icon;
-    align-self: center;
-    color: var(--sun-ink);
   }
   .small {
     margin: -8px 0 0;
