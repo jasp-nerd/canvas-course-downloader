@@ -3,7 +3,7 @@
   "description": "The website for Canvas Course Downloader: coursedownloader.com",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@11.13.0",
+  "packageManager": "pnpm@11.28.6",
   "engines": {
     "node": ">=22.12"
   },

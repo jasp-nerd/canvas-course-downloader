@@ -5,7 +5,7 @@ Notes for add-on store reviewers on how to build Canvas Course Downloader from t
 ## Requirements
 
 - Node.js 22 or later (built with Node 24 LTS)
-- pnpm 11.13.0, the version pinned in `package.json` (`packageManager`). Install it with `npm install -g pnpm@11.13.0`, or with `corepack enable` on Node versions that still include Corepack (Node 25 and later don't).
+- pnpm 11.28.6, the version pinned in `package.json` (`packageManager`). Install it with `npm install -g pnpm@11.28.6`, or with `corepack enable` on Node versions that still include Corepack (Node 25 and later don't).
 - macOS, Linux or Windows. No other tools are needed, and no git checkout: the package builds as unzipped.
 
 ## Build
