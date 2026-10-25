@@ -36,7 +36,7 @@
         icon: 'alert',
       },
       { label: 'Sponsor on GitHub', href: tracked(LINKS.sponsors, 'options'), icon: 'heart' },
-      { label: 'Privacy', href: LINKS.privacy, icon: 'shield' },
+      { label: 'Privacy', href: tracked(LINKS.privacy, 'options'), icon: 'shield' },
     ] satisfies { label: string; href: string; icon: IconName }[]
   ).filter((link) => link.href);
 </script>

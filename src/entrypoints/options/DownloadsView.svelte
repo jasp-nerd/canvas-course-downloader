@@ -1,5 +1,6 @@
 <script lang="ts">
   import { NO_FOLDER_ACCESS } from '../../app/folder-access';
+  import { LINKS, tracked } from '../../app/links';
   import { AI_TARGETS, type AiTargetId } from '../../export/study-pack';
   import type { Settings } from '../../storage/settings';
   import Icon from '../../ui/Icon.svelte';
@@ -119,6 +120,9 @@
         checked={settings.coursePackage}
         onchange={(on: boolean) => save({ coursePackage: on })}
       />
+      <a class="it-link" href={tracked(LINKS.forIt, 'options')} target="_blank" rel="noopener"
+        >A page to send your IT or privacy office<Icon name="external" size={16} /></a
+      >
     </div>
   {/if}
 </Setting>
@@ -227,6 +231,27 @@
 </Setting>
 
 <style>
+  /* The same outlined pill as the links in Help. */
+  .it-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    margin-top: 12px;
+    padding: 0 16px 0 14px;
+    border-radius: var(--r-pill);
+    box-shadow: inset 0 0 0 1.5px var(--control);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+  }
+  .it-link:hover {
+    box-shadow: inset 0 0 0 1.5px var(--ink-3);
+  }
+  .it-link :global(svg) {
+    color: var(--ink-3);
+  }
   .modes {
     width: 100%;
     display: grid;

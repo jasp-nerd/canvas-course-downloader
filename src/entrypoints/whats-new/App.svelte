@@ -3,7 +3,7 @@
   // never by itself: an update shouldn't open tabs nobody asked for.
   import { onMount } from 'svelte';
   import { githubStars } from '../../app/github';
-  import { LINKS } from '../../app/links';
+  import { LINKS, tracked } from '../../app/links';
   import { PRODUCT_NAME } from '../../ui/brand';
   import Icon from '../../ui/Icon.svelte';
   import type { IconName } from '../../ui/icons';
@@ -80,8 +80,8 @@
   <SupportBlock place="whats-new" {stars} />
 
   <footer>
-    <a href="{LINKS.github}/releases" target="_blank" rel="noopener">
-      Every change on GitHub<Icon name="external" size={16} />
+    <a href={tracked(LINKS.changelog, 'whats-new')} target="_blank" rel="noopener">
+      Every change in 3.0<Icon name="external" size={16} />
     </a>
   </footer>
 </main>

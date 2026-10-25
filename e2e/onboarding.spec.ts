@@ -407,9 +407,9 @@ test("the v3 note opens a What's new page, with the changes and a way to support
     'href',
     'https://ko-fi.com/jaspnerd?utm_source=extension&utm_medium=whats-new',
   );
-  await expect(news.getByRole('link', { name: 'Every change on GitHub' })).toHaveAttribute(
+  await expect(news.getByRole('link', { name: 'Every change in 3.0' })).toHaveAttribute(
     'href',
-    'https://github.com/jasp-nerd/canvas-course-downloader/releases',
+    'https://coursedownloader.com/changelog/?utm_source=extension&utm_medium=whats-new',
   );
   // Opening the page counts as having seen the note.
   await expect

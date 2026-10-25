@@ -23,6 +23,8 @@ export default defineConfig({
       rule_resources: [{ id: 'ruleset_cors', enabled: true, path: 'rules.json' }],
     },
     action: { default_title: 'Canvas Course Downloader' },
+    // Where the browser's own menus send people who want to know more about the extension.
+    homepage_url: 'https://coursedownloader.com/',
     web_accessible_resources: [{ resources: ['icons/icon-128.png'], matches: ['https://*/*'] }],
     commands: {
       'download-current': {

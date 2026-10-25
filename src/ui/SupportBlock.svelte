@@ -3,6 +3,7 @@
   // never in a pop-up. A few suggested amounts make giving easier than an empty
   // field; Ko-fi has no link that fills in an amount, so each one says you choose it there.
   import { LINKS, reviewUrl, tracked } from '../app/links';
+  import CopyButton from './CopyButton.svelte';
   import GitHubStars from './GitHubStars.svelte';
   import Icon from './Icon.svelte';
   import Pip from './Pip.svelte';
@@ -45,7 +46,9 @@
   {/if}
 
   <div class="other">
-    <span>No money needed: a review or a star helps other students find it.</span>
+    <span
+      >No money needed: a review, a star or the link sent to a classmate helps others find it.</span
+    >
     <span class="other-links">
       {#if review}
         <a class="btn btn-light btn-sm" href={review} target="_blank" rel="noopener">
@@ -53,6 +56,8 @@
         </a>
       {/if}
       <GitHubStars count={stars} href={tracked(LINKS.github, place)} />
+      <!-- The website, not a store page: it works on any browser and on a phone. -->
+      <CopyButton text={LINKS.website} label="Copy the link" />
     </span>
   </div>
 </section>

@@ -6,6 +6,8 @@ node_modules/
 # Shared agent setup is committed; personal settings and research notes stay local
 .claude/settings.local.json
 .claude/v3-research/
+# University access research shared between sessions; the site's data lives in website/src/data.
+.claude/university-research/
 .claude/skills/project-context/
 .claude/worktrees/
 # The design skill's working files (draws, inspector reports).

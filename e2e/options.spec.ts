@@ -351,8 +351,32 @@ test('the sidebar and Help keep the support links, the shortcut and the version'
   );
   await expect(main.getByRole('link', { name: 'Privacy' })).toHaveAttribute(
     'href',
-    'https://github.com/jasp-nerd/canvas-course-downloader/blob/main/PRIVACY.md',
+    'https://coursedownloader.com/privacy/?utm_source=extension&utm_medium=options',
   );
+  // Telling a classmate is the other free way to help: one press copies the website's address.
+  await page.evaluate(() => {
+    const w = window as unknown as { copied: string[] };
+    w.copied = [];
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: (text: string) => Promise.resolve(void w.copied.push(text)) },
+    });
+  });
+  await support.getByRole('button', { name: 'Copy the link' }).click();
+  await expect(support.getByRole('button', { name: 'Copied' })).toBeVisible();
+  expect(await page.evaluate(() => (window as unknown as { copied: string[] }).copied)).toEqual([
+    'https://coursedownloader.com',
+  ]);
+  // The toolbar icon's menu ("Canvas Course Downloader") opens the website.
+  expect(
+    await serviceWorker.evaluate(
+      () =>
+        (
+          globalThis as unknown as {
+            chrome: { runtime: { getManifest(): { homepage_url?: string } } };
+          }
+        ).chrome.runtime.getManifest().homepage_url,
+    ),
+  ).toBe('https://coursedownloader.com/');
   // Test browsers leave the suggested shortcut unassigned; real installs get Ctrl+Shift+D.
   await expect(main.getByRole('region', { name: 'Keyboard shortcut' })).toContainText(
     /downloads the course you're on|No shortcut is set/,
@@ -381,4 +405,11 @@ test("teachers can also save Canvas's course package, off unless they turn it on
   ).toBeVisible();
   await coursePackage.check();
   await expect.poll(() => stored(serviceWorker)).toMatchObject({ coursePackage: true });
+  // Teachers often need their IT or privacy office's OK first: a page written for them.
+  await expect(
+    page.getByRole('link', { name: 'A page to send your IT or privacy office' }),
+  ).toHaveAttribute(
+    'href',
+    'https://coursedownloader.com/for-teachers/?utm_source=extension&utm_medium=options#it',
+  );
 });

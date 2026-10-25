@@ -1,12 +1,19 @@
 // Outbound links. A link left empty is hidden in the UI until it exists.
 
+const WEBSITE = 'https://coursedownloader.com';
+
 export const LINKS = {
+  /** For reading more: what it saves, the privacy policy, notes for teachers and their IT staff. */
+  website: WEBSITE,
   github: 'https://github.com/jasp-nerd/canvas-course-downloader',
   sponsors: 'https://github.com/sponsors/jasp-nerd',
   koFi: 'https://ko-fi.com/jaspnerd',
   /** Google Form for "something's wrong" feedback, once created. */
   feedbackForm: '',
-  privacy: 'https://github.com/jasp-nerd/canvas-course-downloader/blob/main/PRIVACY.md',
+  privacy: `${WEBSITE}/privacy/`,
+  changelog: `${WEBSITE}/changelog/`,
+  /** The For teachers page's note for IT and privacy staff, who often have to approve tools. */
+  forIt: `${WEBSITE}/for-teachers/#it`,
 };
 
 const REVIEW_PAGES: Record<string, string> = {
