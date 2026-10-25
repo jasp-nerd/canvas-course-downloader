@@ -714,7 +714,6 @@ ol {
 }
 .picker-list [role='option'][aria-selected='true'] {
   background: var(--mist);
-  box-shadow: inset 3px 0 0 var(--ink);
 }
 .picker-name {
   grid-column: 1;
