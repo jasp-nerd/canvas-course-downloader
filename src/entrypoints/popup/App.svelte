@@ -276,7 +276,7 @@
     </footer>
   {:else if page.kind === 'elsewhere'}
     <section class="elsewhere">
-      <Pip pose="sleep" height={120} />
+      <Pip pose="point" height={120} />
       <h2 class="heading">Open your Canvas to start</h2>
       {#if page.canvas}
         <p class="small">The download button shows up on your courses and dashboard.</p>
