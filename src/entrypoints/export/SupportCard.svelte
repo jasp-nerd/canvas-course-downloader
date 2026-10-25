@@ -1,7 +1,8 @@
 <script lang="ts">
   // Shown beside the receipt after a good export, when someone just saved their time. A coffee
   // and a rating sit side by side for everyone; using one keeps the card, with a thank-you, and
-  // only "Don't show again" stops it. Compact (one row, no pitch) when it showed shortly before.
+  // only "Don't show again" stops it. It shows at most once a week, and each time in the next of
+  // three looks (heading, words, tint), so it doesn't turn into wallpaper.
   import { browser } from 'wxt/browser';
   import { LINKS, feedbackUrl, reviewLabel, reviewUrl, tracked } from '../../app/links';
   import { hideSupportCard, type SupportCardMode } from '../../app/support';
@@ -18,19 +19,40 @@
   let clicked = $state<'coffee' | 'review' | null>(null);
   let hidden = $state(false);
 
+  const LOOKS = [
+    {
+      tint: '',
+      heading: 'Did it save you some time?',
+      pitch:
+        "I'm Jasper, a student, and I build this in my spare time. It's free and stays free. A coffee keeps me going, and a rating helps other students find it.",
+    },
+    {
+      tint: 'sun',
+      heading: "Glad it's all saved",
+      pitch:
+        'Course Downloader is free, with no ads and no tracking. If it helped, a coffee keeps it going, and a rating helps other students find it.',
+    },
+    {
+      tint: 'rose',
+      heading: 'Saved before Canvas closes it',
+      pitch:
+        "Courses close after a term, and this keeps them. I'm a student keeping it free, so a coffee helps, and so does a rating.",
+    },
+  ];
+  const look = $derived(LOOKS[mode ? mode.variant % LOOKS.length : 0]!);
   const heading = $derived(
     clicked === 'coffee'
       ? 'Thank you!'
       : clicked === 'review'
         ? 'Thanks for rating it!'
-        : 'Did it save you some time?',
+        : look.heading,
   );
   const pitch = $derived(
     clicked === 'coffee'
       ? "That means a lot. It's what keeps it free for everyone."
       : clicked === 'review'
         ? "If you'd like to do more, a coffee helps too."
-        : "I'm Jasper, a student, and I build this in my spare time. It's free and stays free. A coffee keeps me going, and a rating helps other students find it.",
+        : look.pitch,
   );
 
   function hide() {
@@ -41,11 +63,11 @@
 
 {#if mode && !hidden && (coffee || review)}
   <!-- The logo, not the mascot: every receipt already has the mascot on it. -->
-  <aside class="card support" class:compact={mode === 'compact'} aria-labelledby="support-title">
-    {#if mode === 'full'}<Logo size={40} />{/if}
+  <aside class="card support {look.tint}" aria-labelledby="support-title">
+    <Logo size={40} />
     <div class="body">
       <h2 class="heading" id="support-title">{heading}</h2>
-      {#if mode === 'full' || clicked}<p>{pitch}</p>{/if}
+      <p>{pitch}</p>
       <div class="row actions">
         {#if coffee}
           <!-- Ko-fi's blue and cup, which people know, in the app's button shape. -->
@@ -69,9 +91,7 @@
         {/if}
       </div>
       <div class="row quiet">
-        {#if mode === 'full'}
-          <a href={feedback} target="_blank" rel="noopener">Something missing? Tell me</a>
-        {/if}
+        <a href={feedback} target="_blank" rel="noopener">Something missing? Tell me</a>
         <button type="button" class="link" onclick={hide}>Don't show again</button>
       </div>
     </div>
@@ -90,9 +110,14 @@
   .support > :global(svg) {
     margin-top: 2px;
   }
-  .compact {
-    grid-template-columns: minmax(0, 1fr);
-    padding: 18px 28px;
+  .sun {
+    background: var(--sun-wash);
+    box-shadow: none;
+  }
+  /* Not mint: the saved band above the card is mint already. */
+  .rose {
+    background: var(--red-wash);
+    box-shadow: none;
   }
   .body {
     display: grid;
@@ -112,9 +137,6 @@
     gap: 10px;
     flex-wrap: wrap;
     margin-top: 16px;
-  }
-  .compact .actions {
-    margin-top: 12px;
   }
   .quiet {
     gap: 0 20px;
