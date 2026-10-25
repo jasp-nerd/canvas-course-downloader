@@ -5,7 +5,8 @@
 <h1 align="center">Canvas Course Downloader</h1>
 
 <p align="center">
-  Save your Canvas courses to your computer: every file, page, assignment and grade, in one click.
+  Save your Canvas courses to your computer: every file, page, assignment and grade, in one click.<br>
+  <a href="https://coursedownloader.com">coursedownloader.com</a>
 </p>
 
 <p align="center">
@@ -43,7 +44,7 @@ Canvas courses close after a term, and your account goes when you graduate, some
 - Your grades as a CSV.
 - **For teachers:** an archive of the courses you teach. Students' work stays out unless you include it; then it holds every submission, the gradebook and quiz results. Optionally, the course package Canvas makes for importing a course again.
 
-The full list, every setting and the folder layout: [docs/what-it-saves.md](docs/what-it-saves.md).
+The full list, every setting and the folder layout: [docs/what-it-saves.md](docs/what-it-saves.md). For teachers, with a note for IT and privacy staff: [coursedownloader.com/for-teachers](https://coursedownloader.com/for-teachers/).
 
 ## How to use it
 

@@ -61,4 +61,4 @@ coursedownloader.com runs on the Hetzner server, in Coolify's project `coursedow
 
 To publish a change, from `website/`: `pnpm run deploy` (builds, then rsyncs over the `hetzner` SSH host). It also picks up changes to `PRIVACY.md`, `CHANGELOG.md` and the shared design files, so run it after a release too.
 
-On the day 3.0 is in the stores, set `LAUNCHED = true` in `website/src/data/site.ts` and deploy: until then every page asks search engines not to index it. Then verify the domain in Google Search Console and set it as the store listing's website and privacy link.
+On the day 3.0 is in the stores, set `LAUNCHED = true` in `website/src/data/site.ts` and deploy: until then every page asks search engines not to index it. Then verify the domain in Google Search Console, set it as the Chrome Web Store listing's website and privacy link (and on Firefox Add-ons), and as the GitHub repo's website: `gh repo edit --homepage https://coursedownloader.com`.

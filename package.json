@@ -1,6 +1,7 @@
 {
   "name": "canvas-course-downloader",
   "description": "Download, export, and back up Canvas LMS course files, pages, assignments, grades, and more into organized folders.",
+  "homepage": "https://coursedownloader.com",
   "version": "3.0.0",
   "private": true,
   "type": "module",

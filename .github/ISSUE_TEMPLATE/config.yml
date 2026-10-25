@@ -1,8 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: Questions and how-tos
-    url: https://github.com/jasp-nerd/canvas-course-downloader#readme
-    about: How to install it, where files go, and what it saves.
+    url: https://coursedownloader.com/#faq
+    about: Answers to what people ask most, like whether a teacher can see a download.
+  - name: What it saves and every setting
+    url: https://github.com/jasp-nerd/canvas-course-downloader/blob/main/docs/what-it-saves.md
+    about: The folder layout, the settings and the known limits.
   - name: A security problem
     url: https://github.com/jasp-nerd/canvas-course-downloader/security/advisories/new
     about: Report it privately, not in a public issue.
