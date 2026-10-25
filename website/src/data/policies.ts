@@ -22,12 +22,26 @@ export interface Policy {
 
 export interface OnCanvas {
   name: string;
-  state: string;
+  country: string;
+  /** US schools only, so the guide can group them by state. */
+  state?: string;
   /** The school's own Canvas help or login page. */
   source: string;
 }
 
 export const POLICIES: Policy[] = [
+  {
+    "name": "University of Alabama in Huntsville",
+    "country": "United States",
+    "state": "Alabama",
+    "ends": "Archived after two years",
+    "course": "Courses are taken out of Canvas after two years, once a year in January: \"Canvas courses will be subject to archival from the system after two (2) years.\" \"Canvas archiving will take place annually each January following the video archiving event.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://www.uah.edu/etl/training-resources/faculty-and-staff?view=article&id=16874:etl-archiving-procedures&catid=919:enhanced-teaching-and-learning"
+    ],
+    "pageDate": "Modified 2024-01-02 (meta)"
+  },
   {
     "name": "University of Alaska Fairbanks",
     "country": "United States",
@@ -89,6 +103,18 @@ export const POLICIES: Policy[] = [
     "pageDate": "Not shown"
   },
   {
+    "name": "California State University San Marcos",
+    "country": "United States",
+    "state": "California",
+    "ends": "Access ends 2 weeks after grades due",
+    "course": "Students lose access to a course two weeks after grades are due, unless the instructor changed it: \"By default, you will have access to your current courses for two weeks after grades are due. At that point you will no longer have access.\" \"Keep in mind your instructor may have manually changed this time period to either be longer or shorter.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://www.csusm.edu/iits/services/ats/idesign/canvas/canvasstudentfaq/index.html"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
     "name": "California State University, Long Beach",
     "country": "United States",
     "state": "California",
@@ -97,6 +123,18 @@ export const POLICIES: Policy[] = [
     "account": "Not stated.",
     "sources": [
       "https://www.csulb.edu/academic-technology-services/canvas-at-the-beach/canvas-faqs"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "California State University, Los Angeles",
+    "country": "United States",
+    "state": "California",
+    "ends": "Read-only after grades are in",
+    "course": "Once the semester is over and grades are in, courses turn read-only: \"In Canvas once the semester is finished and grades have been turned in, the course will go into past courses and become read only.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://www.calstatela.edu/cetl/edtech/using-canvas-first-time"
     ],
     "pageDate": "Not shown"
   },
@@ -113,6 +151,18 @@ export const POLICIES: Policy[] = [
     "pageDate": "Not shown"
   },
   {
+    "name": "Fresno State",
+    "country": "United States",
+    "state": "California",
+    "ends": "Read-only 1 week after grades due",
+    "course": "Courses turn read-only a week after grades are due: \"Courses become read-only 1 week after grades are due.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://academics.fresnostate.edu/canvas/timeline.html"
+    ],
+    "pageDate": "Last Updated Apr 8, 2026"
+  },
+  {
     "name": "Pepperdine University",
     "country": "United States",
     "state": "California",
@@ -126,6 +176,18 @@ export const POLICIES: Policy[] = [
     "pageDate": "Not shown"
   },
   {
+    "name": "San Diego State University",
+    "country": "United States",
+    "state": "California",
+    "ends": "Login ends 1 year after graduation",
+    "course": "Not stated.",
+    "account": "Your SDSUid and its data are deleted a year after graduation (90 days for others who leave); the page lists Canvas among the services the SDSUid opens but does not say Canvas ends: \"Students who are graduating, your SDSUid, M365 account, SDSU Google Workspace, and all associated data will be deleted one year from graduation.\" \"For all others (including credential/certificate programs) 90 days after the final day of the last enrolled semester.\"",
+    "sources": [
+      "https://it.sdsu.edu/get-help/topics/sdsuid"
+    ],
+    "pageDate": "Last Updated 6/5/26"
+  },
+  {
     "name": "San José State University",
     "country": "United States",
     "state": "California",
@@ -136,6 +198,18 @@ export const POLICIES: Policy[] = [
       "https://ischool.sjsu.edu/sjsu-applications"
     ],
     "pageDate": "February 2, 2024 (shown on page, not labelled as updated)"
+  },
+  {
+    "name": "Santa Clara University",
+    "country": "United States",
+    "state": "California",
+    "ends": "Camino ends shortly after graduation",
+    "course": "Not stated.",
+    "account": "Camino, SCU's name for Canvas, is switched off shortly after graduation: \"Other services for students will also be discontinued shortly after graduation. This includes Camino, Duo, eduroam, LinkedIn Learning, Microsoft 365, Qualtrics, SmartPrint, and Xfinity on Campus.\" The same page calls it \"Camino (Canvas Learning Management System)\".",
+    "sources": [
+      "https://www.scu.edu/technology/get-connected/logins--accounts/"
+    ],
+    "pageDate": "Not shown"
   },
   {
     "name": "Stanford University",
@@ -250,6 +324,20 @@ export const POLICIES: Policy[] = [
     "pageDate": "Modified 2026-02-20 (page)"
   },
   {
+    "name": "Metropolitan State University of Denver",
+    "country": "United States",
+    "state": "Colorado",
+    "ends": "Login ends after three semesters",
+    "course": "Not stated.",
+    "account": "Canvas is not named in this policy, but the student account stays until three semesters without a course: \"Student accounts will be active while the student is actively enrolled and will remain active until the student has not completed a course for three consecutive semesters.\"",
+    "sources": [
+      "https://www.msudenver.edu/wp-content/uploads/2022/05/User_Account_Management_Policy_20220401.pdf",
+      "https://www.msudenver.edu/policy/user-accounts/",
+      "https://webapp.msudenver.edu/smc/ebird/temp.msudenver.edu/early-bird/2020/7/20-canvas.html"
+    ],
+    "pageDate": "Effective April 1, 2022 (PDF)"
+  },
+  {
     "name": "University of Colorado Boulder",
     "country": "United States",
     "state": "Colorado",
@@ -287,6 +375,31 @@ export const POLICIES: Policy[] = [
     "pageDate": "Not shown"
   },
   {
+    "name": "University of Northern Colorado",
+    "country": "United States",
+    "state": "Colorado",
+    "ends": "Login ends about two semesters later",
+    "course": "Courses stay view-only after the term: \"At the end of a term, you will retain view-only access to each of your courses indefinitely.\" \"Once a course concludes, participation is restricted automatically.\"",
+    "account": "You keep access for about two semesters after you leave: \"If you choose to leave the University, become in-active, or graduate you will retain access for approximately two semesters after your last class registration.\" The student account is your Canvas login: \"Your UNC student account is your personal login for accessing most university services—including MyUNC, Canvas, and BearMail.\"",
+    "sources": [
+      "https://www.unco.edu/information-management-technology/services/online-learning-classrooms/canvas/",
+      "https://www.unco.edu/information-management-technology/services/user-accounts-access/"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "Quinnipiac University",
+    "country": "United States",
+    "state": "Connecticut",
+    "ends": "Read-only one year after term",
+    "course": "IT keeps courses open for a year after the semester, then they turn read-only: \"continues until one year after the end of the semester.\" \"Students are permitted to participate throughout this entire window, and outside of these dates, they can access the course in a read-only mode.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://qilt.qu.edu/knowledge-resources-learnings-posts/courses-can-i-change-the-participation-dates-of-my-course-in-canvas-for-faculty-staff"
+    ],
+    "pageDate": "Updated May 18, 2026"
+  },
+  {
     "name": "Yale University",
     "country": "United States",
     "state": "Connecticut",
@@ -312,6 +425,18 @@ export const POLICIES: Policy[] = [
     "pageDate": "Not shown"
   },
   {
+    "name": "George Washington University Law School",
+    "country": "United States",
+    "state": "District of Columbia",
+    "ends": "Read-only after term ends",
+    "course": "The Law Library's Canvas guide says courses turn read-only when the term ends: \"Students and instructors are only able to interact with a course while the term is active; once the term ends, the Canvas course sites for that term enter a read only mode.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://law.gwu.libguides.com/canvasguide/AllCourses"
+    ],
+    "pageDate": "Last Updated: Sep 23, 2026"
+  },
+  {
     "name": "Georgetown University",
     "country": "United States",
     "ends": "21 years after graduating",
@@ -322,6 +447,18 @@ export const POLICIES: Policy[] = [
     ],
     "pageDate": "Modified 2026-01-28 (meta)",
     "state": "District of Columbia"
+  },
+  {
+    "name": "Florida Atlantic University",
+    "country": "United States",
+    "state": "Florida",
+    "ends": "Concluded two weeks after semester",
+    "course": "Courses conclude two weeks after the semester and students lose access unless the instructor keeps it open: \"A course concludes two weeks after the end of the semester\". \"Students do not maintain access to the course in its read-only state.\" \"Concluded/Past courses do not appear on a student's All Courses list unless their instructor has enabled/requested the above options.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://www.fau.edu/canvas/policies-procedures/"
+    ],
+    "pageDate": "Not shown"
   },
   {
     "name": "Florida State University",
@@ -359,6 +496,30 @@ export const POLICIES: Policy[] = [
       "https://elearning.ufl.edu/instructor-help/faqs/"
     ],
     "pageDate": "Not shown"
+  },
+  {
+    "name": "University of North Florida",
+    "country": "United States",
+    "state": "Florida",
+    "ends": "Closed two weeks after semester",
+    "course": "Since the end of Fall 2025, courses close to students two weeks after the semester: \"Under this policy, all term-based Canvas courses conclude two weeks after the end of each semester.\" \"Concluded courses are closed to student participation, marked with “(Archived)”, and moved to Past Enrollments.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://cirt.domains.unf.edu/archives/45447"
+    ],
+    "pageDate": "Published 15 Dec 2025"
+  },
+  {
+    "name": "Emory University",
+    "country": "United States",
+    "state": "Georgia",
+    "ends": "Deleted after four years",
+    "course": "Courses turn read-only for students soon after the semester and are deleted four years after they were created: \"By default, courses will become read-only for students shortly after a semester concludes.\" \"Canvas courses will remain in Canvas for four years from the date of creation.\" \"Regardless of course end dates, after four years Canvas courses will be permanently deleted.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://canvas-support.emory.edu/reference/course-retention.html"
+    ],
+    "pageDate": "Not shown (sitemap lastmod 2026-07-13 for every page)"
   },
   {
     "name": "Georgia Institute of Technology",
@@ -471,6 +632,18 @@ export const POLICIES: Policy[] = [
     "pageDate": "Updated 2024-10-23 (51006); Updated 2026-04-08 (152440)"
   },
   {
+    "name": "Ball State University",
+    "country": "United States",
+    "state": "Indiana",
+    "ends": "Read-only for 3 years after term",
+    "course": "Courses conclude at the end of the term and stay read-only for three years: \"In Canvas, courses conclude at the end of a term.\" \"Students can only view these past enrollment courses as ready-only.\" \"A concluded course remains accessible in Canvas, in a read-only state, for students and Faculty for 3 years.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://www.bsu.edu/about/administrativeoffices/online-and-strategic-learning/canvas-at-ball-state/course-types-and-descriptions"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
     "name": "Indiana State University",
     "country": "United States",
     "state": "Indiana",
@@ -558,6 +731,32 @@ export const POLICIES: Policy[] = [
     "pageDate": "Last revised 2023-08-21 (registrar page)"
   },
   {
+    "name": "Morgan State University",
+    "country": "United States",
+    "state": "Maryland",
+    "ends": "2 years after graduation",
+    "course": "Past courses stay viewable unless the instructor has concluded them: \"As long as the instructor has not concluded a course, you can access it\".",
+    "account": "The student account, and Canvas with it, is purged two years after Commencement: \"After 2 years from the date of Commencement (or your last enrollment date), your current University student email account will be purged in accordance with our procedures.\" and \"This means you will not be able to access university resources such as WebSIS, Canvas, Google Apps (e.g., Gmail, Calendar, Google Drive), etc. once your account is purged.\"",
+    "sources": [
+      "https://www.morgan.edu/alumniemail",
+      "https://www.morgan.edu/canvas4students"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "Salisbury University",
+    "country": "United States",
+    "state": "Maryland",
+    "ends": "Access ends 2 weeks after term",
+    "course": "Course dates give students access until two weeks after the semester ends: \"Course dates are set up for students to access courses one week prior to the semester start date to two weeks after the end of the semester.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://www.salisbury.edu/administration/academic-affairs/instructional-design-delivery/cms/faculty-support/faqs-instructor.aspx",
+      "https://www.salisbury.edu/administration/academic-affairs/instructional-design-delivery/cms/index.aspx"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
     "name": "University of Maryland (Smith School of Business)",
     "country": "United States",
     "state": "Maryland",
@@ -566,6 +765,19 @@ export const POLICIES: Policy[] = [
     "account": "The Smith School's IT page says the Canvas account lasts two semesters: \"Canvas accounts remain active for 270 days (2 full semesters) after graduation.\"",
     "sources": [
       "https://networth.rhsmith.umd.edu/smith/tools-resources/account-information-smith-it"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "Boston College",
+    "country": "United States",
+    "state": "Massachusetts",
+    "ends": "Login ends about 6 months later",
+    "course": "Not stated.",
+    "account": "BC lists end dates per graduating class; for May 2026 graduates the Agora login portal ends in late November. Canvas isn't named in the table: \"Once your BC account has expired, no recovery is possible through BC.\" \"Agora Portal November 28, 2026\"",
+    "sources": [
+      "https://www.bc.edu/content/bc-web/offices/its/sites/leaving-bc.html",
+      "https://www.bc.edu/content/bc-web/sites/accessibility/technology-accessibility/canvas.html"
     ],
     "pageDate": "Not shown"
   },
@@ -619,6 +831,19 @@ export const POLICIES: Policy[] = [
     "pageDate": "Not shown"
   },
   {
+    "name": "University of Massachusetts Boston",
+    "country": "United States",
+    "state": "Massachusetts",
+    "ends": "Login ends 2 years after graduation",
+    "course": "Not stated.",
+    "account": "The UMass Boston email account is deleted two years after graduation; Canvas isn't named on that page: \"All students keep their UMass Boston email account for two years after graduation, at which point it will be deleted.\"",
+    "sources": [
+      "https://www.umb.edu/it/software-systems/alumni/",
+      "https://www.umb.edu/canvas/"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
     "name": "University of Massachusetts Dartmouth",
     "country": "United States",
     "state": "Massachusetts",
@@ -642,6 +867,18 @@ export const POLICIES: Policy[] = [
       "https://www.uml.edu/it/account-assistance.aspx"
     ],
     "pageDate": "Posted 2026-04-15 (URL); account page not shown"
+  },
+  {
+    "name": "Grand Rapids Community College",
+    "country": "United States",
+    "state": "Michigan",
+    "ends": "Read-only, kept up to 2 years",
+    "course": "Courses turn read-only at their end date and stay in Canvas for up to two years: \"When a course reaches its end date, Canvas automatically updates all enrollments to Completed / Concluded, and the course is placed in a read-only state.\" \"Courses remain available in Canvas for up to 2 years.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://supportdesk.grcc.edu/TDClient/53/Portal/KB/ArticleDet?ID=4983"
+    ],
+    "pageDate": "Modified 2026-08-14 (meta)"
   },
   {
     "name": "Michigan Technological University",
@@ -668,6 +905,31 @@ export const POLICIES: Policy[] = [
     "state": "Michigan"
   },
   {
+    "name": "University of St. Thomas",
+    "country": "United States",
+    "state": "Minnesota",
+    "ends": "Read-only after end date",
+    "course": "Courses turn read-only for students at the course end date and are archived a few weeks after the term: \"Once a course has reached its end date it becomes read-only for students; once the term has concluded it becomes read-only for faculty.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://services.stthomas.edu/TDClient/1898/ClientPortal/KB/ArticleDet?ID=142120"
+    ],
+    "pageDate": "Modified 2026-09-28 (meta)"
+  },
+  {
+    "name": "Missouri University of Science and Technology",
+    "country": "United States",
+    "state": "Missouri",
+    "ends": "Login ends after 12 months",
+    "course": "Not stated.",
+    "account": "Canvas is not named on this UM System email procedures page, but student accounts are locked a year after the last term: \"Student accounts will be locked 12 months from the end of the last term enrolled.\" \"Locked accounts will have all content deleted 21 days after the lock date.\"",
+    "sources": [
+      "https://www.umsystem.edu/ums/is/electronic-mail-use-and-management-procedures",
+      "https://canvas.mst.edu/"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
     "name": "University of Missouri",
     "country": "United States",
     "state": "Missouri",
@@ -676,6 +938,32 @@ export const POLICIES: Policy[] = [
     "account": "Canvas is not named, but the university account is deleted a year after your last term: \"Former students will no longer be eligible for a University account 12 months from the end of the last term enrolled. Students who are no longer eligible for a university account will be deleted and the student will lose access to Office 365, email and all other electronic resources.\" \"Students may request a one-time extension for their account not to exceed one year.\"",
     "sources": [
       "https://doit.missouri.edu/services/accounts-and-access/account-expiration/"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "University of Missouri-Kansas City",
+    "country": "United States",
+    "state": "Missouri",
+    "ends": "Login ends after 12 months",
+    "course": "Not stated.",
+    "account": "The UM System locks student accounts a year after the last term: \"Student accounts will be locked 12 months from the end of the last term enrolled.\" \"Locked accounts will have all content deleted 21 days after the lock date.\" Canvas isn't named there, but UMKC uses the same login for it: \"Your UMKC Username and password are used for Canvas, e-mail, and many other services.\"",
+    "sources": [
+      "https://www.umkc.edu/is/resources/quickstartguide.html",
+      "https://www.umsystem.edu/ums/is/electronic-mail-use-and-management-procedures"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "University of Missouri-St. Louis",
+    "country": "United States",
+    "state": "Missouri",
+    "ends": "Login ends after 12 months",
+    "course": "Not stated.",
+    "account": "Canvas is not named on this UM System email procedures page, but student accounts are locked a year after the last term: \"Student accounts will be locked 12 months from the end of the last term enrolled.\" \"Locked accounts will have all content deleted 21 days after the lock date.\"",
+    "sources": [
+      "https://www.umsystem.edu/ums/is/electronic-mail-use-and-management-procedures",
+      "https://www.umsl.edu/technology/student-technology-guide/index.html"
     ],
     "pageDate": "Not shown"
   },
@@ -702,6 +990,18 @@ export const POLICIES: Policy[] = [
       "https://www.montana.edu/ecat/help/instructors/terms/index.html"
     ],
     "pageDate": "Not shown"
+  },
+  {
+    "name": "University of Montana",
+    "country": "United States",
+    "state": "Montana",
+    "ends": "View-only after grade deadline",
+    "course": "Courses conclude when final grades are due and then become view-only: \"By default, courses are set to conclude on the last day grades can be entered in GrizPortal at 11:59 PM.\" \"After courses are concluded, they move off the Canvas Dashboard into Courses > Past Enrollments.\" \"Students can perform the following actions by default within a concluded course: view grades, view course content, view Discussions and Assignments, and send a message to the instructor.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://www.umt.edu/canvas/tip-sheets/files/concluding-a-course.pdf"
+    ],
+    "pageDate": "PDF created 29 Sep 2026 (metadata)"
   },
   {
     "name": "University of Nebraska-Lincoln",
@@ -781,6 +1081,30 @@ export const POLICIES: Policy[] = [
     "pageDate": "Modified 2026-08-27, 2026-09-03 and 2026-08-28 (meta)"
   },
   {
+    "name": "Montclair State University",
+    "country": "United States",
+    "state": "New Jersey",
+    "ends": "Read-only after grade-change deadline",
+    "course": "Courses turn read-only once the incomplete-grade deadline passes, unless the instructor sets course dates: \"Courses by default become read only after the deadline for incomplete grade change passes.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://inside.montclair.edu/resources/canvas/canvas-administration"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "New Jersey Institute of Technology",
+    "country": "United States",
+    "state": "New Jersey",
+    "ends": "Kept while you renew your password",
+    "course": "Not stated.",
+    "account": "Alumni keep Canvas as long as they keep their UCID password current: \"Can I still access my notes and homework information in Canvas after I graduate? Canvas can still be accessed, as long as you keep your UCID and password current.\" \"If you do not update your UCID password when prompted, your NJIT account will be deactivated, resulting in a loss of access to NJIT computing services and alumni email forwarding to your personal email address.\"",
+    "sources": [
+      "https://ist.njit.edu/transition-alumni-google-workspace-and-email"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
     "name": "Rutgers University",
     "country": "United States",
     "state": "New Jersey",
@@ -789,6 +1113,18 @@ export const POLICIES: Policy[] = [
     "account": "Canvas stays open while your NetID does, and alumni keep it: \"Access maintained with an active NetID.\" \"After graduation, an active NetID is maintained for alumni.\"",
     "sources": [
       "https://it.rutgers.edu/access-to-rutgers-technology-resources-for-graduating-students/"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "Stevens Institute of Technology",
+    "country": "United States",
+    "state": "New Jersey",
+    "ends": "90 days after graduation",
+    "course": "Not stated.",
+    "account": "Student accounts switch to alumni accounts 90 days after graduation, and alumni lose Canvas: \"the Division of Information Technology will start automatic student de-provisioning 90 days after graduation.\" \"However, with this profile, alumni will no longer have access to student-facing applications within myStevens including all Microsoft 365 applications, Google Drive, Zoom, Canvas, Google apps, and others.\"",
+    "sources": [
+      "https://www.stevens.edu/it/governance-policy-standards/alumni-accounts-and-email-forwarding"
     ],
     "pageDate": "Not shown"
   },
@@ -819,6 +1155,18 @@ export const POLICIES: Policy[] = [
     "pageDate": "Not shown"
   },
   {
+    "name": "Duke University",
+    "country": "United States",
+    "state": "North Carolina",
+    "ends": "Read-only 21 days after term",
+    "course": "Official course sites turn read-only three weeks after the term ends: \"Sites associated with an official course listed in DukeHub/DKU Hub will go into a concluded state 21 days after the official end of the term.\" \"A concluded state means that the site turns into read-only for all users enrolled in the site (including instructors).\" \"Concluded sites are removed from users’ dashboards but remain accessible via the Courses > All courses link.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://go.canvas.duke.edu/instructors/using-canvas/end-term-site-behavior/"
+    ],
+    "pageDate": "Modified 2024-07-25 (meta)"
+  },
+  {
     "name": "University of North Carolina at Chapel Hill",
     "country": "United States",
     "state": "North Carolina",
@@ -831,6 +1179,57 @@ export const POLICIES: Policy[] = [
       "https://edtech.unc.edu/service/canvas/canvas-faq/"
     ],
     "pageDate": "Modified 2026-08-25 and 2026-08-13 (meta)"
+  },
+  {
+    "name": "University of North Carolina at Charlotte",
+    "country": "United States",
+    "state": "North Carolina",
+    "ends": "Login ends 365 days after graduation",
+    "course": "Not stated.",
+    "account": "Your NinerNET login expires a year after graduating; the page does not name Canvas: \"Account expires 365 days after graduation\". Students who stop enrolling lose it sooner: \"Typically, accounts expire after two sequential semesters of no registration, or if student applies for specific term and does not register for classes.\"",
+    "sources": [
+      "https://services.help.charlotte.edu/TDClient/33/Portal/KB/ArticleDet?ID=534",
+      "https://teaching.charlotte.edu/academic-technologies/canvas/"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "University of North Carolina Wilmington",
+    "country": "United States",
+    "state": "North Carolina",
+    "ends": "Courses deleted after five years",
+    "course": "Courses are deleted twice a year once they are five years old: \"This is part of our biannual cycle to manage data storage, where we remove academic courses that have been in the system for five years.\" \"As part of our regular maintenance plan, we will delete Summer and Fall 2021 courses in Canvas on Oct. 27.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://uncw.edu/news/business-affairs/its/2026/09/summer-fall-2021-canvas-courses-deleted-oct-27.html",
+      "https://www.uncw.edu/seahawk-life/services/technology/support/services/canvas"
+    ],
+    "pageDate": "September 18, 2026"
+  },
+  {
+    "name": "Wake Forest University",
+    "country": "United States",
+    "state": "North Carolina",
+    "ends": "Read-only after term ends",
+    "course": "Courses turn read-only when the Canvas term ends, one to two weeks after grades are due: \"Canvas terms are set by the University to end 1-2 weeks after grades are due to the Registrar’s Office.\" \"When the Canvas term ends, courses move from the Dashboard to the Past Enrollments section of the All Courses page.\" \"When a course is in Past Enrollments, it is in a Read-Only mode.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://canvas.wfu.edu/2021/01/canvas-courses-past-enrollments-and-end-dates/"
+    ],
+    "pageDate": "Modified 2023-11-14 (meta)"
+  },
+  {
+    "name": "Case Western Reserve University",
+    "country": "United States",
+    "state": "Ohio",
+    "ends": "180 days after graduation",
+    "course": "Not stated.",
+    "account": "Graduates keep Canvas for 180 days after their degree is conferred: \"You will have access to Canvas account for 180 days after your conferral date.\"",
+    "sources": [
+      "https://case.edu/utech/resources/student-resources/graduating-students-utech-access",
+      "https://case.edu/utech/help/knowledge-base/canvas/canvas-information"
+    ],
+    "pageDate": "Updated 2026-10-22 (meta)"
   },
   {
     "name": "Kent State University",
@@ -1046,6 +1445,18 @@ export const POLICIES: Policy[] = [
     "pageDate": "Not shown"
   },
   {
+    "name": "Rice University",
+    "country": "United States",
+    "state": "Texas",
+    "ends": "Canvas ends 1 year after graduation",
+    "course": "Not stated.",
+    "account": "Student accounts stay active for a year after graduation, then lose Canvas: \"Student accounts remain active for one year following graduation. After the one-year period, student accounts become inactive.\" Then \"Once students become inactive, they will no longer have access to the following resources:\", which lists \"Campus systems such as Canvas and library journals\".",
+    "sources": [
+      "https://kb.rice.edu/64781"
+    ],
+    "pageDate": "Updated: 2026-06-12 (page)"
+  },
+  {
     "name": "Southern Methodist University (SMU)",
     "country": "United States",
     "state": "Texas",
@@ -1083,6 +1494,18 @@ export const POLICIES: Policy[] = [
     "pageDate": "Modified 2026-01-30 (meta)"
   },
   {
+    "name": "Texas Tech University",
+    "country": "United States",
+    "state": "Texas",
+    "ends": "Read-only after end date",
+    "course": "When a course's end date passes it concludes and turns read-only: \"Once the course end date passes Canvas will: Conclude the course, shifting it into a Read Only status. Move the course from the Dashboard to the 'Past Enrollments' area of the Courses page.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://www.depts.ttu.edu/online/canvas/raidercanvas-course-access-dates.php"
+    ],
+    "pageDate": "Mar 31, 2026 (footer timestamp)"
+  },
+  {
     "name": "University of Houston",
     "country": "United States",
     "state": "Texas",
@@ -1106,6 +1529,18 @@ export const POLICIES: Policy[] = [
       "https://lms.unt.edu/resources/canvas-faq.html"
     ],
     "pageDate": "Updated 2025-07-29 (meta)"
+  },
+  {
+    "name": "University of Texas at Dallas",
+    "country": "United States",
+    "state": "Texas",
+    "ends": "Courses kept for two years",
+    "course": "UT Dallas keeps courses for two years: \"By policy, UTD retains courses in the LMS for two years.\" It moved from Blackboard to Canvas for Fall 2026: \"All academic courses will be offered through the Canvas LMS beginning with the Fall 2026 semester.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://ets.utdallas.edu/elearning-services/canvas-migration/"
+    ],
+    "pageDate": "Not shown"
   },
   {
     "name": "Utah Tech University",
@@ -1170,6 +1605,18 @@ export const POLICIES: Policy[] = [
     "pageDate": "Not shown"
   },
   {
+    "name": "University of Virginia",
+    "country": "United States",
+    "state": "Virginia",
+    "ends": "6 months after graduation",
+    "course": "Each past term gets an end date 90 days after UVA's term ends; the course then moves to Past Enrollments and turns read-only: \"As of December 2025, each previous term in Canvas will have an end date set 90 days after UVA's term end date.\" A past course \"cannot be edited\".",
+    "account": "Graduates keep UVACanvas for a six-month grace period: \"individuals who have left UVA lose access to UVACanvas after their grace period. For students who graduated, the grace period is 6 months.\" After that: \"If someone who has left UVA attempts to log into UVACanvas after their grace period expires, they will get an error message indicating that they do not have an account.\"",
+    "sources": [
+      "https://lts-help.its.virginia.edu/m/essential-tips/l/1931208-what-are-the-important-policies-and-rules-for-uvacanvas-and-uvacanvas-connect"
+    ],
+    "pageDate": "Last Updated Sep 10, 2026 (shown on page; may belong to the sidebar article list)"
+  },
+  {
     "name": "Virginia Commonwealth University",
     "country": "United States",
     "state": "Virginia",
@@ -1195,6 +1642,30 @@ export const POLICIES: Policy[] = [
     "pageDate": "Not shown"
   },
   {
+    "name": "Central Washington University",
+    "country": "United States",
+    "state": "Washington",
+    "ends": "Read-only when grades are due",
+    "course": "Courses turn read-only for students at midnight on the day grades are due: \"Courses conclude (become read-only) for students on the day grades are due at 11:59pm.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://www.cwu.edu/academics/academic-resources/multimodal-learning/faculty-resources/canvas-help-support/canvas-procedure.pdf"
+    ],
+    "pageDate": "Updated 2025.02.18"
+  },
+  {
+    "name": "Seattle University",
+    "country": "United States",
+    "state": "Washington",
+    "ends": "Read-only after term ends",
+    "course": "Courses turn read-only for students when the term ends: \"Once a term ends, courses go into ‘read only’ mode for students\".",
+    "account": "Not stated.",
+    "sources": [
+      "https://www.seattleu.edu/canvas-help/faculty/canvas/faq/"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
     "name": "University of Washington (Seattle)",
     "country": "United States",
     "ends": "5 years after leaving",
@@ -1207,6 +1678,18 @@ export const POLICIES: Policy[] = [
     "state": "Washington"
   },
   {
+    "name": "Washington State University",
+    "country": "United States",
+    "state": "Washington",
+    "ends": "Courses deleted after 5 years",
+    "course": "Course content is kept five years after the fiscal year it was taught, then permanently removed: \"Canvas course content is retained for five years after the end of the fiscal year in which the course was taught.\" \"Once Canvas course content is removed as part of university record disposal requirements, it cannot be recovered.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://its.wsu.edu/2026/01/22/canvas-course-content-removal-7-1/"
+    ],
+    "pageDate": "January 22, 2026"
+  },
+  {
     "name": "Western Washington University",
     "country": "United States",
     "state": "Washington",
@@ -1217,6 +1700,32 @@ export const POLICIES: Policy[] = [
       "https://atus.wwu.edu/kb/after-leaving-western-when-will-my-account-be-deleted"
     ],
     "pageDate": "Not shown"
+  },
+  {
+    "name": "University of Wisconsin-Milwaukee",
+    "country": "United States",
+    "state": "Wisconsin",
+    "ends": "Read-only after end date",
+    "course": "Once the term, course and section end dates have passed, the course turns read-only: \"When the term, course, and section have all reached their respective end dates, all course enrollments are automatically set to Concluded. This makes the course read-only for Teachers and Students, and teachers will be unable to add new users.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://kb.uwm.edu/cetl/91181",
+      "https://uwm.edu/canvas/canvas-for-students/"
+    ],
+    "pageDate": "Updated 2025-08-11"
+  },
+  {
+    "name": "University of Wisconsin-Stout",
+    "country": "United States",
+    "state": "Wisconsin",
+    "ends": "Read-only after end date",
+    "course": "Once the term, course and section end dates have passed, the course turns read-only: \"When the term, course, and section have all reached their respective end dates, all course enrollments are automatically set to Concluded. This makes the course read-only for Teachers and Students, and teachers will be unable to add new users.\" \"Students with a concluded status can access the course but cannot submit any material.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://kb.uwstout.edu/91181",
+      "https://kb.uwstout.edu/90087"
+    ],
+    "pageDate": "Updated 2025-08-11"
   },
   {
     "name": "University of Wisconsin–Madison",
@@ -1232,70 +1741,38 @@ export const POLICIES: Policy[] = [
     "state": "Wisconsin"
   },
   {
-    "name": "University of Sussex",
-    "country": "United Kingdom",
-    "ends": "14 months after your course",
-    "course": "Not stated separately.",
-    "account": "Canvas stays for 14 months, counted from the last day of the course: \"Services you will retain access to for 14 months after the last day of your course\" (Canvas is on the list). The page also says access to many services ends \"on the last day of your course (not graduation)\".",
-    "sources": [
-      "https://www.sussex.ac.uk/its/help/faq?faqid=5"
-    ],
-    "pageDate": "Last updated 26 May 2026"
-  },
-  {
-    "name": "Queen’s University Belfast",
-    "country": "United Kingdom",
-    "ends": "60 days after completion",
+    "name": "Queensland University of Technology",
+    "country": "Australia",
+    "ends": "2 years after graduating",
     "course": "Not stated.",
-    "account": "60 days after completion for completed, graduated and alumni students: \"Canvas Access removed 60 days after completion.\" On withdrawal or dismissal: \"Access may be revoked immediately, depending on request from School, Academic Services or other.\"",
+    "account": "Two years for alumni: \"Student alumni retain access to their completed units on Canvas for two years, however some units may be made unavailable earlier by the Unit Coordinator.\" For coursework students the clock starts on \"the day you graduate or have your degree conferred\".",
     "sources": [
-      "https://www.qub.ac.uk/directorates/InformationServices/Services/ITServiceDesk/ITAccessAfterLeavingQUBStudent/"
-    ],
-    "pageDate": "Last Updated: July 2025"
-  },
-  {
-    "name": "University of Liverpool",
-    "country": "United Kingdom",
-    "ends": "Shortly after your end date",
-    "course": "Not stated.",
-    "account": "Whole IT account closes soon after you finish: \"Your IT account – including your University email, M Drive, Canvas and access to most University systems – will close shortly after your official end date or graduation, if later.\" Also: \"Once your account is closed, we can’t recover any files\".",
-    "sources": [
-      "https://news.liverpool.ac.uk/2025/06/20/what-happens-to-your-it-account-after-graduation/"
-    ],
-    "pageDate": "2025-06-20"
-  },
-  {
-    "name": "Liverpool John Moores University",
-    "country": "United Kingdom",
-    "ends": "About 90 days after completion",
-    "course": "Not stated.",
-    "account": "About 90 days after completion, not after graduation: \"Your university IT account usually expires approximately 90 days after the completion of your programme of study\"; \"This does not mean 90 days after graduation\"; \"You will be able to log-on to Canvas up until your account expires, including during your 90 days grace period\".",
-    "sources": [
-      "https://www.ljmu.ac.uk/ithelp/user-accounts-and-security/account-expiration"
+      "https://qutvirtual4.qut.edu.au/web/qut/after-leaving-qut/access-to-systems"
     ],
     "pageDate": "Not shown"
   },
   {
-    "name": "University of Toronto (Quercus = Canvas)",
-    "country": "Canada",
-    "ends": "Read-only 1 month after term",
-    "course": "Read-only one month after term (teaching-centre course life cycle): \"1 month after the end of term: The course becomes read-only for students, teaching assistants, and designers.\"",
-    "account": "Not stated.",
+    "name": "RMIT University",
+    "country": "Australia",
+    "ends": "The day you graduate",
+    "course": "Not stated.",
+    "account": "Cut on graduation day: \"You will lose access to all RMIT systems and software on the day you graduate (unless you’re continuing your studies with RMIT)\". The research-student page names Canvas: \"withdraw access to RMIT systems, including Canvas and myRMIT. This will occur on the day you graduate\".",
     "sources": [
-      "https://teaching.utoronto.ca/resources/course-life-cycle/"
-    ],
-    "pageDate": "Last Modified 23 October 2026"
-  },
-  {
-    "name": "Simon Fraser University",
-    "country": "Canada",
-    "ends": "4 months after the last class",
-    "course": "Four months after the last class: \"For courses completed in Canvas Cloud on January 1, 2026 or later, access will be available for four months after the final day of class.\" Older courses: \"Access to courses that you completed in Canvas prior to December 31, 2025 has ended as of April 30, 2026\". The page sits in SFU's Continuing Studies section.",
-    "account": "Not stated.",
-    "sources": [
-      "https://www.sfu.ca/continuing-studies/programs-and-courses/online-and-distance-education/technical-support.html"
+      "https://www.rmit.edu.au/students/my-course/graduation/apply",
+      "https://www.rmit.edu.au/students/my-course/research-students/submission-examination/completion-graduation"
     ],
     "pageDate": "Not shown"
+  },
+  {
+    "name": "University of Melbourne",
+    "country": "Australia",
+    "ends": "12 months after leaving",
+    "course": "Not stated.",
+    "account": "Account disabled after 12 months: \"Your University of Melbourne student account will be disabled following a 12-month grace period\". Download first, \"before the end of this period when your data will be revoked from University systems\".",
+    "sources": [
+      "https://studentit.unimelb.edu.au/student-offboarding/download-other-data/canvas-lms"
+    ],
+    "pageDate": "Last updated 18 Aug 2026"
   },
   {
     "name": "University of Sydney",
@@ -1320,38 +1797,209 @@ export const POLICIES: Policy[] = [
     "pageDate": "Not shown"
   },
   {
-    "name": "RMIT University",
-    "country": "Australia",
-    "ends": "The day you graduate",
+    "name": "Artevelde University of Applied Sciences",
+    "country": "Belgium",
+    "ends": "Login ends 1 Dec the next year",
     "course": "Not stated.",
-    "account": "Cut on graduation day: \"You will lose access to all RMIT systems and software on the day you graduate (unless you’re continuing your studies with RMIT)\". The research-student page names Canvas: \"withdraw access to RMIT systems, including Canvas and myRMIT. This will occur on the day you graduate\".",
+    "account": "The Artevelde login is switched off in December of the next academic year; the privacy policy doesn't name Canvas: \"Your student account will be deactivated on 1 December of the following academic year after your deregistration or graduation.\" The Canvas login page says this account gives access to \"all our platforms, including Canvas.\"",
     "sources": [
-      "https://www.rmit.edu.au/students/my-course/graduation/apply",
-      "https://www.rmit.edu.au/students/my-course/research-students/submission-examination/completion-graduation"
+      "https://www.arteveldehogeschool.be/en/privacy-policy",
+      "https://canvaslogin.arteveldehogeschool.be/"
     ],
     "pageDate": "Not shown"
   },
   {
-    "name": "Queensland University of Technology",
-    "country": "Australia",
-    "ends": "2 years after graduating",
+    "name": "Vrije Universiteit Brussel (VUB)",
+    "country": "Belgium",
+    "ends": "Login ends 31 Oct the next year",
     "course": "Not stated.",
-    "account": "Two years for alumni: \"Student alumni retain access to their completed units on Canvas for two years, however some units may be made unavailable earlier by the Unit Coordinator.\" For coursework students the clock starts on \"the day you graduate or have your degree conferred\".",
+    "account": "The VUB login, which is how students sign in to Canvas, is deleted in the autumn after graduating; Canvas isn't named on that page: \"After you graduate, your VUB account will be deleted automatically on 31 October of the subsequent academic year.\"",
     "sources": [
-      "https://qutvirtual4.qut.edu.au/web/qut/after-leaving-qut/access-to-systems"
+      "https://www.vub.be/en/studying-vub/practical-info-for-students/graduating-vub",
+      "https://www.vub.be/en/canvas"
+    ],
+    "pageDate": "Modified 5 Nov 2025 (page metadata)"
+  },
+  {
+    "name": "Ontario Tech University",
+    "country": "Canada",
+    "ends": "Courses close 120 days after end",
+    "course": "Students lose concluded courses 120 days after the course ends (Teaching and Learning Centre Canvas FAQ): \"For students, access to concluded courses expires 120 days after the course ends.\" The reason given: \"Due to record retention requirements and storage requirements at the university, students will not be able to access Canvas courses after 120 days have past since the end of the course.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://tlc.ontariotechu.ca/instructional-support/canvas/faqs.php",
+      "https://ontariotechu.ca/canvas"
     ],
     "pageDate": "Not shown"
   },
   {
-    "name": "University of Melbourne",
-    "country": "Australia",
-    "ends": "12 months after leaving",
-    "course": "Not stated.",
-    "account": "Account disabled after 12 months: \"Your University of Melbourne student account will be disabled following a 12-month grace period\". Download first, \"before the end of this period when your data will be revoked from University systems\".",
+    "name": "Simon Fraser University",
+    "country": "Canada",
+    "ends": "4 months after the last class",
+    "course": "Four months after the last class: \"For courses completed in Canvas Cloud on January 1, 2026 or later, access will be available for four months after the final day of class.\" Older courses: \"Access to courses that you completed in Canvas prior to December 31, 2025 has ended as of April 30, 2026\". The page sits in SFU's Continuing Studies section.",
+    "account": "Not stated.",
     "sources": [
-      "https://studentit.unimelb.edu.au/student-offboarding/download-other-data/canvas-lms"
+      "https://www.sfu.ca/continuing-studies/programs-and-courses/online-and-distance-education/technical-support.html"
     ],
-    "pageDate": "Last updated 18 Aug 2026"
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "University of Alberta",
+    "country": "Canada",
+    "ends": "Login cut back after graduating",
+    "course": "Not stated.",
+    "account": "After graduating, the account is cut back to Bear Tracks and Gmail; the page doesn't name Canvas: \"If you graduated with a degree from U of A, your existing U of A account will be reduced after your status is transitioned to Alumni.\" and \"At that time, you will have access to Bear Tracks and Gmail (with 100 MB of email storage) but will no longer have access to other Google apps\". Diploma and certificate graduates: \"If you graduate with a diploma or certificate, your account will transition to Bear Tracks and Gmail (with 100 MB of email storage) after the last day of the term.\"",
+    "sources": [
+      "https://www.ualberta.ca/en/information-services-and-technology/services/ccid-passwords/changes-to-u-of-a-accounts.html",
+      "https://www.ualberta.ca/en/centre-for-teaching-and-learning/canvas-supports/index.html"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "University of Toronto (Quercus = Canvas)",
+    "country": "Canada",
+    "ends": "Read-only 1 month after term",
+    "course": "Read-only one month after term (teaching-centre course life cycle): \"1 month after the end of term: The course becomes read-only for students, teaching assistants, and designers.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://teaching.utoronto.ca/resources/course-life-cycle/"
+    ],
+    "pageDate": "Last Modified 23 October 2026"
+  },
+  {
+    "name": "Duke Kunshan University",
+    "country": "China",
+    "ends": "Read-only 21 days after term",
+    "course": "Courses conclude three weeks after term: \"Sites associated with an official course listed in DukeHub/DKU Hub will go into a concluded state 21 days after the official end of the term.\" and \"A concluded state means that the site turns into read-only for all users enrolled in the site (including instructors).\" \"Concluded sites are removed from users’ dashboards but remain accessible via the Courses > All courses link.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://ctl.dukekunshan.edu.cn/archives/canvas/faq"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "University of Copenhagen (Absalon = Canvas)",
+    "country": "Denmark",
+    "ends": "Read-only after term, archived",
+    "course": "Faculty of Theology page: \"Gamle kursusrum på Absalon bliver automatisk arkiveret og fremgår ikke længere af din kursusoversigt.\" (old Absalon course rooms are archived automatically and no longer show in your course list) \"Forårskurser arkiveres 1. november / Efterårskurser arkiveres 1. juli.\" (spring courses are archived on 1 November, autumn courses on 1 July). KU's Absalon guide: \"Terms make it possible to end course rooms in a softer manner (“soft concluding”), so that users remain in the room and maintain a read-only access to the material.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://teol.ku.dk/uddannelser/master-som-fleksibelt-forloeb/",
+      "https://obl.ku.dk/ku-absalon/terms/",
+      "https://science.ku.dk/teachinglearning/absalon/"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "Hong Kong University of Science and Technology (HKUST)",
+    "country": "Hong Kong",
+    "ends": "Read-only 6 weeks after term",
+    "course": "Courses turn read-only at the Canvas term end date, six weeks after the official term: \"Term End Date 6 weeks after HKUST's official term end date\" and \"When a course reaches the course end date, the course will be completed and become concluded.\" Then \"the course is archived in a read-only state. Students may be restricted from viewing concluded courses.\" The student FAQ: \"After the course end date, the online content including the discussion forum will become read-only. You will be able to view the content that the instructor has published but you will not be able to participate in any way.\"",
+    "account": "Student account ends four months after finishing; that page lists Canvas among the account's services: \"A student’s HKUST account will be terminated upon leaving the University.\" and \"Upon successful completion of the study, a four-month grace period will be granted to transition from a Student Account to an Alumni Account.\" The account is \"your key to university online services, including Wi-Fi, Canvas - LMS, etc.\" It does not say whether an Alumni Account keeps Canvas. \"Students are urged to back up or transfer files before termination.\"",
+    "sources": [
+      "https://cei.hkust.edu.hk/en-hk/elearning-platform-and-tools/faqs-instructors-tas",
+      "https://cei.hkust.edu.hk/en-hk/alh-and-edtech/faqs-students",
+      "https://itso.hkust.edu.hk/services/general-it-services/user-account/student/student-account"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "University College Cork",
+    "country": "Ireland",
+    "ends": "12 months after registration ends",
+    "course": "Modules turn read-only after the academic year and are kept for five years: \"Modules will be made read-only following the end of academic year (using block code data from ITS). Modules will be retained online for 5 years.\"",
+    "account": "Graduates keep a Canvas login for a year: \"Students will retain a login to Canvas for 12 months following end of registration, this will allow recent graduates to continue to access former learning materials and submissions.\" Also: \"They retain read-only access to former modules (subject to module availability).\" On leaving early: \"Students who withdraw from UCC will have their accounts and access to modules deleted.\"",
+    "sources": [
+      "https://www.ucc.ie/en/academicgov/policies/learning-policies/learning-platforms-data-retention-and-access/"
+    ],
+    "pageDate": "Updated 9 January 2026"
+  },
+  {
+    "name": "University of Galway",
+    "country": "Ireland",
+    "ends": "180 days after course end",
+    "course": "Not stated.",
+    "account": "Accounts close 180 days after the official course end date (350 for PhD students), and Canvas goes with them: \"Student accounts in these categories will be disabled 180 days after the official course end date, typically 31st August of the final registered academic year.\" \"PhD student accounts will be disabled 350 days after the official course end date\"; \"After this grace period, students leaving University of Galway will lose access to: Canvas\".",
+    "sources": [
+      "https://www.universityofgalway.ie/information-solutions-services/services-for-students/campusaccount/graduatingstudents/",
+      "https://www.universityofgalway.ie/information-solutions-services/services-for-students/canvas/"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "Keio University (K-LMS = Canvas)",
+    "country": "Japan",
+    "ends": "keio.jp apps end on leaving",
+    "course": "Not stated.",
+    "account": "On graduating, all keio.jp applications except Keio Mail stop: \"卒業・修了または後期博士課程の所定単位取得退学で義塾を離籍される皆様は、2026年9月19日(土)午前9時以降順次、keio.jpポータルおよび慶應メールを除くkeio.jpのすべてのアプリケーションが利用できなくなります。\" (those leaving Keio by graduating or completing their programme lose, from 9:00 on 19 Sep 2026, all keio.jp applications except the keio.jp portal and Keio Mail). The general rule: \"離籍後に使えなくなるもの 慶應メール(Google Workspace（旧 G Suite）の連絡先含む)を除くkeio.jpの全てのアプリケーション\" (unavailable after leaving: every keio.jp application except Keio Mail). Canvas is not named on those pages; Keio's keio.jp application list includes \"7-1-1. 授業で利用するシステム（「CanvasLMS」）\" (the system used in classes, CanvasLMS).",
+    "sources": [
+      "https://www.itc.keio.ac.jp/ja/news_keiojp_grad202609.html",
+      "https://www.itc.keio.ac.jp/ja/keiojp_withdraw.html",
+      "https://www.itc.keio.ac.jp/ja/keiojp_manual_application.html",
+      "https://www.itc.keio.ac.jp/ja/keiojp_edu2.html"
+    ],
+    "pageDate": "最終更新日: 2026年7月23日; 最終更新日: 2026年7月16日"
+  },
+  {
+    "name": "Eindhoven University of Technology (TU/e)",
+    "country": "Netherlands",
+    "ends": "Login ends 42 days after leaving",
+    "course": "Not stated.",
+    "account": "The TU/e login ends 42 days after enrolment ends unless you join the alumni portal; Canvas isn't named on that page: \"If you do not sign up to the TU/e Alumni Portal, your TU/e account will expire 42 days after the date of termination of enrollment, and you will therefore no longer have access to your TU/e email address or the files saved in your TU/e account.\"",
+    "sources": [
+      "https://educationguide.tue.nl/practical-info/student-administration/termination-of-enrollment/termination-of-enrollment-upon-graduation/what-do-i-need-to-consider-when-i-want-to-terminate-my-enrollment",
+      "https://educationguide.tue.nl/programs/graduate-school/masters-programs/computer-science-and-engineering/graduation/administrative-process"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "Erasmus University Rotterdam",
+    "country": "Netherlands",
+    "ends": "Login ends within 2 months of leaving",
+    "course": "Not stated.",
+    "account": "The ERNA login ends when you deregister; Canvas isn't named on these pages: \"If you deregister, your ERNA account will be deactivated, and you will no longer have access to educational information and your e-mail.\" The graduation leaflet (PDF) gives a grace period: \"Je ERNA account wordt binnen twee maanden na je uitschrijving gedeactiveerd.\" (your ERNA account is deactivated within two months of deregistering) and \"Het is niet mogelijk om je account langer te blijven gebruiken.\" (you can't keep using the account longer).",
+    "sources": [
+      "https://www.eur.nl/en/education/practical-matters/registration/terminating-enrolment",
+      "https://www.eur.nl/media/121917",
+      "https://www.eur.nl/en/news/introduction-canvas"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "Maastricht University",
+    "country": "Netherlands",
+    "ends": "Read-only from November, 2 years on",
+    "course": "Courses close about two years after their academic year: \"The end date is set for November, 2 years after the end of the academic year.\" Then \"After the end date, the course will change to “Concluded,” which means it is read-only for students and teachers.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://library.maastrichtuniversity.nl/apps-tools/canvas-support/canvas-faq/"
+    ],
+    "pageDate": "Modified 17 Jul 2026 (page metadata)"
+  },
+  {
+    "name": "University of Amsterdam (UvA)",
+    "country": "Netherlands",
+    "ends": "90 days after leaving",
+    "course": "Not stated. The Canvas page only explains how to find older courses: \"Can’t see older courses on your dashboard?\"",
+    "account": "Account rule, Canvas not named: \"You can continue to use your UvAnetID and the UvA’s facilities for 90 days after terminating your enrolment\"; \"After that, your account will be closed and you'll no longer have access to the UvA's digital environment\". Canvas login uses the UvAnetID: \"with your UvAnetID and two-step verification\".",
+    "sources": [
+      "https://student.uva.nl/en/information/terminating-your-enrolment-on-graduation",
+      "https://student.uva.nl/en/information/canvas"
+    ],
+    "pageDate": "Last modified 28-04-2026; 15-07-2026"
+  },
+  {
+    "name": "University of Twente",
+    "country": "Netherlands",
+    "ends": "4 weeks after enrolment ends",
+    "course": "Old courses stay readable: \"Courses are moved automatically to 'Past enrollments' two years after the end of the quartile. However, they are still accessible (read-only).\"",
+    "account": "Canvas ends with the UT login, about four weeks after enrolment stops: \"Canvas is accessible as long as your ICT account is active.\" The account page: \"Student accounts are automatically deactivated four weeks after student enrolment has stopped\" (that page doesn't name Canvas). The staff page adds: \"This means that a student account will be permanently deleted from the Canvas database three years after leaving UT.\"",
+    "sources": [
+      "https://www.utwente.nl/en/educational-systems/student-applications/canvas-student/",
+      "https://www.utwente.nl/en/service-portal/educational-support/educational-systems/canvas",
+      "https://www.utwente.nl/en/service-portal/workplace-support/accounts-passwords/ut-account-incl.-activation-password-change"
+    ],
+    "pageDate": "Last update 14 Aug 2026 (student Canvas page); others Not shown"
   },
   {
     "name": "Vrije Universiteit Amsterdam",
@@ -1366,16 +2014,203 @@ export const POLICIES: Policy[] = [
     "pageDate": "Laatst gewijzigd 9 september 2026; last updated 26 August 2026"
   },
   {
-    "name": "University of Amsterdam (UvA)",
-    "country": "Netherlands",
-    "ends": "90 days after leaving",
-    "course": "Not stated. The Canvas page only explains how to find older courses: \"Can’t see older courses on your dashboard?\"",
-    "account": "Account rule, Canvas not named: \"You can continue to use your UvAnetID and the UvA’s facilities for 90 days after terminating your enrolment\"; \"After that, your account will be closed and you'll no longer have access to the UvA's digital environment\". Canvas login uses the UvAnetID: \"with your UvAnetID and two-step verification\".",
+    "name": "University of Auckland",
+    "country": "New Zealand",
+    "ends": "Login ends 4 weeks after semester",
+    "course": "Not stated.",
+    "account": "Login ends 4 weeks after your last semester; the page covers the university's electronic services and does not name Canvas: \"Electronic access will begin 4 weeks prior to your class start date and will end 4 weeks after the semester or quarter end date.\" Students enrolled in back-to-back terms keep it: \"For students with an active enrolment in consecutive semesters or quarters, access will be continuous.\" Doctoral candidates: \"Access will end 2 years after the start date of your completion year.\"",
     "sources": [
-      "https://student.uva.nl/en/information/terminating-your-enrolment-on-graduation",
-      "https://student.uva.nl/en/information/canvas"
+      "https://www.auckland.ac.nz/en/about-us/about-the-university/identity-and-access-management/online-services-access/student-access.html",
+      "https://www.auckland.ac.nz/en/students/digital-tools-support.html"
     ],
-    "pageDate": "Last modified 28-04-2026; 15-07-2026"
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "University of Oslo",
+    "country": "Norway",
+    "ends": "Read-only after term, deleted after 5 years",
+    "course": "Rooms lock shortly after the semester and are deleted five years later: \"After you finish a course its Canvas room will be locked (read-only) shortly after the semester ends.\" Lock dates: \"Fall semester courses: usually February 1st\", spring and summer usually September 1st. \"Course rooms where the semester ended at least five years ago are automatically deleted.\"",
+    "account": "Staff guide: \"Merk at brukere mister tilgangen til sin Canvasbruker når de ikke lenger har en aktiv tilknytning til UiO\" (users lose access to their Canvas user when they no longer have an active affiliation with UiO) and \"Studenter regnes som inaktive 180 dager etter at de har avsluttet studiene\" (students count as inactive 180 days after finishing their studies). The student page adds: \"Usually you have access to your Canvas rooms until you finish your study program.\"",
+    "sources": [
+      "https://www.uio.no/english/services/it/education/canvas/help/student/access-after-semester.html",
+      "https://www.uio.no/for-ansatte/arbeidsstotte/sta/canvas/veiledninger/fs-canvas/hva-gjor-integrasjonen.html"
+    ],
+    "pageDate": "Last modified Oct. 8, 2025; Sist endret 9. jan. 2023"
+  },
+  {
+    "name": "De La Salle University (AnimoSpace = Canvas)",
+    "country": "Philippines",
+    "ends": "Concluded at end of term",
+    "course": "Staff FAQ: courses conclude automatically at the end of term and are archived: \"Courses in AnimoSpace will be automatically concluded for teachers. Concluded courses will be archived.\" In them \"New submissions cannot be uploaded.\" \"Teachers can extend the course end date by changing the Course Settings.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://old.dlsu.edu.ph/offices/asist/faqs/",
+      "https://old.dlsu.edu.ph/offices/asist/animospace/"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "Karolinska Institutet",
+    "country": "Sweden",
+    "ends": "365 days after finishing",
+    "course": "Not stated.",
+    "account": "Canvas named: \"You will keep access to your student account – including student email, Canvas, Ladok and Microsoft 365 – for 365 days after you finish your studies.\" Then: \"Towards the end of this period, you will receive a notice to your student email address with information about when your account will be closed.\"",
+    "sources": [
+      "https://education.ki.se/student-at-ki/information-about-your-studies/checklist-for-when-leaving-karolinska-institutet"
+    ],
+    "pageDate": "Page updated 10-09-2026"
+  },
+  {
+    "name": "KTH Royal Institute of Technology",
+    "country": "Sweden",
+    "ends": "Read-only 60 days after course end",
+    "course": "Staff page: \"Course rooms are deactivated 60 days after the course end date.\" and \"The rooms will be in a read-only state, which means that students will not be able to upload materials and assignments.\" Students \"can still see their assignments, feedback, results and grades.\"",
+    "account": "Not stated.",
+    "sources": [
+      "https://intra.kth.se/en/utbildning/systemstod/canvas/administration/rutin-for-gamla-kursrum-i-canvas-1.1092061"
+    ],
+    "pageDate": "Last changed: Jul 17, 2026"
+  },
+  {
+    "name": "Lund University",
+    "country": "Sweden",
+    "ends": "Login ends 2 semesters after last registration",
+    "course": "Not stated.",
+    "account": "Canvas isn't named on the closing page; the student account page says Canvas is part of the account. \"You keep your student account for two semesters after your last registration in Ladok.\" After the closure notice: \"From the date you receive the notice, you will have 30 days to access the account. After that, the account is deactivated, and you will no longer be able to log in.\"",
+    "sources": [
+      "https://www.lunduniversity.lu.se/current-students/student-services-and-support/it-resources-and-assistance/student-account/closing-your-student-account",
+      "https://www.lunduniversity.lu.se/current-students/new-students/your-student-account"
+    ],
+    "pageDate": "Last updated: 19 Jun 2025"
+  },
+  {
+    "name": "Umeå University",
+    "country": "Sweden",
+    "ends": "Login ends 2 years after studies",
+    "course": "Not stated.",
+    "account": "Canvas isn't named in the after-studies section (the same page lists Canvas among the services the UMU ID gives access to): \"Your UMU ID will be deactivated when two years have passed after your studies.\" Then: \"When two years have passed after completing your studies, your UMU ID user account will be deactivated and you can no longer log in to access university resources\".",
+    "sources": [
+      "https://www.umu.se/en/student/help-and-support/it-services/umu-id/",
+      "https://www.umu.se/en/student/help-and-support/it-services/"
+    ],
+    "pageDate": "Latest update: 2025-09-10"
+  },
+  {
+    "name": "University of Gothenburg",
+    "country": "Sweden",
+    "ends": "Login ends 12 months after last course",
+    "course": "Not stated.",
+    "account": "Student account page, which says the account is used for Canvas: \"After your last course registration has ended, your student account is kept for 12 months. After that, it is deleted.\" and \"You use your student account to log in to the Student Portal, Canvas and Ladok and other university services.\"",
+    "sources": [
+      "https://studentportal.gu.se/en/digital-tools/student-account",
+      "https://studentportal.gu.se/english/e-services/canvas-and-gul/"
+    ],
+    "pageDate": "Last modified 10 November 2025"
+  },
+  {
+    "name": "Uppsala University (Studium = Canvas)",
+    "country": "Sweden",
+    "ends": "1 year after last registered semester",
+    "course": "Not stated.",
+    "account": "Studium is named: \"A student account is active one year after the last semester in which you are registered.\" and \"As before, you can access all services during that time in, for example, Ladok and Studium.\" The Studium login page: \"If you are a former student, it may be because your account is no longer active. In that case, you will no longer have access to Studium.\"",
+    "sources": [
+      "https://www.uu.se/en/students/it-for-students/student-account",
+      "https://www.uu.se/en/students/it-for-students/services-for-students/studium/log-in-to-studium",
+      "https://www.uu.se/en/students/it-for-students/services-for-students/studium"
+    ],
+    "pageDate": "Last modified: 2025-02-21"
+  },
+  {
+    "name": "National Taiwan University (NTU COOL = Canvas)",
+    "country": "Taiwan",
+    "ends": "Courses deleted after 7 years",
+    "course": "Since September 2025, course data older than seven years is deleted at the start of each semester: \"自 114 學年 (2025 年 9 月) 起，我們將開始執行「課程資料保存期限七年」之政策。\" (from academic year 114, September 2025, we start a policy of keeping course data for seven years) and \"NTU COOL 將在每個學期開始後(第一學期 9/1，第二學期 3/1) ， 刪除七年前的課程資料\" (after each semester starts, 1 Sep and 1 Mar, NTU COOL deletes course data from seven years earlier). Afterwards \"課程刪除後，使用者 (包括教師、助教、學生、旁聽生)則無法再進入讓課程網頁\" (once a course is deleted, users, including teachers, TAs, students and auditors, can no longer open the course page).",
+    "account": "Graduates can no longer sign in with the campus account: \"畢業生無法計中帳號登入 NTU COOL\" (graduates can't log in to NTU COOL with their computing-center account). To back up course data they can apply to link an outside account: \"請填寫以下表單以進行校外帳號的綁定申請喔！\" (please fill in the form to apply to bind an outside account).",
+    "sources": [
+      "https://epaper.ntu.edu.tw/view.php?id=34801&listid=355",
+      "https://www.aca.ntu.edu.tw/w/aca/CIMDNews_21090209504161705"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "Liverpool John Moores University",
+    "country": "United Kingdom",
+    "ends": "About 90 days after completion",
+    "course": "Not stated.",
+    "account": "About 90 days after completion, not after graduation: \"Your university IT account usually expires approximately 90 days after the completion of your programme of study\"; \"This does not mean 90 days after graduation\"; \"You will be able to log-on to Canvas up until your account expires, including during your 90 days grace period\".",
+    "sources": [
+      "https://www.ljmu.ac.uk/ithelp/user-accounts-and-security/account-expiration"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "Newcastle University",
+    "country": "United Kingdom",
+    "ends": "Read-only after 18 months",
+    "course": "Courses stay open for 18 months, then turn read-only: \"Courses on Canvas remain open for 18 months from the 1st of September of the academic year they are part of. After this period, the course transitions to read-only mode, preventing further interaction but still allowing content to be viewed.\"",
+    "account": "Login ends 7 months after completing; Canvas isn't named on that page: \"Students retain access to IT facilities, including OneDrive, email and filestore, for 7 months after the successful completion of their studies.\" On withdrawal, the account expires \"two months from the date the withdrawn date is processed by the School.\"",
+    "sources": [
+      "https://www.ncl.ac.uk/learning-and-teaching/digital-technologies/canvas/sections/",
+      "https://services.ncl.ac.uk/itservice/core-services/account-admin/accountexpirystudents/"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "Queen’s University Belfast",
+    "country": "United Kingdom",
+    "ends": "60 days after completion",
+    "course": "Not stated.",
+    "account": "60 days after completion for completed, graduated and alumni students: \"Canvas Access removed 60 days after completion.\" On withdrawal or dismissal: \"Access may be revoked immediately, depending on request from School, Academic Services or other.\"",
+    "sources": [
+      "https://www.qub.ac.uk/directorates/InformationServices/Services/ITServiceDesk/ITAccessAfterLeavingQUBStudent/"
+    ],
+    "pageDate": "Last Updated: July 2025"
+  },
+  {
+    "name": "Swansea University",
+    "country": "United Kingdom",
+    "ends": "Login ends at course end date",
+    "course": "Not stated.",
+    "account": "The account closes when the course ends, not at graduation, with 28 days' notice: \"Your access to an IT account is determined by your course end date and not your graduation date.\" \"Account closure means you will lose access to all University systems, including your email, OneDrive account and Office subscriptions.\" \"Account Closure notifications are delivered to your University email address 28 days, 14 days and 1 day before the account closes.\" The checklist says: \"Save any course material and submissions from Canvas\".",
+    "sources": [
+      "https://hwb.swansea.ac.uk/it-services/account-enquiry/leaving-the-university/",
+      "https://www.swansea.ac.uk/study/student-life/canvas/"
+    ],
+    "pageDate": "Not shown"
+  },
+  {
+    "name": "University of Liverpool",
+    "country": "United Kingdom",
+    "ends": "Shortly after your end date",
+    "course": "Not stated.",
+    "account": "Whole IT account closes soon after you finish: \"Your IT account – including your University email, M Drive, Canvas and access to most University systems – will close shortly after your official end date or graduation, if later.\" Also: \"Once your account is closed, we can’t recover any files\".",
+    "sources": [
+      "https://news.liverpool.ac.uk/2025/06/20/what-happens-to-your-it-account-after-graduation/"
+    ],
+    "pageDate": "2025-06-20"
+  },
+  {
+    "name": "University of Manchester",
+    "country": "United Kingdom",
+    "ends": "IT account closes on a set date",
+    "course": "Not stated.",
+    "account": "The IT account, and Canvas with it, closes on a fixed date after finishing (1 August 2026 for 2026 finalists): \"Your IT account will close on Saturday, 1 August 2026. This means that you will no longer have access to your documents, email or Canvas course materials.\" For 2026 masters leavers: \"On the Wednesday, 6 January 2027, your IT account will close.\"",
+    "sources": [
+      "https://studentnews.manchester.ac.uk/2026/06/02/finalist-checklist/",
+      "https://studentnews.manchester.ac.uk/2026/08/18/leaving-university-after-your-masters-what-you-need-to-know-and-do/"
+    ],
+    "pageDate": "2026-06-02 and 2026-08-18"
+  },
+  {
+    "name": "University of Sussex",
+    "country": "United Kingdom",
+    "ends": "14 months after your course",
+    "course": "Not stated separately.",
+    "account": "Canvas stays for 14 months, counted from the last day of the course: \"Services you will retain access to for 14 months after the last day of your course\" (Canvas is on the list). The page also says access to many services ends \"on the last day of your course (not graduation)\".",
+    "sources": [
+      "https://www.sussex.ac.uk/its/help/faq?faqid=5"
+    ],
+    "pageDate": "Last updated 26 May 2026"
   }
 ];
 
@@ -1384,672 +2219,875 @@ export const POLICIES: Policy[] = [
 export const ON_CANVAS: OnCanvas[] = [
   {
     "name": "Auburn University",
+    "country": "United States",
     "state": "Alabama",
-    "source": "https://www.auburn.edu/canvas"
+    "source": "https://biggio.auburn.edu/instructional-technology/index.php"
   },
   {
     "name": "Jacksonville State University",
+    "country": "United States",
     "state": "Alabama",
     "source": "https://www.jsu.edu/online/canvas_access.html"
   },
   {
     "name": "University of Alabama at Birmingham",
+    "country": "United States",
     "state": "Alabama",
     "source": "https://www.uab.edu/elearning/academic-technologies/canvas"
   },
   {
-    "name": "University of Alabama in Huntsville",
-    "state": "Alabama",
-    "source": "https://www.uah.edu/oit"
-  },
-  {
     "name": "University of North Alabama",
+    "country": "United States",
     "state": "Alabama",
-    "source": "https://una.instructure.com/"
+    "source": "https://www.una.edu/its/canvas/"
   },
   {
     "name": "University of South Alabama",
+    "country": "United States",
     "state": "Alabama",
-    "source": "https://usaonline.southalabama.edu"
+    "source": "https://www.southalabama.edu/departments/usaonline/canvasfaq.html"
   },
   {
     "name": "Arizona State University",
+    "country": "United States",
     "state": "Arizona",
-    "source": "https://canvas.asu.edu/"
+    "source": "https://ulc.asu.edu/help-center/faqs/"
   },
   {
     "name": "Arkansas State University",
+    "country": "United States",
     "state": "Arkansas",
-    "source": "https://arkansasstateuniversity.instructure.com/"
+    "source": "https://kb.astate.edu/books/it-policies-procedures/page/32-canvas-live-course-access-instructional-support-procedure"
   },
   {
     "name": "NorthWest Arkansas Community College",
+    "country": "United States",
     "state": "Arkansas",
-    "source": "https://nwacc.instructure.com/login/saml"
+    "source": "https://www.nwacc.edu/administrativeservices/informationtechnology-256255/helpdesk/index.html"
+  },
+  {
+    "name": "California State University, East Bay",
+    "country": "United States",
+    "state": "California",
+    "source": "https://www.csueastbay.edu/online/canvas-migration/index.html"
   },
   {
     "name": "California State University, Fullerton",
+    "country": "United States",
     "state": "California",
     "source": "https://fullerton.instructure.com"
   },
   {
-    "name": "California State University, Los Angeles",
+    "name": "California State University, Sacramento",
+    "country": "United States",
     "state": "California",
-    "source": "https://calstatela.instructure.com"
+    "source": "https://www.csus.edu/information-resources-technology/canvas/canvas-for-students.html"
   },
   {
-    "name": "California State University, Sacramento",
+    "name": "California State University, San Bernardino",
+    "country": "United States",
     "state": "California",
-    "source": "https://csus.instructure.com"
+    "source": "https://www.csusb.edu/canvas"
   },
   {
     "name": "Chapman University",
+    "country": "United States",
     "state": "California",
     "source": "https://canvas.chapman.edu/login"
   },
   {
     "name": "De Anza College",
+    "country": "United States",
     "state": "California",
     "source": "https://deanza.instructure.com/login"
   },
   {
     "name": "East Los Angeles College",
+    "country": "United States",
     "state": "California",
     "source": "https://ilearn.laccd.edu/login"
   },
   {
-    "name": "Fresno State",
-    "state": "California",
-    "source": "https://academics.fresnostate.edu/canvas/students"
-  },
-  {
     "name": "Mt. San Antonio College",
+    "country": "United States",
     "state": "California",
-    "source": "https://mtsac.instructure.com/login"
+    "source": "https://www.mtsac.edu/canvas/index.html"
   },
   {
     "name": "Pasadena City College",
+    "country": "United States",
     "state": "California",
-    "source": "https://canvas.pasadena.edu/login"
-  },
-  {
-    "name": "San Diego State University",
-    "state": "California",
-    "source": "https://its.sdsu.edu/software/canvas"
-  },
-  {
-    "name": "Santa Clara University",
-    "state": "California",
-    "source": "https://www.scu.edu/training/resources/students/new-student-technical-support/camino---learning-management-system/"
+    "source": "https://pasadena.edu/academics/pcc-online/canvas-support.php"
   },
   {
     "name": "Santa Monica College",
+    "country": "United States",
     "state": "California",
-    "source": "https://smc.instructure.com/login"
+    "source": "https://www.smc.edu/academics/online-learning/canvas.php"
   },
   {
     "name": "Santa Rosa Junior College",
+    "country": "United States",
     "state": "California",
-    "source": "https://canvas.santarosa.edu/login"
+    "source": "https://de.santarosa.edu/faculty-information"
   },
   {
     "name": "UC Merced",
+    "country": "United States",
     "state": "California",
     "source": "https://catcourses.ucmerced.edu"
   },
   {
     "name": "UC Riverside",
+    "country": "United States",
     "state": "California",
     "source": "https://its.ucr.edu/canvas"
   },
   {
     "name": "UC Santa Cruz",
+    "country": "United States",
     "state": "California",
     "source": "https://its.ucsc.edu/canvas"
   },
   {
-    "name": "Metropolitan State University of Denver",
-    "state": "Colorado",
-    "source": "https://webapp.msudenver.edu/smc/ebird/temp.msudenver.edu/early-bird/2020/7/20-canvas.html"
-  },
-  {
-    "name": "University of Northern Colorado",
-    "state": "Colorado",
-    "source": "https://www.unco.edu/canvas/"
-  },
-  {
-    "name": "Quinnipiac University",
-    "state": "Connecticut",
-    "source": "https://quinnipiac.instructure.com/"
-  },
-  {
     "name": "American University",
+    "country": "United States",
     "state": "District of Columbia",
     "source": "https://www.american.edu/library/canvas/"
   },
   {
     "name": "Howard University",
+    "country": "United States",
     "state": "District of Columbia",
-    "source": "https://canvas.howard.edu/login"
+    "source": "https://technology.howard.edu"
   },
   {
     "name": "Florida A&M University",
+    "country": "United States",
     "state": "Florida",
-    "source": "https://famu.instructure.com/login"
-  },
-  {
-    "name": "Florida Atlantic University",
-    "state": "Florida",
-    "source": "https://www.fau.edu/canvas/getting-started/"
+    "source": "https://www.famu.edu/administration/campus-services/instructional-technology/index.php"
   },
   {
     "name": "Florida Gulf Coast University",
+    "country": "United States",
     "state": "Florida",
-    "source": "https://fgcu.instructure.com/login"
+    "source": "https://www.fgcu.edu/canvas/"
   },
   {
     "name": "Florida International University",
+    "country": "United States",
     "state": "Florida",
     "source": "https://canvas.fiu.edu/"
   },
   {
-    "name": "Florida State College at Jacksonville",
+    "name": "Florida SouthWestern State College",
+    "country": "United States",
     "state": "Florida",
-    "source": "https://fscj.instructure.com/login"
+    "source": "https://www.fsw.edu/canvas"
+  },
+  {
+    "name": "Florida State College at Jacksonville",
+    "country": "United States",
+    "state": "Florida",
+    "source": "https://www.fscj.edu/academics/online-learning"
   },
   {
     "name": "Hillsborough Community College",
+    "country": "United States",
     "state": "Florida",
-    "source": "https://hcc.instructure.com/login"
+    "source": "https://www.hcfl.edu/academics/hc-online/canvas-student-resources"
   },
   {
     "name": "Miami Dade College",
+    "country": "United States",
     "state": "Florida",
-    "source": "https://mdc.instructure.com/login"
+    "source": "https://faq.mdc.edu/knowledgebase/how-do-i-log-into-blackboard/"
+  },
+  {
+    "name": "Palm Beach State College",
+    "country": "United States",
+    "state": "Florida",
+    "source": "https://www.pbsc.edu/canvas/"
   },
   {
     "name": "Santa Fe College",
+    "country": "United States",
     "state": "Florida",
-    "source": "https://sfcollege.instructure.com/login"
+    "source": "https://www.sfcollege.edu/online/canvas-help/index.html"
   },
   {
     "name": "Seminole State College of Florida",
+    "country": "United States",
     "state": "Florida",
-    "source": "https://seminolestate.instructure.com/login"
-  },
-  {
-    "name": "University of North Florida",
-    "state": "Florida",
-    "source": "https://unf.instructure.com/login"
+    "source": "https://www.seminolestate.edu/online/canvas"
   },
   {
     "name": "University of South Florida",
+    "country": "United States",
     "state": "Florida",
-    "source": "https://usflearn.instructure.com/login"
+    "source": "https://www.usf.edu/innovative-education/digital-learning/digital-learning-resources/canvas.aspx"
   },
   {
     "name": "University of West Florida",
+    "country": "United States",
     "state": "Florida",
-    "source": "https://uwf.instructure.com/login"
+    "source": "https://confluence.uwf.edu/spaces/public/pages/45225435/Canvas+Help+for+Instructors"
   },
   {
     "name": "Valencia College",
+    "country": "United States",
     "state": "Florida",
-    "source": "https://valenciacollege.instructure.com/login"
-  },
-  {
-    "name": "Emory University",
-    "state": "Georgia",
-    "source": "https://canvas.emory.edu/login"
+    "source": "https://catalog.valenciacollege.edu/glossary/"
   },
   {
     "name": "College of Western Idaho",
+    "country": "United States",
     "state": "Idaho",
     "source": "https://cwi.instructure.com/login/canvas"
   },
   {
     "name": "University of Idaho",
+    "country": "United States",
     "state": "Idaho",
     "source": "https://uidaho.instructure.com/login/canvas"
   },
   {
-    "name": "Ball State University",
-    "state": "Indiana",
-    "source": "https://www.bsu.edu/about/administrativeoffices/online-and-strategic-learning/canvas-at-ball-state"
-  },
-  {
     "name": "Indiana University Bloomington",
+    "country": "United States",
     "state": "Indiana",
     "source": "https://uits.iu.edu/services/canvas/index.html"
   },
   {
     "name": "Ivy Tech Community College",
+    "country": "United States",
     "state": "Indiana",
     "source": "https://www.ivytech.edu/student-services/ivylearn-canvas/"
   },
   {
     "name": "University of Notre Dame",
+    "country": "United States",
     "state": "Indiana",
     "source": "https://learning.nd.edu/learning-technology/canvas/"
   },
   {
     "name": "Des Moines Area Community College",
+    "country": "United States",
     "state": "Iowa",
-    "source": "https://dmacc.instructure.com"
+    "source": "https://www.dmacc.edu/online/login.html"
   },
   {
     "name": "Iowa State University",
+    "country": "United States",
     "state": "Iowa",
     "source": "https://celt.iastate.edu/prepare-and-teach/design-your-course/get-started-with-canvas/"
   },
   {
     "name": "Johnson County Community College",
+    "country": "United States",
     "state": "Kansas",
     "source": "https://jccc.instructure.com"
   },
   {
     "name": "Murray State University",
+    "country": "United States",
     "state": "Kentucky",
-    "source": "https://murraystate.instructure.com/"
+    "source": "https://www.murraystate.edu/online/current-students/index.aspx"
   },
   {
     "name": "Northern Kentucky University",
+    "country": "United States",
     "state": "Kentucky",
-    "source": "https://nku.instructure.com/"
+    "source": "https://www.nku.edu/center-for-excellence-in-teaching-and-innovation/resources/technology/canvas-student/index.html"
   },
   {
     "name": "Loyola University New Orleans",
+    "country": "United States",
     "state": "Louisiana",
     "source": "https://loyno.instructure.com/login/saml"
   },
   {
     "name": "Southeastern Louisiana University",
+    "country": "United States",
     "state": "Louisiana",
-    "source": "https://southeastern.instructure.com/"
+    "source": "https://www.southeastern.edu/resources/howdoi/canvas/"
   },
   {
-    "name": "Morgan State University",
+    "name": "University of Maryland",
+    "country": "United States",
     "state": "Maryland",
-    "source": "https://www.morgan.edu/canvas"
-  },
-  {
-    "name": "Salisbury University",
-    "state": "Maryland",
-    "source": "https://www.salisbury.edu/administration/academic-affairs/instructional-design-delivery/cms/index.aspx"
+    "source": "https://elms.umd.edu"
   },
   {
     "name": "Berklee College of Music",
+    "country": "United States",
     "state": "Massachusetts",
     "source": "https://canvas.berklee.edu"
   },
   {
-    "name": "Boston College",
+    "name": "Massachusetts Institute of Technology",
+    "country": "United States",
     "state": "Massachusetts",
-    "source": "https://www.bc.edu/content/bc-web/sites/accessibility/technology-accessibility/canvas.html"
+    "source": "https://web.mit.edu/canvas/about.html"
   },
   {
     "name": "Merrimack College",
+    "country": "United States",
     "state": "Massachusetts",
     "source": "https://www.merrimack.edu/academics/centers-and-institutes/ctide/canvas/"
   },
   {
     "name": "Northeastern University",
+    "country": "United States",
     "state": "Massachusetts",
-    "source": "https://canvas.northeastern.edu/"
+    "source": "https://canvas.northeastern.edu/student-resources/"
   },
   {
     "name": "Salem State University",
+    "country": "United States",
     "state": "Massachusetts",
     "source": "https://www.salemstate.edu/offices-and-services/information-technology-services/canvas"
   },
   {
     "name": "Suffolk University",
+    "country": "United States",
     "state": "Massachusetts",
     "source": "https://www.suffolk.edu/about/directory/information-technology-services/accounts-and-access/canvas"
   },
   {
     "name": "University of Massachusetts Amherst",
+    "country": "United States",
     "state": "Massachusetts",
     "source": "https://umamherst.instructure.com/login"
   },
   {
-    "name": "University of Massachusetts Boston",
-    "state": "Massachusetts",
-    "source": "https://www.umb.edu/canvas/"
-  },
-  {
     "name": "Worcester Polytechnic Institute",
+    "country": "United States",
     "state": "Massachusetts",
     "source": "https://canvas.wpi.edu/"
   },
   {
     "name": "Eastern Michigan University",
+    "country": "United States",
     "state": "Michigan",
     "source": "https://canvas.emich.edu"
   },
   {
     "name": "Wayne State University",
+    "country": "United States",
     "state": "Michigan",
-    "source": "https://services.wayne.edu/TDClient/277/Portal/KB/ArticleDet?ID=20266"
+    "source": "https://services.wayne.edu/TDClient/277/Portal/KB/ArticleDet?ID=20379"
   },
   {
     "name": "University of Minnesota Twin Cities",
+    "country": "United States",
     "state": "Minnesota",
     "source": "https://canvas.umn.edu"
   },
   {
-    "name": "University of St. Thomas",
-    "state": "Minnesota",
-    "source": "https://stthomas.instructure.com"
-  },
-  {
     "name": "Jackson State University",
+    "country": "United States",
     "state": "Mississippi",
-    "source": "https://jsums.instructure.com/login/saml"
+    "source": "https://www.jsums.edu/canvas/"
   },
   {
     "name": "Mississippi State University",
+    "country": "United States",
     "state": "Mississippi",
     "source": "https://www.online.msstate.edu/faq/canvas"
   },
   {
     "name": "University of Southern Mississippi",
+    "country": "United States",
     "state": "Mississippi",
-    "source": "https://www.usm.edu/canvas"
-  },
-  {
-    "name": "Missouri University of Science and Technology",
-    "state": "Missouri",
-    "source": "https://canvas.mst.edu/"
+    "source": "https://www.usm.edu/itech/campusid-faqs.php"
   },
   {
     "name": "Saint Louis University",
+    "country": "United States",
     "state": "Missouri",
     "source": "https://www.slu.edu/provost/ltac-files/canvas-migration.php"
   },
   {
     "name": "St. Louis Community College",
+    "country": "United States",
     "state": "Missouri",
     "source": "https://stlcc.edu/programs-academics/online-education/canvas.aspx"
   },
   {
-    "name": "University of Missouri-Kansas City",
-    "state": "Missouri",
-    "source": "https://umkc.instructure.com"
-  },
-  {
-    "name": "University of Missouri-St. Louis",
-    "state": "Missouri",
-    "source": "https://umsl.instructure.com"
-  },
-  {
     "name": "Webster University",
+    "country": "United States",
     "state": "Missouri",
     "source": "https://www.webster.edu/technology/access-accounts.php"
   },
   {
-    "name": "University of Montana",
-    "state": "Montana",
-    "source": "https://www.umt.edu/canvas/"
-  },
-  {
     "name": "Metropolitan Community College (Omaha)",
+    "country": "United States",
     "state": "Nebraska",
-    "source": "https://mccneb.instructure.com"
+    "source": "https://www.mccneb.edu/about-mcc/it-services"
   },
   {
     "name": "College of Southern Nevada",
+    "country": "United States",
     "state": "Nevada",
     "source": "https://csn.instructure.com/login/canvas"
   },
   {
     "name": "University of Nevada, Reno",
+    "country": "United States",
     "state": "Nevada",
     "source": "https://www.unr.edu/tlt/tools-and-technologies/webcampus/getting-started"
   },
   {
     "name": "Bergen Community College",
+    "country": "United States",
     "state": "New Jersey",
-    "source": "https://bergen.instructure.com"
+    "source": "https://bergen.edu/portalhelp/access-canvas/"
   },
   {
     "name": "Kean University",
+    "country": "United States",
     "state": "New Jersey",
-    "source": "https://kean.instructure.com"
+    "source": "https://www.kean.edu/canvas-lms"
   },
   {
     "name": "Middlesex College",
+    "country": "United States",
     "state": "New Jersey",
     "source": "https://middlesexcc.instructure.com"
   },
   {
-    "name": "Montclair State University",
-    "state": "New Jersey",
-    "source": "https://inside.montclair.edu/resources/canvas"
-  },
-  {
-    "name": "New Jersey Institute of Technology",
-    "state": "New Jersey",
-    "source": "https://canvas.njit.edu"
-  },
-  {
     "name": "Princeton University",
+    "country": "United States",
     "state": "New Jersey",
     "source": "https://canvas.princeton.edu"
   },
   {
     "name": "Rowan University",
+    "country": "United States",
     "state": "New Jersey",
-    "source": "https://rowan.instructure.com"
+    "source": "https://sites.rowan.edu/academic-affairs/facultycenter/resources/canvasresources/"
   },
   {
-    "name": "Stevens Institute of Technology",
+    "name": "Seton Hall University",
+    "country": "United States",
     "state": "New Jersey",
-    "source": "https://sit.instructure.com"
+    "source": "https://www.shu.edu/technology/canvas/index.html"
   },
   {
     "name": "New Mexico State University",
+    "country": "United States",
     "state": "New Mexico",
     "source": "https://learning.nmsu.edu/"
   },
   {
     "name": "Columbia University",
+    "country": "United States",
     "state": "New York",
     "source": "https://support.ctl.columbia.edu/809664"
   },
   {
     "name": "Hofstra University",
+    "country": "United States",
     "state": "New York",
-    "source": "https://hofstra.instructure.com"
+    "source": "https://www.hofstra.edu/about/administration/its/canvas-breach/"
   },
   {
     "name": "St. John's University",
+    "country": "United States",
     "state": "New York",
-    "source": "https://stjohns.instructure.com"
+    "source": "https://www.stjohns.edu/office-information-technology/academic-technology/canvas"
   },
   {
     "name": "The New School",
+    "country": "United States",
     "state": "New York",
     "source": "https://canvas.newschool.edu"
   },
   {
-    "name": "Duke University",
-    "state": "North Carolina",
-    "source": "https://ctl.duke.edu/technology/canvas/"
-  },
-  {
     "name": "East Carolina University",
+    "country": "United States",
     "state": "North Carolina",
     "source": "https://ecu.instructure.com/login"
   },
   {
-    "name": "University of North Carolina at Charlotte",
-    "state": "North Carolina",
-    "source": "https://canvas.charlotte.edu/"
-  },
-  {
     "name": "University of North Carolina at Greensboro",
+    "country": "United States",
     "state": "North Carolina",
     "source": "https://uncg.instructure.com/"
   },
   {
-    "name": "Bowling Green State University",
-    "state": "Ohio",
-    "source": "https://canvas.bgsu.edu"
+    "name": "Western Carolina University",
+    "country": "United States",
+    "state": "North Carolina",
+    "source": "https://www.wcu.edu/canvas/"
   },
   {
-    "name": "Case Western Reserve University",
+    "name": "Bowling Green State University",
+    "country": "United States",
     "state": "Ohio",
-    "source": "https://case.edu/utech/help/knowledge-base/canvas/canvas-information"
+    "source": "https://onlinedegree.bgsu.edu/faq/"
   },
   {
     "name": "University of Cincinnati",
+    "country": "United States",
     "state": "Ohio",
     "source": "https://www.uc.edu/about/registrar/registration/registration-how-to-guide/catalyst-canvas.html"
   },
   {
     "name": "Oklahoma State University",
+    "country": "United States",
     "state": "Oklahoma",
     "source": "https://canvas.okstate.edu/"
   },
   {
     "name": "Community College of Philadelphia",
+    "country": "United States",
     "state": "Pennsylvania",
     "source": "https://ccp.instructure.com"
   },
   {
     "name": "Clemson University",
+    "country": "United States",
     "state": "South Carolina",
-    "source": "https://clemson.instructure.com/login"
+    "source": "https://www.clemson.edu/canvas/"
   },
   {
     "name": "Middle Tennessee State University",
+    "country": "United States",
     "state": "Tennessee",
     "source": "https://www.mtsu.edu/canvas/"
   },
   {
     "name": "University of Memphis",
+    "country": "United States",
     "state": "Tennessee",
-    "source": "https://www.memphis.edu/umtech/service_catalog/software/canvas.php"
+    "source": "https://www.memphis.edu/ctl/canvas/"
   },
   {
     "name": "University of Tennessee at Chattanooga",
+    "country": "United States",
     "state": "Tennessee",
     "source": "https://www.utc.edu/canvas"
   },
   {
     "name": "Alamo Colleges District",
+    "country": "United States",
     "state": "Texas",
     "source": "https://www.alamo.edu/sac/experience-sac/current-students/student-resources/canvas-for-students/"
   },
   {
     "name": "Collin College",
+    "country": "United States",
     "state": "Texas",
     "source": "https://www.collin.edu/academics/elearning/student-canvas-resources.html"
   },
   {
     "name": "Houston City College (formerly Houston Community College)",
+    "country": "United States",
     "state": "Texas",
     "source": "https://www.hccs.edu/current-students/technology-support/eagle-online-canvas-support/"
   },
   {
-    "name": "Rice University",
-    "state": "Texas",
-    "source": "https://tss.rice.edu/services/accounts-access"
-  },
-  {
-    "name": "Texas Tech University",
-    "state": "Texas",
-    "source": "https://www.depts.ttu.edu/ithelpcentral/"
-  },
-  {
-    "name": "UT San Antonio (UTSA)",
-    "state": "Texas",
-    "source": "https://provost.utsa.edu/canvas/"
-  },
-  {
     "name": "University of Texas at Arlington",
+    "country": "United States",
     "state": "Texas",
     "source": "https://oit.uta.edu/canvas/"
   },
   {
     "name": "University of Texas at Austin",
+    "country": "United States",
     "state": "Texas",
     "source": "https://tech.utexas.edu/services-tools/canvas"
   },
   {
+    "name": "UT San Antonio (UTSA)",
+    "country": "United States",
+    "state": "Texas",
+    "source": "https://provost.utsa.edu/canvas/"
+  },
+  {
     "name": "Brigham Young University",
+    "country": "United States",
     "state": "Utah",
     "source": "https://byucanvas.byu.edu/getting-started-with-canvas"
   },
   {
     "name": "Salt Lake Community College",
+    "country": "United States",
     "state": "Utah",
     "source": "https://www.slcc.edu/student-tech-guide/canvas-help.aspx"
   },
   {
+    "name": "Southern Utah University",
+    "country": "United States",
+    "state": "Utah",
+    "source": "https://www.suu.edu/news/2026/05/canvas-incident.html"
+  },
+  {
     "name": "University of Utah",
+    "country": "United States",
     "state": "Utah",
     "source": "https://digitallearning.utah.edu/support/canvas-help.php"
   },
   {
     "name": "Utah State University",
+    "country": "United States",
     "state": "Utah",
     "source": "https://www.usu.edu/teach/help-topics/canvas/index.php"
   },
   {
     "name": "Utah Valley University",
+    "country": "United States",
     "state": "Utah",
     "source": "https://www.uvu.edu/canvas/everyone/index.html"
   },
   {
     "name": "Northern Virginia Community College",
+    "country": "United States",
     "state": "Virginia",
     "source": "https://www.nvcc.edu/student-resources/technology/canvas.html"
   },
   {
     "name": "Old Dominion University",
+    "country": "United States",
     "state": "Virginia",
     "source": "https://www.odu.edu/technology-services/canvas"
   },
   {
-    "name": "University of Virginia",
-    "state": "Virginia",
-    "source": "https://canvas.virginia.edu/students-getting-started"
-  },
-  {
-    "name": "Central Washington University",
-    "state": "Washington",
-    "source": "https://canvas.cwu.edu"
-  },
-  {
     "name": "Eastern Washington University",
+    "country": "United States",
     "state": "Washington",
-    "source": "https://canvas.ewu.edu"
+    "source": "https://support.ewu.edu/support/solutions/folders/10000086854"
   },
   {
     "name": "Gonzaga University",
+    "country": "United States",
     "state": "Washington",
     "source": "https://canvas.gonzaga.edu"
   },
   {
-    "name": "Seattle University",
-    "state": "Washington",
-    "source": "https://canvas.seattleu.edu (DNS alias of seattleu.instructure.com)"
-  },
-  {
-    "name": "Washington State University",
-    "state": "Washington",
-    "source": "https://canvas.wsu.edu (redirects to wsu.instructure.com)"
-  },
-  {
-    "name": "University of Wisconsin-Milwaukee",
+    "name": "University of Wisconsin-Green Bay",
+    "country": "United States",
     "state": "Wisconsin",
-    "source": "https://uwm.edu/canvas/canvas-for-students/"
+    "source": "https://www.uwgb.edu/canvas/"
+  },
+  {
+    "name": "University of Wisconsin-La Crosse",
+    "country": "United States",
+    "state": "Wisconsin",
+    "source": "https://www.uwlax.edu/info/canvas/"
+  },
+  {
+    "name": "University of Wisconsin-Oshkosh",
+    "country": "United States",
+    "state": "Wisconsin",
+    "source": "https://www.uwosh.edu/canvas/"
+  },
+  {
+    "name": "University of Wisconsin-Whitewater",
+    "country": "United States",
+    "state": "Wisconsin",
+    "source": "https://www.uww.edu/canvas"
   },
   {
     "name": "University of Wyoming",
+    "country": "United States",
     "state": "Wyoming",
     "source": "https://www.uwyo.edu/ctl/knowledge-base/wyocourses-information.html"
+  },
+  {
+    "name": "Adelaide University (myLearning = Canvas)",
+    "country": "Australia",
+    "source": "https://adelaide.edu.au/about/news/2026/canvas-security-incident/"
+  },
+  {
+    "name": "Swinburne University of Technology",
+    "country": "Australia",
+    "source": "https://www.swinburne.edu.au/student-login/submitting-work/"
+  },
+  {
+    "name": "University of Canberra (UCLearn = Canvas)",
+    "country": "Australia",
+    "source": "https://www.canberra.edu.au/current-students/other-countries/enrolment-information/accessing-unit-material-online"
+  },
+  {
+    "name": "Erasmus University College Brussels (EhB)",
+    "country": "Belgium",
+    "source": "https://www.erasmushogeschool.be/nl/studenten/cas-en-canvas"
+  },
+  {
+    "name": "Karel de Grote University of Applied Sciences (KdG)",
+    "country": "Belgium",
+    "source": "https://www.kdg.be/helpdesk-canvas"
+  },
+  {
+    "name": "Thomas More University of Applied Sciences",
+    "country": "Belgium",
+    "source": "https://thomasmore.be/en/international-what-canvas"
+  },
+  {
+    "name": "Unisinos",
+    "country": "Brazil",
+    "source": "https://www.unisinos.br/graduacao/orientacoes-ead"
+  },
+  {
+    "name": "OCAD University",
+    "country": "Canada",
+    "source": "http://www.ocadu.ca/news/updated-instructure/canvas-security-incident"
+  },
+  {
+    "name": "University of British Columbia",
+    "country": "Canada",
+    "source": "https://it.ubc.ca/services/accounts-passwords/campus-wide-login-cwl"
+  },
+  {
+    "name": "University of Saskatchewan",
+    "country": "Canada",
+    "source": "https://teaching.usask.ca/learning-technology/tools/canvas.php"
+  },
+  {
+    "name": "Pontificia Universidad Católica de Chile (Canvas UC)",
+    "country": "Chile",
+    "source": "https://www.uc.cl/noticias/las-ventajas-de-canvas-la-nueva-plataforma-web-de-cursos/"
+  },
+  {
+    "name": "Universidad de los Andes, Chile (CanvasUANDES)",
+    "country": "Chile",
+    "source": "https://www.uandes.cl/actualidad/noticias/como-utilizar-canvasuandes-guia-rapida-para-alumnos-y-profesores/"
+  },
+  {
+    "name": "Universidad del Desarrollo (UDD)",
+    "country": "Chile",
+    "source": "https://auladigital.udd.cl/preguntas-frecuentes/"
+  },
+  {
+    "name": "Universidad Diego Portales (UDP)",
+    "country": "Chile",
+    "source": "https://www.udp.cl/cms/wp-content/uploads/2021/06/moduloI.pdf"
+  },
+  {
+    "name": "ESPOL (Escuela Superior Politécnica del Litoral)",
+    "country": "Ecuador",
+    "source": "https://www.espol.edu.ec/es/noticias/canvas-una-plataforma-para-mejorar-la-experiencia-academica-virtual-e-impulsar-la"
+  },
+  {
+    "name": "American University in Cairo",
+    "country": "Egypt",
+    "source": "https://www.aucegypt.edu/digital-transformation/IT-services-catalog"
+  },
+  {
+    "name": "Frankfurt School of Finance & Management",
+    "country": "Germany",
+    "source": "https://www.frankfurt-school.de/en/home/news/2026/07/canvas-incident"
+  },
+  {
+    "name": "Ashesi University",
+    "country": "Ghana",
+    "source": "https://ashesi.edu.gh/alumni/"
+  },
+  {
+    "name": "University of Iceland",
+    "country": "Iceland",
+    "source": "https://hi.is/nam/adgangur_ad_uglu_og_tolvukerfi"
+  },
+  {
+    "name": "ITAM (Instituto Tecnológico Autónomo de México)",
+    "country": "Mexico",
+    "source": "https://exalumnos.itam.mx/boletin/2020/agosto/"
+  },
+  {
+    "name": "ITESO",
+    "country": "Mexico",
+    "source": "https://estudiantes.iteso.mx/en/"
+  },
+  {
+    "name": "Tecnológico de Monterrey",
+    "country": "Mexico",
+    "source": "https://tedu.tec.mx/es/canvas"
+  },
+  {
+    "name": "Universidad Autónoma de Guadalajara (UAG)",
+    "country": "Mexico",
+    "source": "https://soportecanvas.uag.mx/assets/uso-de-canvas---alumnos-ene-2022.pdf"
+  },
+  {
+    "name": "UPAEP",
+    "country": "Mexico",
+    "source": "https://upaep.mx/idd/manuales/pdf/915"
+  },
+  {
+    "name": "HU University of Applied Sciences Utrecht",
+    "country": "Netherlands",
+    "source": "https://www.hu.nl/nieuws/hu-neemt-canvas-weer-in-gebruik"
+  },
+  {
+    "name": "Tilburg University",
+    "country": "Netherlands",
+    "source": "https://www.tilburguniversity.edu/sites/default/files/download/Privacy%20Statement%20Canvas.pdf"
+  },
+  {
+    "name": "Victoria University of Wellington (Nuku = Canvas)",
+    "country": "New Zealand",
+    "source": "https://www.wgtn.ac.nz/students/study/ako/access-your-courses-on-nuku"
+  },
+  {
+    "name": "University of Bergen (Mitt UiB = Canvas)",
+    "country": "Norway",
+    "source": "https://www.uib.no/diguib/79169/l%C3%A6ringsplattform-mitt-uib"
+  },
+  {
+    "name": "Universidad San Ignacio de Loyola (USIL)",
+    "country": "Peru",
+    "source": "https://contenidoscev.usil.edu.pe/canvas/manuales/Manual-Estudiantes-CANVAS.pdf"
+  },
+  {
+    "name": "Ateneo de Manila University",
+    "country": "Philippines",
+    "source": "https://www.ateneo.edu/gsb/FAQs/Registration"
+  },
+  {
+    "name": "University of the Witwatersrand (ulwazi = Canvas)",
+    "country": "South Africa",
+    "source": "https://www.wits.ac.za/ulwazi/"
+  },
+  {
+    "name": "Universidad Francisco de Vitoria",
+    "country": "Spain",
+    "source": "https://www.ufv.es/preguntas-frecuentes-secretaria-de-alumnos/"
+  },
+  {
+    "name": "Chalmers University of Technology",
+    "country": "Sweden",
+    "source": "https://www.chalmers.se/en/education/your-studies/services-and-tools/canvas/"
+  },
+  {
+    "name": "University of St. Gallen (StudyNet = Canvas)",
+    "country": "Switzerland",
+    "source": "https://www.unisg.ch/en/studying/orientation/uni-abcs/"
+  },
+  {
+    "name": "Heriot-Watt University",
+    "country": "United Kingdom",
+    "source": "https://www.hw.ac.uk/students/student-a-z-guide"
+  },
+  {
+    "name": "Kingston University",
+    "country": "United Kingdom",
+    "source": "https://progspec.kingston.ac.uk/view/?d=1213509dd03edf59ca8f98b5240928"
+  },
+  {
+    "name": "University of Birmingham",
+    "country": "United Kingdom",
+    "source": "https://intranet.birmingham.ac.uk/student/academic-support/online-learning/index.aspx"
+  },
+  {
+    "name": "University of Stirling",
+    "country": "United Kingdom",
+    "source": "https://isnews.stir.ac.uk/2023/03/08/things-to-do-before-you-graduate-tie-up-library-and-it-loose-ends/"
+  },
+  {
+    "name": "University of Wolverhampton",
+    "country": "United Kingdom",
+    "source": "https://www.wlv.ac.uk/courses/online-distance-learning/starting-out/"
   }
 ];

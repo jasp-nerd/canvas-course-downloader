@@ -18,14 +18,17 @@ const options = [
   })),
   ...ON_CANVAS.map((s) => ({
     name: s.name,
-    country: 'United States',
+    country: s.country,
     ends: 'No written rule found',
     text: "We couldn't find a written rule on this school's own pages. Ask its IT help desk, and save your courses before you graduate.",
     source: s.source,
     label: "The university's Canvas page",
   })),
 ].sort((a, b) => a.name.localeCompare(b.name));
-const countries = [...new Set(POLICIES.map((p) => p.country))];
+// Most visitors are in the US, so it leads; other countries follow alphabetically.
+const countries = [...new Set(options.map((o) => o.country))].sort(
+  (a, b) => Number(a !== 'United States') - Number(b !== 'United States') || a.localeCompare(b),
+);
 const checkedDay = new Date(CHECKED).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 ---
 
