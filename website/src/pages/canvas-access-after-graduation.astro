@@ -1,0 +1,182 @@
+---
+import Base from '../layouts/Base.astro';
+import Closer from '../components/Closer.astro';
+import { CHECKED, ON_CANVAS, POLICIES } from '../data/policies';
+import InstallCta from '../components/InstallCta.astro';
+import { href } from '../data/site';
+
+const reviewed = new Date(CHECKED).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+const countries = [...new Set(POLICIES.map((p) => p.country))];
+// No-rule schools by country, and US schools by state within that; elsewhere one list is short enough.
+const canvasGroups = [...new Set(ON_CANVAS.map((s) => s.country))].map((country) => {
+  const schools = ON_CANVAS.filter((s) => s.country === country);
+  const states = [...new Set(schools.map((s) => s.state))];
+  return {
+    country,
+    groups: states.every(Boolean) ? states.map((state) => ({ state, schools: schools.filter((s) => s.state === state) })) : [{ state: undefined, schools }],
+  };
+});
+const url = new URL(Astro.url.pathname, Astro.site).toString();
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: 'How long do you keep access to Canvas after graduation?',
+  description: `What happens to Canvas courses when a term ends or you graduate, with the official policies of ${POLICIES.length} universities and a checklist to save your work in time.`,
+  datePublished: CHECKED,
+  dateModified: CHECKED,
+  inLanguage: 'en',
+  mainEntityOfPage: url,
+  publisher: { '@id': new URL('/#org', Astro.site).toString() },
+};
+// The site's own name, without the help desk in front: "services.northwestern.edu" is "northwestern.edu".
+const site = (u: string) => {
+  const parts = new URL(u).hostname.split('.');
+  const keep = /^(ac|edu|co)$/.test(parts.at(-2)!) ? 3 : 2;
+  return parts.slice(-keep).join('.');
+};
+---
+
+<Base
+  title="Canvas access after graduation: how long you keep your courses – Canvas Course Downloader"
+  description={`What happens to Canvas courses when a term ends or you graduate, with linked policies from ${POLICIES.length} universities and a checklist to save your work in time.`}
+  ogTitle="How long do you keep access to Canvas after graduation?"
+  ogType="article"
+  jsonLd={jsonLd}
+  current="/canvas-access-after-graduation/"
+>
+  <section class="wrap page-head head-split">
+    <div>
+      <h1>Canvas access after graduation</h1>
+      <p class="lead">
+        How long you keep your courses depends on your school: from the day you graduate to years
+        later. Two things decide it, the course's own dates and your login. You keep a course only
+        while both last.
+      </p>
+      <p class="byline">By the maker of Canvas Course Downloader. Policies checked on {reviewed}.</p>
+    </div>
+    <Closer />
+  </section>
+
+  <article class="wrap prose" style="max-width: none">
+    <div style="max-width: 44em">
+      <h2>Two clocks</h2>
+      <p>
+        <strong>The course.</strong> When a term ends, Canvas puts its courses in a read-only state by default:
+        you can still look, but not submit. A teacher or the school can also hide a course from students
+        once it ends, and many schools delete old courses after a few years. Instructure explains how{' '}
+        <a href="https://community.instructure.com/en/kb/articles/662735-how-do-term-dates-course-dates-and-section-dates-work-in-canvas">term, course and section dates</a>{' '}
+        work and how teachers can{' '}
+        <a href="https://community.instructure.com/en/kb/articles/661118-how-do-i-restrict-student-access-to-a-course-before-or-after-the-course-dates">restrict access after a course ends</a>.
+      </p>
+      <p>
+        <strong>Your login.</strong> When you graduate or leave, your school account is closed after a while,
+        and with it your way into Canvas. That clock often starts when your enrolment ends, not on the day
+        of the ceremony.
+      </p>
+
+      <h2>Before you lose access</h2>
+      <ul class="checklist" id="checklist">
+        <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><span>Look up your school's rule below, or on its IT help pages. Note the date.</span></li>
+        <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><span>Find your older courses: they leave the Dashboard but stay under Courses › All Courses › <a href="https://community.instructure.com/en/kb/articles/662809-how-do-i-view-all-my-canvas-courses">Past Enrollments</a> while they're still open.</span></li>
+        <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><span>Save each course while it's still open, files and pages and your own submissions with feedback. <a href={href('/download/')}>Canvas Course Downloader</a> does a whole course in one click.</span></li>
+        <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><span>Recordings on Panopto, Kaltura or Canvas Studio, and library e-books, expire on their own schedules. Ask your teacher or library about those.</span></li>
+        <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><span>Keep the copy somewhere that lasts: your own drive and a backup.</span></li>
+      </ul>
+      <h2>What {POLICIES.length} universities say</h2>
+      <p>
+        Each row quotes the university's own help or IT pages; follow the link for the full text.
+        Rules change, so check your school's page before you rely on a date.
+      </p>
+    </div>
+
+    {
+      countries.map((country) => (
+        <>
+          <h3>{country}</h3>
+          <div class="table-scroll">
+            <table class="policy-table">
+              <colgroup>
+                <col style="width: 18%" />
+                <col style="width: 15%" />
+                <col />
+                <col />
+                <col style="width: 15%" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th scope="col">University</th>
+                  <th scope="col">Access ends</th>
+                  <th scope="col">After a course ends</th>
+                  <th scope="col">After you graduate or leave</th>
+                  <th scope="col">Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                {POLICIES.filter((p) => p.country === country).map((p) => (
+                  <tr>
+                    <th scope="row">
+                      {p.name}
+                      {p.state && <span class="state">{p.state}</span>}
+                    </th>
+                    <td class="ends" data-label="Access ends">{p.ends}</td>
+                    <td data-label="After a course ends">{p.course}</td>
+                    <td data-label="After you graduate or leave">{p.account}</td>
+                    <td data-label="Source">
+                      {p.sources.map((s, i) => (
+                        <p>
+                          <a href={s}>{i ? `${site(s)} (${i + 1})` : site(s)}</a>
+                        </p>
+                      ))}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ))
+    }
+
+    <div style="max-width: 44em">
+      <h2>On Canvas, no written rule found</h2>
+      <p>
+        These {ON_CANVAS.length} schools use Canvas, but we found no written rule on their own pages. That
+        doesn't mean access lasts: ask the IT help desk, and save your courses before you graduate. Each link
+        goes to the school's Canvas page.
+      </p>
+      {
+        canvasGroups.map(({ country, groups }) => (
+          <>
+            <h3>{country}</h3>
+            <dl class="canvas-schools">
+              {groups.map(({ state, schools }) => (
+                <div>
+                  {state && <dt>{state}</dt>}
+                  <dd>
+                    {schools.map((s, i) => (
+                      <>
+                        {i > 0 && ', '}
+                        <a href={s.source}>{s.name}</a>
+                      </>
+                    ))}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </>
+        ))
+      }
+      <h2>Not in the list?</h2>
+      <p>
+        Search your school's IT help pages for "Canvas after graduation" or "account after leaving". The
+        schools above range from closing access on graduation day (RMIT) to keeping it for 21 years
+        (Georgetown), so don't assume.
+      </p>
+      <h2>Save a course in one click</h2>
+      <p>Canvas Course Downloader saves a whole course, files and pages and your own submissions, before your access ends.</p>
+      <p style="margin-top: 20px">
+        <InstallCta campaign="guide-access" />
+      </p>
+    </div>
+  </article>
+</Base>

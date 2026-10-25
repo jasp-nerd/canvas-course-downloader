@@ -1,0 +1,346 @@
+---
+// "When does your Canvas close?": find a university, see its rule in its own words, with the source.
+// Served showing the fallback school's answer, which reads fine without JavaScript. The script
+// makes the field searchable (the WAI-ARIA editable combobox with list autocomplete) and opens on
+// a school in the visitor's time zone. One per page: the ids below are fixed.
+import { CHECKED, ON_CANVAS, POLICIES } from '../data/policies';
+import { FALLBACK_SCHOOL, NEARBY_COUNTRIES, NEARBY_SCHOOLS } from '../data/nearby';
+
+for (const name of NEARBY_SCHOOLS) {
+  if (!POLICIES.some((p) => p.name === name)) throw new Error(`nearby.ts names an unknown school: ${name}`);
+}
+for (const country of NEARBY_COUNTRIES) {
+  if (!ON_CANVAS.some((s) => s.country === country)) throw new Error(`nearby.ts names a country with no schools: ${country}`);
+}
+const first = POLICIES.find((p) => p.name === FALLBACK_SCHOOL)!;
+// The login rule when the school has one, else the course rule: many US pages only cover courses.
+const quote = (p: (typeof POLICIES)[number]) =>
+  p.account.match(/"([^"]+)"/)?.[1] ?? p.course.match(/"([^"]+)"/)?.[1] ?? p.account;
+// Schools on Canvas without a written rule are in the picker too, pointing at their own Canvas help.
+const options = [
+  ...POLICIES.map((p) => ({
+    name: p.name,
+    country: p.country,
+    ends: p.ends,
+    text: `“${quote(p)}”`,
+    source: p.sources[0],
+    label: "From the university's own help page",
+  })),
+  ...ON_CANVAS.map((s) => ({
+    name: s.name,
+    country: s.country,
+    ends: 'No written rule found',
+    text: "We couldn't find a written rule on this school's own pages. Ask its IT help desk, and save your courses before you graduate.",
+    source: s.source,
+    label: "The university's Canvas page",
+  })),
+].sort((a, b) => a.name.localeCompare(b.name));
+const checkedDay = new Date(CHECKED).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<div class="closer" data-closer>
+  <h3 id="closer-title">When does your Canvas close?</h3>
+
+  <div class="picker">
+    <label class="sr-only" for="school-search">Your university</label>
+    <div class="picker-field">
+      <svg class="icon picker-search" aria-hidden="true"><use href="#i-search"></use></svg>
+      <!-- Read-only until the script makes it searchable. -->
+      <input
+        id="school-search"
+        type="text"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded="false"
+        aria-controls="school-list"
+        aria-describedby="closer-title"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+        enterkeyhint="done"
+        placeholder="Type your university"
+        value={first.name}
+        readonly
+        data-search
+      />
+      <button class="picker-toggle" type="button" tabindex="-1" aria-label="Show universities" aria-controls="school-list" aria-expanded="false" hidden data-toggle>
+        <svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>
+      </button>
+    </div>
+    <div class="picker-pop" data-pop hidden>
+      <div class="picker-list" id="school-list" role="listbox" aria-label="Universities" data-list></div>
+      <p class="picker-empty" data-empty hidden></p>
+    </div>
+    <p class="sr-only" aria-live="polite" data-picker-count></p>
+  </div>
+
+  <div class="result" data-result>
+    <span class="near" data-r-near hidden>A school in your time zone</span>
+    <span class="ends" data-r-ends>{first.ends}</span>
+    <span class="school" data-r-school>{first.name}</span>
+    <p data-r-text>“{quote(first)}”</p>
+    <a href={first.sources[0]} data-r-source>From the university's own help page</a>
+  </div>
+  <p class="closer-note">
+    From each school's own pages, checked on {checkedDay}. Not listed? The {POLICIES.length} rules we found range from the
+    day you graduate to never.
+  </p>
+  <script type="application/json" data-options set:html={JSON.stringify(options)} />
+</div>
+
+<script>
+  import { FALLBACK_SCHOOL, nearby } from '../data/nearby';
+
+  type School = { name: string; country: string; ends: string; text: string; source: string; label: string };
+
+  const root = document.querySelector<HTMLElement>('[data-closer]');
+  if (root) setUp(root);
+
+  // Case and accents don't matter: "zurich" finds "Zürich".
+  function fold(s: string) {
+    return s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+  }
+
+  function setUp(root: HTMLElement) {
+    const schools: School[] = JSON.parse(root.querySelector('[data-options]')!.textContent!);
+    const names = schools.map((s) => fold(s.name));
+    // Initials too, since people search by them: "vu" finds Vrije Universiteit, "unc" North Carolina.
+    const initials = names.map((n) =>
+      n
+        .split(/[^a-z0-9]+/)
+        .filter((w) => w && !['of', 'at', 'the', 'and', 'in', 'de', 'la'].includes(w))
+        .map((w) => w[0])
+        .join(''),
+    );
+    const input = root.querySelector<HTMLInputElement>('[data-search]')!;
+    const toggle = root.querySelector<HTMLButtonElement>('[data-toggle]')!;
+    const pop = root.querySelector<HTMLElement>('[data-pop]')!;
+    const list = root.querySelector<HTMLElement>('[data-list]')!;
+    const empty = root.querySelector<HTMLElement>('[data-empty]')!;
+    const count = root.querySelector<HTMLElement>('[data-picker-count]')!;
+    const result = root.querySelector<HTMLElement>('[data-result]')!;
+    const touch = matchMedia('(pointer: coarse)');
+
+    let zone = '';
+    try {
+      zone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? '';
+    } catch {
+      // Without time zone support the box opens on the fallback school.
+    }
+    const near = nearby(zone);
+    const fromZone = schools.find((s) => s.name === near.school);
+    let current = fromZone ?? schools.find((s) => s.name === FALLBACK_SCHOOL)!;
+    // The visitor's country first, then the US, then the rest alphabetically.
+    const home = fromZone?.country ?? near.country ?? 'United States';
+    const rank = (c: string) => (c === home ? 0 : c === 'United States' ? 1 : 2);
+    const countries = [...new Set(schools.map((s) => s.country))].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+
+    let shown: School[] = [];
+    let active = -1;
+    let typed = false;
+    let countTimer = 0;
+
+    function show(school: School, nearYou = false) {
+      current = school;
+      result.querySelector<HTMLElement>('[data-r-near]')!.hidden = !nearYou;
+      result.querySelector('[data-r-ends]')!.textContent = school.ends;
+      result.querySelector('[data-r-school]')!.textContent = school.name;
+      result.querySelector('[data-r-text]')!.textContent = school.text;
+      const link = result.querySelector<HTMLAnchorElement>('[data-r-source]')!;
+      link.href = school.source;
+      link.textContent = school.label;
+      input.value = school.name;
+    }
+
+    // Every typed word is bolded where it appears. Built as text nodes, so no name is read as HTML.
+    function label(name: string, words: string[]) {
+      const span = document.createElement('span');
+      span.className = 'picker-name';
+      const folded = fold(name);
+      // Folding can change a name's length (rarely); then the offsets don't fit, so skip the bold.
+      const marks = new Array<boolean>(name.length).fill(false);
+      if (folded.length === name.length) {
+        for (const w of words) {
+          for (let at = folded.indexOf(w); at >= 0; at = folded.indexOf(w, at + 1)) marks.fill(true, at, at + w.length);
+        }
+      }
+      let i = 0;
+      while (i < name.length) {
+        let j = i;
+        while (j < name.length && marks[j] === marks[i]) j++;
+        if (marks[i]) {
+          const mark = document.createElement('mark');
+          mark.textContent = name.slice(i, j);
+          span.append(mark);
+        } else span.append(name.slice(i, j));
+        i = j;
+      }
+      return span;
+    }
+
+    function render(query: string) {
+      const words = fold(query.trim()).split(/\s+/).filter(Boolean);
+      const matches = schools.filter((_, i) =>
+        words.every((w) => names[i]!.includes(w) || (w.length > 1 && initials[i]!.startsWith(w))),
+      );
+      shown = [];
+      list.replaceChildren();
+      for (const [g, country] of countries.entries()) {
+        const group = matches.filter((s) => s.country === country);
+        if (!group.length) continue;
+        const box = document.createElement('div');
+        box.setAttribute('role', 'group');
+        box.setAttribute('aria-labelledby', `school-group-${g}`);
+        const heading = document.createElement('div');
+        heading.className = 'picker-group';
+        heading.id = `school-group-${g}`;
+        heading.textContent = country;
+        box.append(heading);
+        for (const school of group) {
+          const option = document.createElement('div');
+          option.setAttribute('role', 'option');
+          option.setAttribute('aria-selected', 'false');
+          option.id = `school-option-${shown.length}`;
+          option.dataset.index = String(shown.length);
+          const ends = document.createElement('span');
+          ends.className = 'picker-ends';
+          ends.textContent = school.ends;
+          option.append(label(school.name, words), ends);
+          if (school === current) {
+            option.classList.add('is-current');
+            option.insertAdjacentHTML('beforeend', '<svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>');
+          }
+          box.append(option);
+          shown.push(school);
+        }
+        list.append(box);
+      }
+      list.hidden = !shown.length;
+      empty.hidden = !!shown.length;
+      if (!shown.length) empty.textContent = `No match for “${query.trim()}”. Ask your school's IT help desk.`;
+      // One announcement when typing pauses, not one per key.
+      clearTimeout(countTimer);
+      count.textContent = '';
+      if (words.length) {
+        countTimer = window.setTimeout(() => {
+          count.textContent = `${shown.length} ${shown.length === 1 ? 'university' : 'universities'} found`;
+        }, 400);
+      }
+      // Typing highlights the first match; opening without a query starts on the current school.
+      if (words.length) move(shown.length ? 0 : -1);
+      else move(shown.indexOf(current), true);
+    }
+
+    function move(index: number, top = false) {
+      const previous = list.querySelector('[aria-selected="true"]');
+      previous?.setAttribute('aria-selected', 'false');
+      active = index;
+      const option = index >= 0 ? list.querySelector<HTMLElement>(`#school-option-${index}`) : null;
+      if (!option) {
+        input.removeAttribute('aria-activedescendant');
+        return;
+      }
+      option.setAttribute('aria-selected', 'true');
+      input.setAttribute('aria-activedescendant', option.id);
+      // Scroll the list only (scrollIntoView can move the page too), clear of the sticky heading.
+      const heading = option.parentElement!.querySelector<HTMLElement>('.picker-group')!.offsetHeight;
+      if (top || option.offsetTop - heading < list.scrollTop) list.scrollTop = option.offsetTop - heading;
+      else if (option.offsetTop + option.offsetHeight > list.scrollTop + list.clientHeight)
+        list.scrollTop = option.offsetTop + option.offsetHeight - list.clientHeight;
+    }
+
+    // On a phone the keyboard covers the lower half: lift the field to the top, fit the list above the keyboard.
+    function fit() {
+      const space = (visualViewport?.height ?? innerHeight) - input.getBoundingClientRect().bottom - 16;
+      list.style.maxHeight = `${Math.max(160, Math.min(360, space))}px`;
+    }
+
+    function open(query = '') {
+      if (pop.hidden) {
+        pop.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+        toggle.setAttribute('aria-expanded', 'true');
+        if (touch.matches) input.scrollIntoView({ block: 'start' });
+        fit();
+      }
+      render(query);
+    }
+
+    function close() {
+      pop.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-expanded', 'false');
+      input.removeAttribute('aria-activedescendant');
+      clearTimeout(countTimer);
+      count.textContent = '';
+      typed = false;
+      input.value = current.name;
+    }
+
+    function choose(index: number) {
+      const school = shown[index];
+      if (school) show(school);
+      close();
+    }
+
+    input.addEventListener('focus', () => {
+      // A focus handler's select() doesn't stick on iOS; a frame later it does.
+      requestAnimationFrame(() => input.setSelectionRange(0, input.value.length));
+    });
+    input.addEventListener('click', () => pop.hidden && open());
+    input.addEventListener('input', () => {
+      typed = true;
+      open(input.value);
+    });
+    input.addEventListener('keydown', (e) => {
+      // Enter also confirms a word while typing Japanese or Chinese; leave that to the input method.
+      if (e.isComposing || e.keyCode === 229) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (pop.hidden) open();
+        else if (!e.altKey) move(Math.min(active + 1, shown.length - 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (e.altKey) close();
+        else if (!pop.hidden) move(Math.max(active - 1, 0));
+      } else if (e.key === 'Enter' && !pop.hidden) {
+        e.preventDefault();
+        choose(active);
+      } else if (e.key === 'Escape' && !pop.hidden) {
+        e.preventDefault();
+        close();
+        input.select();
+      }
+    });
+    // Leaving the field after typing keeps the highlighted match; Escape is the way back.
+    input.addEventListener('blur', () => {
+      if (pop.hidden) return;
+      if (typed && active >= 0) choose(active);
+      else close();
+    });
+    toggle.addEventListener('pointerdown', (e) => e.preventDefault());
+    toggle.addEventListener('click', () => {
+      if (pop.hidden) {
+        input.focus();
+        open();
+      } else close();
+    });
+    // Keep focus in the field while an option is pressed, so blur doesn't close the list first.
+    pop.addEventListener('pointerdown', (e) => e.preventDefault());
+    list.addEventListener('click', (e) => {
+      const option = (e.target as HTMLElement).closest<HTMLElement>('[role="option"]');
+      if (option) choose(Number(option.dataset.index));
+    });
+    list.addEventListener('pointermove', (e) => {
+      const option = (e.target as HTMLElement).closest<HTMLElement>('[role="option"]');
+      if (option && Number(option.dataset.index) !== active) move(Number(option.dataset.index));
+    });
+    visualViewport?.addEventListener('resize', () => !pop.hidden && fit());
+
+    input.readOnly = false;
+    toggle.hidden = false;
+    show(current, !!fromZone);
+    // Live only from here, so the switch to the visitor's school isn't read out on load.
+    result.setAttribute('aria-live', 'polite');
+  }
+</script>

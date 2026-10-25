@@ -1,0 +1,24 @@
+{
+  "course": "Academic Writing",
+  "courseId": "104",
+  "sourceUrl": "https://school.instructure.com/courses/104",
+  "exportDate": "<export-date>",
+  "extensionVersion": "<extension-version>",
+  "counts": {
+    "files": 24,
+    "pages": 0,
+    "assignments": 0,
+    "announcements": 0,
+    "discussions": 0,
+    "discussionReplies": 0,
+    "studentSubmissions": 0,
+    "gradebookStudents": 0,
+    "quizzes": 0,
+    "modules": 0,
+    "extractedFiles": 0,
+    "inaccessibleLinkedFiles": 0,
+    "skippedIncremental": 0,
+    "skippedFilters": 0,
+    "total": 25
+  }
+}

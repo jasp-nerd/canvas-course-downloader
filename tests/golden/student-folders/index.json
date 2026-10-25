@@ -1,0 +1,261 @@
+{
+  "scenario": "student-folders",
+  "description": "Student, ZIP off: individual downloads into course folders.",
+  "files": [
+    {
+      "path": "Data Structures and Algorithms/Announcements/Room change for Thursday.html",
+      "size": 329,
+      "sha256": "e5174333f89ee8762064afde1473fa1450a19988e60a6df0d41d32e937ebaccd"
+    },
+    {
+      "path": "Data Structures and Algorithms/Announcements/Slides for week 2 are online.html",
+      "size": 341,
+      "sha256": "15c8437d42a5603439a7cde68ff6ef6f2b4bbe64c00f9194ce9f448ff4b78043"
+    },
+    {
+      "path": "Data Structures and Algorithms/Announcements/Welcome to the course!.html",
+      "size": 323,
+      "sha256": "6268bcad7d23839a3e25a44c6fe34c6e3617023c3fc61c5b9e2ea21937ab4763"
+    },
+    {
+      "path": "Data Structures and Algorithms/Assignments/Assignment 1.html",
+      "size": 339,
+      "sha256": "052183e9eb070cebe43ac4f743b05a8e4215d75265c0b2d126aba18e4105352c"
+    },
+    {
+      "path": "Data Structures and Algorithms/Assignments/Assignment 2.html",
+      "size": 339,
+      "sha256": "f8ed337af555483fd61791efb8f05d5d662aaa8e63d32708c94cfc6ebc8559b2"
+    },
+    {
+      "path": "Data Structures and Algorithms/Assignments/Assignment 3.html",
+      "size": 339,
+      "sha256": "c90aa342a0179488ca2a96d5643d58778b4f6f8976c61feae63ca520be1004b2"
+    },
+    {
+      "path": "Data Structures and Algorithms/Assignments/Final project.html",
+      "size": 342,
+      "sha256": "00687448366da590b39c5fa64439158459f6370aecad53f6719c61a8ac60cf75"
+    },
+    {
+      "path": "Data Structures and Algorithms/Assignments/Midterm project.html",
+      "size": 348,
+      "sha256": "27e2720b7b50ae8680a8aab15f70b96ad9ec1a9da2a4af6ecdca97b68147ec7d"
+    },
+    {
+      "path": "Data Structures and Algorithms/Discussions/Exam preparation.html",
+      "size": 1152,
+      "sha256": "4e13a10cd988aa9f8c66fd88d5a3e9b7cf9945526966686830a3d24d7e8b4161"
+    },
+    {
+      "path": "Data Structures and Algorithms/Discussions/Introduce yourself.html",
+      "size": 1158,
+      "sha256": "71806604b9bac804470f79649fc6e35f9a89410ea11d5bfb8ef497918978e0e3"
+    },
+    {
+      "path": "Data Structures and Algorithms/Discussions/Questions about assignment 1.html",
+      "size": 1188,
+      "sha256": "e66d151b09f97c1f12fce1aec78bbea156c5cd0cafdf0d42aa2effcc037753d7"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Assignments/Assignment 1 brief.pdf",
+      "size": 740,
+      "sha256": "f41dceb661dd198b54cbf97c2f056eb0862348e804d07c1541be0c53d21e2c9f"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Assignments/Assignment 2 brief.pdf",
+      "size": 740,
+      "sha256": "2030b011229506415b08e097ebfda3f3f8b200e0095bf9a0a77db65191e9a3ad"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Assignments/Project guidelines.pdf",
+      "size": 740,
+      "sha256": "d7d7e17a5a91965c16df4310834d3a3389bd78f07ae09e71d7767dff7905fd9c"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Assignments/Rubric.pdf",
+      "size": 728,
+      "sha256": "28af752f64e6f6f166af69635510b738b322d07f31f32dfe5e9184344f5c2a2c"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Exam prep/Formula sheet.pdf",
+      "size": 735,
+      "sha256": "930df29ec77cb63175b595d6dff8b9a12941f60123acf1a32fa9de22a638230d"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Exam prep/Practice exam - solutions.pdf",
+      "size": 747,
+      "sha256": "357ec562463bd84bce7f6eaeb54596f8a821c963cecc152e42a247cd5876e4bc"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Exam prep/Practice exam.pdf",
+      "size": 735,
+      "sha256": "bc03d7dc0952f38ebd4324086f7c8faa96082a57c0f42d3d7d246c7f799d2bbc"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Lectures/Lecture 01 - Complexity and Big-O.pdf",
+      "size": 755,
+      "sha256": "0d12fa59faa8134c3a3c8d7560941d65f2b24503fd534e04faf28b1f54f552d6"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Lectures/Lecture 02 - Arrays and linked lists.pdf",
+      "size": 758,
+      "sha256": "aac14111d73009a0eb8d2e1ad5a2f6a5cd15dc5a8ba93360e73c4f94d462523e"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Lectures/Lecture 03 - Stacks and queues.pdf",
+      "size": 752,
+      "sha256": "151f77102d687a403c0765d9800940980a9eccf5ead947ffd4dc3bf2eaa59732"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Lectures/Lecture 04 - Recursion.pdf",
+      "size": 744,
+      "sha256": "fe15e9e22c0acfda7639a1bc2744dc5135aa75d04ba3d76f5617a4dc9f56383b"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Lectures/Lecture 05 - Sorting.pdf",
+      "size": 742,
+      "sha256": "a52b0c32f6e398043d262ce98fcd746e13c262236cc3a59a2070909dc4671207"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Lectures/Lecture 06 - Hash tables.pdf",
+      "size": 746,
+      "sha256": "5fe6b080ddad33b0759d39a474234339c3c1ca0581f1bb7908a771d7a9770f38"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Lectures/Lecture 07 - Trees.pdf",
+      "size": 740,
+      "sha256": "f927dd9924271022e9cd9e766be2061152af79865b476258d2b8fcb6b947fd9f"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Lectures/Lecture 08 - Balanced trees.pdf",
+      "size": 749,
+      "sha256": "d40e217503211f71a1d073d64acee30f884d4fbc1f4cd47d716691859fae4845"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Lectures/Lecture 09 - Heaps.pdf",
+      "size": 740,
+      "sha256": "4137c82e9b065c2f809963c88754d8949f35acea32ab1e1e19ec1fd1110e4694"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Lectures/Lecture 10 - Graphs.pdf",
+      "size": 741,
+      "sha256": "c7c1abfb9c3fbad4a7bd88984a16e88589b2697fcb2be61a79cd58526c418463"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Lectures/Lecture 11 - Shortest paths.pdf",
+      "size": 749,
+      "sha256": "64c07ce7620ee5d74af1a10b00d07d072e5ea9fcbab22beb6d66c4eb808de78a"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Lectures/Lecture 12 - Dynamic programming.pdf",
+      "size": 754,
+      "sha256": "8e83d59ae612dca6df5576b63491dead9ad1414df617c4b38944d8271a83c832"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Readings/Week 1 - Core reading.pdf",
+      "size": 743,
+      "sha256": "40e4c984ee11c7af3f8933d723d64c3cff82ab13260e9fd423c400edd799ae5f"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Readings/Week 10 - Further reading.pdf",
+      "size": 747,
+      "sha256": "de7072ca9a583fec8702e9074bd80131b694c42da38a7d51d872c59d6f784810"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Readings/Week 4 - Background article.pdf",
+      "size": 749,
+      "sha256": "17f0f4881c06b99074604f33dc764db334922e7e3e9f4f3bf8714dd717900483"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Readings/Week 7 - Case study.pdf",
+      "size": 741,
+      "sha256": "17344e262244e5335998358f89137537308dfff52a64298cf59685cf8632f2d3"
+    },
+    {
+      "path": "Data Structures and Algorithms/Files/Syllabus.pdf",
+      "size": 730,
+      "sha256": "10b9c43ccd59f646a855345fc811ffb43babc1b2346ec3c019b9e2e841b7f3c0"
+    },
+    {
+      "path": "Data Structures and Algorithms/Grades.csv",
+      "size": 325,
+      "sha256": "b6ecca7bc171a2b08604a38a869e7b1aa1900327d200c15be347e0396e89a91a"
+    },
+    {
+      "path": "Data Structures and Algorithms/Grading Weights.html",
+      "size": 451,
+      "sha256": "1138f46b37647197920aab9547cdfb274ea207b04d335d04de6cb03fdef3d703"
+    },
+    {
+      "path": "Data Structures and Algorithms/manifest.json",
+      "size": 579,
+      "sha256": "b17b59218d3bf2e07e492ba0a290f1947bca0b4b79a09c5703de1a80c16af437"
+    },
+    {
+      "path": "Data Structures and Algorithms/Modules.html",
+      "size": 1052,
+      "sha256": "6add37b5aa78b1fec547c7ec86f30878b2d30a058868b136e313b33053acb235"
+    },
+    {
+      "path": "Data Structures and Algorithms/Pages/course-schedule.html",
+      "size": 739,
+      "sha256": "50ebb701be6e17bee8b61d2a433ff29ea7f3386a437201c63ad639b73cfa712d"
+    },
+    {
+      "path": "Data Structures and Algorithms/Pages/exam-information.html",
+      "size": 296,
+      "sha256": "e54b2bb879c4875f894040a389f4f8007821baabb8158bf12f54cce7c7c1ebfb"
+    },
+    {
+      "path": "Data Structures and Algorithms/Pages/how-to-get-help.html",
+      "size": 313,
+      "sha256": "cf7732b9f72513ec5a8b7ecc9a991ef6c5ea38f0e8ff91f9fcedb8bea7b5dc4c"
+    },
+    {
+      "path": "Data Structures and Algorithms/Pages/welcome-to-the-course.html",
+      "size": 348,
+      "sha256": "f27e502a24bb8fd28a764b5e88393479e33be8d938660b8c345ba9e51084dfbf"
+    },
+    {
+      "path": "Data Structures and Algorithms/Quizzes/Midterm practice quiz/Midterm practice quiz.html",
+      "size": 343,
+      "sha256": "cbf7adfbdaefaae0b2861c1934368972cdd46f6a64a684a1e25e87288072a312"
+    },
+    {
+      "path": "Data Structures and Algorithms/Quizzes/Week 3 quiz/Week 3 quiz.html",
+      "size": 373,
+      "sha256": "172e6ea045d627948bb59d32b214ebd38eae46f2def6031c414c5a566aae2578"
+    },
+    {
+      "path": "Data Structures and Algorithms/styles.css",
+      "size": 991,
+      "sha256": "03f865bd295c6b8931d23f38e880dbc49157909cf5334ac5bc07d441da470ea5"
+    },
+    {
+      "path": "Data Structures and Algorithms/Submissions/Assignment 1/You.html",
+      "size": 367,
+      "sha256": "a920cab255982e22ab15cd9f0c3e594640c25287ceda47db672aea10dacd8c8c"
+    },
+    {
+      "path": "Data Structures and Algorithms/Submissions/Assignment 2/You.html",
+      "size": 363,
+      "sha256": "9c4d082ac909491f9b3a70c51df437a721f53d27b69c7eda33cf80aa67f83a66"
+    },
+    {
+      "path": "Data Structures and Algorithms/Submissions/Assignment 3/You.html",
+      "size": 367,
+      "sha256": "28ac80824488984c31d73c7f4c04f0834e9a831cc5baca9901abea231aac957e"
+    },
+    {
+      "path": "Data Structures and Algorithms/Submissions/Midterm project/You.html",
+      "size": 371,
+      "sha256": "11a5a0387efedc671017156b3388fcedcc880f205acdbc093a5e281a473d033f"
+    },
+    {
+      "path": "Data Structures and Algorithms/Syllabus.html",
+      "size": 681,
+      "sha256": "b61510a76bc12216c9a1841b1536518e4c8c295be95dc1ecd5ed17cce1979275"
+    }
+  ]
+}

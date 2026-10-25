@@ -1,0 +1,15 @@
+legacy/
+marketing/
+media/
+.output/
+.wxt/
+pnpm-lock.yaml
+*.md
+manifest.snapshot.json
+tests/golden/
+.claude/skills/design-taste-frontend/
+.claude/worktrees/
+website/
+video/
+.taste-skill/
+.claude/university-research/

@@ -1,0 +1,141 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: var(--mist);
+      overflow: hidden;
+    }
+    #te-t {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 150px;
+      text-align: center;
+    }
+    #te-cam {
+      position: absolute;
+      inset: 0;
+      transform-origin: 960px 620px;
+    }
+    /* A teacher's receipt, rebuilt from the extension's CSS at film size. */
+    #te-card {
+      position: absolute;
+      left: 410px;
+      top: 410px;
+      width: 1100px;
+    }
+    .te-band {
+      padding: 40px 48px;
+      border-radius: 36px;
+      background: #fff;
+    }
+    .te-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 42px;
+      padding: 0 18px;
+      border-radius: 999px;
+      background: var(--sun-wash);
+      font: 700 20px Figtree, sans-serif;
+      color: var(--sun-ink);
+    }
+    .te-chip svg {
+      width: 22px;
+      height: 22px;
+    }
+    .te-band p {
+      margin-top: 14px;
+      font: 800 62px/1.05 Gabarito, sans-serif;
+      letter-spacing: -0.035em;
+    }
+    .te-band .te-sub {
+      margin-top: 10px;
+      font: 400 27px/1.3 Figtree, sans-serif;
+      letter-spacing: 0;
+      color: var(--ink-2);
+    }
+    #te-note {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 24px;
+      align-items: center;
+      margin-top: 18px;
+      padding: 28px 36px;
+      border-radius: 36px;
+      background: var(--mint-wash);
+      color: #0f4c32;
+      font-size: 26px;
+    }
+    #te-note > svg {
+      width: 72px;
+      height: 72px;
+      padding: 16px;
+      border-radius: 50%;
+      background: #fff;
+      color: var(--mint-ink);
+    }
+    #te-note b {
+      display: block;
+      font: 700 32px Gabarito, sans-serif;
+    }
+    /* What a teacher's copy leaves out unless it's turned on. */
+    .te-outs {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 30px;
+    }
+    .te-out {
+      position: relative;
+      padding: 16px 30px;
+      border-radius: 999px;
+      background: var(--mist-2);
+      font: 600 30px/1 Figtree, sans-serif;
+      color: var(--ink-3);
+    }
+    .te-out i {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: 50%;
+      height: 3px;
+      margin-top: -1.5px;
+      border-radius: 2px;
+      background: var(--ink-2);
+      transform-origin: 0 50%;
+    }
+  </style>
+  <div id="root" data-composition-id="teachers" data-width="1920" data-height="1080">
+    <p id="te-t" class="title"><span class="ln">Teachers' copies</span><span class="ln">leave students out.</span></p>
+    <div id="te-cam" data-layout-allow-overflow>
+      <div id="te-card">
+        <div class="te-band">
+          <span class="te-chip"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>Course archive</span>
+          <p>Teaching Practicum is archived</p>
+          <p class="te-sub">Course content only, saved as Downloads/Teaching Practicum.zip</p>
+        </div>
+        <div id="te-note"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM17 8l5 5M22 8l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><p><b>Student data: none included</b>Unless you turn on Include students' work.</p></div>
+        <div class="te-outs">
+          <span class="te-out">Roster<i></i></span>
+          <span class="te-out">Submissions<i></i></span>
+          <span class="te-out">Gradebook<i></i></span>
+          <span class="te-out">Quiz attempts<i></i></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    window.enterTitle(tl, '#te-t', 0.15);
+    tl.fromTo('.te-band', { y: 24 }, { y: 0, duration: 0.5, ease: 'power3.out' }, 0);
+    // The note slides out from under the receipt; then each kind of student data is struck out.
+    tl.fromTo('#te-note', { y: -50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 0.7);
+    tl.fromTo('.te-out', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.08, ease: 'power3.out' }, 1.15);
+    tl.fromTo('.te-out i', { scaleX: 0 }, { scaleX: 1, duration: 0.25, stagger: 0.14, ease: 'power2.inOut' }, 1.75);
+    tl.fromTo('.te-out', { opacity: 1 }, { immediateRender: false, opacity: 0.7, duration: 0.25, stagger: 0.14 }, 1.95);
+    window.pushIn(tl, '#te-cam', 0, 4, 1.03);
+    window.__timelines['teachers'] = tl;
+  </script>
+</template>

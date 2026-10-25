@@ -3,5 +3,45 @@
 *.crx
 *.pem
 node_modules/
-.claude/
+# Shared agent setup is committed; personal settings and research notes stay local
+.claude/settings.local.json
+.claude/v3-research/
+# University access research shared between sessions; the site's data lives in website/src/data.
+.claude/university-research/
+.claude/skills/project-context/
+.claude/worktrees/
+# The design skill's working files (draws, inspector reports).
+.taste-skill/
 _metadata/
+generated_indexed_rulesets
+
+# WXT and test output
+.output/
+.wxt/
+web-ext.config.ts
+test-results/
+playwright-report/
+.context/
+
+# Secrets (store API credentials live only in CI secrets)
+.env
+.env.*
+!.env.example
+
+# Mock Canvas TLS cert (generated)
+e2e/.certs/
+
+# Website and video build output
+website/dist/
+website/.astro/
+video/out/
+video/renders/
+video/assets/fonts/
+video/assets/pip/
+video/assets/logo.js
+video/assets/sfx/
+video/.thumbnails/
+video/.hyperframes/
+
+# Marketing material lives outside the repo (it once held a browser profile)
+marketing/

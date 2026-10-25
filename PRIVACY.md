@@ -1,44 +1,61 @@
-# Privacy Policy — Canvas Course Downloader
+# Privacy policy
 
-**Last updated:** March 14, 2026
+**Last updated:** October 2026 (version 3.0)
 
 ## Overview
 
 Canvas Course Downloader is a free, open-source browser extension. This policy explains what data the extension accesses and how it's handled.
 
-## Data Collection
+## Data collection
 
-**Canvas Course Downloader does not collect, store, transmit, or share any user data.** The extension does not use analytics, tracking, cookies, or any form of telemetry.
+**Canvas Course Downloader does not collect, transmit, or share any user data.** It has no analytics, tracking, or telemetry, and no server of its own. Nothing about you or your courses is ever sent to the developer.
 
-## How the Extension Works
+## How the extension works
 
 - The extension runs entirely in your browser.
-- When you choose to download course content, it communicates **only** with the Canvas LMS server you are currently logged into, using your existing browser session.
-- Downloaded files are saved directly to your computer via your browser's built-in download manager.
-- No data is ever sent to the extension developer, any third-party server, or any external service.
+- It talks **only** to the Canvas site you are logged into (and Canvas's own file server for the files themselves), using your existing browser session. It never asks for your password or an access token.
+- Exports run in a browser tab the extension opens, and are saved to your Downloads folder or to a folder you choose.
+- If you have downloaded a course before, opening Canvas makes the extension ask that same Canvas site, at most every few hours, whether the course has new files, announcements or changed pages, so it can show what's new on your dashboard. This request goes only to Canvas.
+- To show how many stars the project has on GitHub, the extension asks GitHub's public API for that one number, at most once a day, without cookies. Nothing about you or your courses is sent; GitHub sees only that someone asked, like any visit to a web page.
+- If you teach a course and turn on "Also save Canvas's course package" (off by default), the extension asks your Canvas to build the course's own export file (.imscc) and downloads it. This is the only time it asks Canvas to create anything. Canvas lists that export under the course's Settings › Export Course Content, where your co-teachers can see it, and keeps it for 30 days. The security token Canvas puts in the page is used for that one request, kept only in memory, and never stored or sent anywhere else.
+- "Download new files automatically" is off unless you turn it on in the settings.
+
+## What is stored on your computer
+
+Everything below stays in your browser, in storage that only this extension can read. Uninstalling the extension removes it.
+
+| What | Why |
+|---|---|
+| Your settings | So your choices are remembered. Browsers that sync extension settings (such as Chrome with sync on) copy them between your own devices |
+| A list of files you downloaded per course (Canvas file id, name, size, date) | To download only what's new next time, and to show "new files" |
+| When Canvas was last checked for new files | So it's checked at most every few hours |
+| Whether you've seen or dismissed the review card, or the question at your first download | So they're not shown again |
+| The folder you chose to save into, if you chose one | So exports can go there. The extension can only write inside that folder, and only after your browser has asked for your OK |
+
+## Links
+
+After some successful downloads, the extension may show a small card asking how it went. The settings page has a few links too. These links (store review page, GitHub, GitHub Sponsors, Ko-fi, a feedback form on Google Forms) open only when you click them. Some include a fixed tag such as `utm_source=extension`, which is the same for everyone and tells me which link was used, not who used it. The feedback form is optional and hosted by Google; it is filled in with the extension's version and your browser's name, which you can see and change before sending.
 
 ## Permissions
 
-The extension requests the following browser permissions:
-
 | Permission | Why it's needed |
 |---|---|
-| `activeTab` | To communicate with the content script on the current tab |
+| `activeTab` | To talk to the Canvas tab you're on when you use the toolbar button or keyboard shortcut |
 | `downloads` | To save course files to your computer |
-| `notifications` | To notify you when a download batch finishes |
-| `storage` | To save your settings and track which files have been downloaded in incremental mode |
-| Content script (`https://*/*`) | Canvas LMS can be hosted on any domain, so the content script loads on any HTTPS page to detect Canvas. It exits immediately on non-Canvas pages |
-| Host permissions (`*://*.instructure.com/*`) | Elevated access for Instructure-hosted Canvas instances. On self-hosted instances the extension works through same-origin requests from the page you're already on |
-| `declarativeNetRequest` | Allows the extension to declare rules that modify network responses. Used solely to add a CORS header to responses from Canvas's file CDN (`canvas-user-content.com`), which is required for the extension to read file bytes when building ZIP archives |
-| Host permissions (`*://*.canvas-user-content.com/*`) | Canvas stores uploaded files on this CDN domain. This permission is required for the CORS rule above to be permitted to apply to responses from that domain |
+| `notifications` | To tell you when an automatic download of new files has finished |
+| `storage` | To keep the settings and lists described above |
+| Content script (`https://*/*`) | Canvas can run on any domain (`canvas.university.edu`), so the script loads on HTTPS pages to recognize Canvas. On other sites it stops immediately and does nothing |
+| Host permission (`*://*.instructure.com/*`) | Access to Canvas sites hosted by Instructure, for exports |
+| `declarativeNetRequest` | Adds one header to responses from Canvas's file server (`canvas-user-content.com`) so files from there can be put into a ZIP |
+| Optional: `*://*.canvas-user-content.com/*` | Only asked for when you click "Allow access" in the settings, for schools that serve submitted files from that server |
 
-## Third-Party Services
+## Third-party services
 
-The extension does not integrate with or send data to any third-party services.
+The extension does not send data to any third-party service. The links described above open third-party websites only when you click them.
 
-## Open Source
+## Open source
 
-The full source code is publicly available at [github.com/jasp-nerd/canvas-course-downloader](https://github.com/jasp-nerd/canvas-course-downloader). You can audit exactly what the extension does.
+The full source code is publicly available at [github.com/jasp-nerd/canvas-course-downloader](https://github.com/jasp-nerd/canvas-course-downloader). You can check exactly what the extension does.
 
 ## Contact
 

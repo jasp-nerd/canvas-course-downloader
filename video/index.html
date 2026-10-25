@@ -1,0 +1,43 @@
+<!doctype html>
+<!-- Course Downloader 3.0, the release film, on 2 s bars (120 BPM). Every UI pixel is the real
+     extension: stills of the build on the test Canvas (invented course data) or its own pieces rebuilt
+     from its CSS, and the logo's real geometry (assets/logo.js, from src/ui/logo-paths.ts). -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="assets/logo.js"></script>
+    <link rel="stylesheet" href="assets/film.css" />
+    <script src="assets/film.js"></script>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="40" data-width="1920" data-height="1080">
+      <div id="hook" data-composition-id="hook" data-composition-src="compositions/hook.html" data-start="0" data-duration="10" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 1"></div>
+      <div id="dashboard" data-composition-id="dashboard" data-composition-src="compositions/dashboard.html" data-start="10" data-duration="6" data-track-index="2" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 2"></div>
+      <div id="study" data-composition-id="study" data-composition-src="compositions/study.html" data-start="16" data-duration="6" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 3"></div>
+      <div id="calendar" data-composition-id="calendar" data-composition-src="compositions/calendar.html" data-start="22" data-duration="4" data-track-index="2" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 4"></div>
+      <div id="teachers" data-composition-id="teachers" data-composition-src="compositions/teachers.html" data-start="26" data-duration="4" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 5"></div>
+      <div id="offline" data-composition-id="offline" data-composition-src="compositions/offline.html" data-start="30" data-duration="4" data-track-index="2" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 6"></div>
+      <div id="end" data-composition-id="end" data-composition-src="compositions/end.html" data-start="34" data-duration="6" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: 7"></div>
+
+      <audio id="sfx-1" class="clip" src="assets/sfx/click.wav" data-start="1.5" data-duration="0.06" data-track-index="6" data-volume="1"></audio>
+      <audio id="sfx-2" class="clip" src="assets/sfx/chime.wav" data-start="5" data-duration="1.3" data-track-index="8" data-volume="1"></audio>
+      <audio id="sfx-3" class="clip" src="assets/sfx/click.wav" data-start="12.95" data-duration="0.06" data-track-index="6" data-volume="1"></audio>
+      <audio id="sfx-4" class="clip" src="assets/sfx/chime.wav" data-start="14.65" data-duration="1.3" data-track-index="8" data-volume="0.6"></audio>
+      <audio id="sfx-5" class="clip" src="assets/sfx/tick.wav" data-start="23.5" data-duration="0.035" data-track-index="7" data-volume="0.8"></audio>
+      <audio id="sfx-6" class="clip" src="assets/sfx/tick.wav" data-start="23.64" data-duration="0.035" data-track-index="7" data-volume="0.8"></audio>
+      <audio id="sfx-7" class="clip" src="assets/sfx/tick.wav" data-start="23.78" data-duration="0.035" data-track-index="7" data-volume="0.8"></audio>
+      <audio id="sfx-8" class="clip" src="assets/sfx/tick.wav" data-start="23.92" data-duration="0.035" data-track-index="7" data-volume="0.8"></audio>
+      <audio id="sfx-9" class="clip" src="assets/sfx/tick.wav" data-start="27.75" data-duration="0.035" data-track-index="7" data-volume="0.8"></audio>
+      <audio id="sfx-10" class="clip" src="assets/sfx/tick.wav" data-start="27.89" data-duration="0.035" data-track-index="7" data-volume="0.8"></audio>
+      <audio id="sfx-11" class="clip" src="assets/sfx/tick.wav" data-start="28.03" data-duration="0.035" data-track-index="7" data-volume="0.8"></audio>
+      <audio id="sfx-12" class="clip" src="assets/sfx/tick.wav" data-start="28.17" data-duration="0.035" data-track-index="7" data-volume="0.8"></audio>
+      <audio id="sfx-13" class="clip" src="assets/sfx/pop.wav" data-start="36" data-duration="0.12" data-track-index="9" data-volume="1"></audio>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines['main'] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>
