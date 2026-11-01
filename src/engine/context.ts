@@ -106,6 +106,8 @@ export function addDocument(
     canvasUrls?: string[];
     dueAt?: string;
     points?: number;
+    createdAt?: string;
+    changedAt?: string;
   },
 ): void {
   const entry: DocumentEntry = {
@@ -117,6 +119,8 @@ export function addDocument(
     canvasUrls: doc.canvasUrls ?? [],
     ...(doc.dueAt ? { dueAt: doc.dueAt } : {}),
     ...(doc.points != null ? { points: doc.points } : {}),
+    ...(doc.createdAt ? { createdAt: doc.createdAt } : {}),
+    ...(doc.changedAt ? { changedAt: doc.changedAt } : {}),
   };
   ctx.entries.push(entry);
 }

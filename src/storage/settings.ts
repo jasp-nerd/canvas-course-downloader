@@ -15,6 +15,8 @@ export interface Settings extends Required<Omit<StoredSettings, 'contentTypes'>>
   incrementalMode: boolean;
   /** When Canvas is opened, download new files from courses saved before, without asking. */
   autoDownloadNew: boolean;
+  /** A note on the Canvas Dashboard when courses saved before have something new. */
+  updatesNote: boolean;
   /** Which preset the options page highlights. */
   preset: string;
   /** What a download makes: a copy of the course, a study pack for an AI tool, or a copy for agents. */
@@ -42,6 +44,7 @@ export const DEFAULT_SETTINGS: Settings = {
   conflictAction: 'uniquify',
   incrementalMode: false,
   autoDownloadNew: false,
+  updatesNote: true,
   preset: 'full-archive',
   profile: 'copy',
   aiTarget: 'notebooklm',

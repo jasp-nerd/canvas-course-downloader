@@ -15,13 +15,15 @@
   const saved = $derived(courses.filter((c) => c.outcome === 'success' || c.outcome === 'partial'));
   const stopped = $derived(courses.some((c) => c.outcome === 'cancelled'));
   const notSaved = $derived(courses.filter((c) => !saved.includes(c)));
+  /** Updates of copies saved before are "up to date", as each one's receipt says. */
+  const done = $derived(courses.every((c) => c.update) ? 'up to date' : 'saved');
   const heading = $derived(
     stopped
       ? 'You stopped the download'
       : saved.length === courses.length
-        ? `${courses.length} courses are saved`
+        ? `${courses.length} courses are ${done}`
         : saved.length
-          ? `${saved.length} of ${courses.length} courses are saved`
+          ? `${saved.length} of ${courses.length} courses are ${done}`
           : 'No course was saved',
   );
   const tone = $derived(

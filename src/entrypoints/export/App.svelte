@@ -5,8 +5,10 @@
   import { browser } from 'wxt/browser';
   import { csrfKey } from '../../app/course-package';
   import { exportCourses, type CourseState } from '../../app/export-job';
+  import { listNews } from '../../app/receipt';
   import { supportCardAfterExport, type SupportCardMode } from '../../app/support';
   import { TimeLeft } from '../../app/time-left';
+  import { listNames } from '../../app/updates';
   import { AI_TARGETS } from '../../export/study-pack';
   import { PRODUCT_NAME } from '../../ui/brand';
   import Icon from '../../ui/Icon.svelte';
@@ -85,15 +87,18 @@
   /** Automatic exports run in a background tab: tell the user how it went, and get out of the way if it worked. */
   async function reportQuietly(finished: CourseState[], allSaved: boolean) {
     const names = finished.map((c) => c.name).join(', ');
-    const savedFiles = finished.reduce((n, c) => n + c.done, 0);
+    // What came in, by name: the notification is all most people see of it.
+    const news = finished.flatMap((c) => listNews(c.whatsNew ?? []).map((t) => t.name));
     const self = await browser.tabs.getCurrent();
     try {
       await browser.notifications.create({
         type: 'basic',
         iconUrl: browser.runtime.getURL('/icons/icon-128.png'),
-        title: allSaved ? 'New Canvas files saved' : "Some new Canvas files couldn't be saved",
+        title: allSaved ? `New from ${names}` : "Some new Canvas files couldn't be saved",
         message: allSaved
-          ? `Saved ${savedFiles} files from ${names}.`
+          ? news.length
+            ? `Saved ${listNames(news, 3)}.`
+            : 'Nothing new to save.'
           : `Open the export tab to see what happened in ${names}.`,
       });
     } catch {

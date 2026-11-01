@@ -61,6 +61,9 @@ export interface DocumentEntry extends EntryBase {
   /** For assignments and quizzes: the due date and points, used by study packs. */
   dueAt?: string;
   points?: number;
+  /** When Canvas made it and last changed it, for saying what's new in an update. */
+  createdAt?: string;
+  changedAt?: string;
 }
 
 /** Generated text such as CSVs, captions, the stylesheet and manifest.json. */
@@ -92,6 +95,10 @@ export interface ExportCounts {
 export interface PlannedFile {
   /** Path from the course root, e.g. "Files/Lectures/Week 1.pdf". */
   path: string;
+  /** In an update: new since the last export, or changed since. Left out for the rest. */
+  news?: 'new' | 'updated';
+  /** A document's title, for listing what's new: its file name may be a URL slug. */
+  title?: string;
   source:
     | {
         kind: 'remote';
@@ -136,4 +143,6 @@ export interface PreviousExport {
   files: Record<string, { size: number; modifiedAt: string }>;
   /** v2's records, by "<folder><name>": { m: modified, s: size }, or a bare timestamp. */
   legacy: Record<string, { m?: string; s?: number } | number>;
+  /** When it was last exported (ms); 0 or left out when unknown, as for v2. */
+  savedAt?: number;
 }

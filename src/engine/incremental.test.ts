@@ -53,6 +53,22 @@ describe('exporting only what is new', () => {
       counts: { skippedIncremental: number };
     };
     expect(manifest.counts.skippedIncremental).toBe(24);
+    // Nothing changed on Canvas: written again, but nothing to list as new.
+    expect(again.files.filter((f) => f.news)).toEqual([]);
+  });
+
+  it("flags what's new for the receipt: new and changed files, and documents Canvas changed since", async () => {
+    const full = await plan();
+    const saved = savedFrom(full);
+    saved['101002'] = { ...saved['101002']!, size: 1 };
+    delete saved['101003'];
+    // Saved on 10 September: one announcement was posted after that.
+    const again = await plan({ files: saved, legacy: {}, savedAt: Date.UTC(2026, 8, 10) });
+    expect(again.files.filter((f) => f.news).map((f) => [f.path, f.news, f.title])).toEqual([
+      ['Files/Lectures/Lecture 01 - What is psychology-.pdf', 'updated', undefined],
+      ['Files/Lectures/Lecture 02 - Research methods.pdf', 'new', undefined],
+      ['Announcements/Room change for Thursday.html', 'new', 'Room change for Thursday'],
+    ]);
   });
 
   it('keeps a file that changed on Canvas and flags it', async () => {

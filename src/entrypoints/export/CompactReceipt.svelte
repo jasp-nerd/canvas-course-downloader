@@ -1,7 +1,8 @@
 <script lang="ts">
   // One course's receipt when several were downloaded together.
   import type { CourseState } from '../../app/export-job';
-  import { describeFile } from '../../app/receipt';
+  import { describeFile, listNews } from '../../app/receipt';
+  import { listNames } from '../../app/updates';
   import { reasonText } from '../../export/course-index';
   import { AI_TARGETS } from '../../export/study-pack';
   import Icon from '../../ui/Icon.svelte';
@@ -16,9 +17,14 @@
   const files = $derived(course.kinds.reduce((n, k) => n + k.done, 0));
   const pack = $derived(course.how.profile === 'study');
   const target = $derived(course.studyPack ? AI_TARGETS[course.studyPack] : undefined);
+  const news = $derived(
+    listNews(course.whatsNew ?? []).map((t) =>
+      t.news === 'updated' ? `${t.name} (updated)` : t.name,
+    ),
+  );
   const heading = $derived(
     saved
-      ? `${course.name} is saved`
+      ? `${course.name} is ${course.update ? 'up to date' : 'saved'}`
       : course.outcome === 'cancelled'
         ? `${course.name} was stopped`
         : course.phase === 'waiting'
@@ -49,19 +55,32 @@
     </div>
     {#if saved}
       <p class="small num meta">
-        {joined(`${files} ${files === 1 ? 'file' : 'files'}`, sizeOf(course))}, saved as
+        {joined(
+          course.update
+            ? `${news.length} ${news.length === 1 ? 'change' : 'changes'}`
+            : `${files} ${files === 1 ? 'file' : 'files'}`,
+          sizeOf(course),
+        )}, saved as
         <span>{course.savedAs}</span>
       </p>
-      <ul class="kinds" aria-label="What's inside {course.name}">
-        {#each course.kinds as kind (kind.id)}
-          <li class:warn={kind.failed > 0}>
-            {kind.label}
-            <span class="num"
-              >{kind.done}{#if kind.failed}<span class="of"> of {kind.total}</span>{/if}</span
-            >
-          </li>
-        {/each}
-      </ul>
+      {#if course.update}
+        <p class="news">
+          {news.length
+            ? `New: ${listNames(news, 4)}`
+            : 'Nothing changed on Canvas since last time.'}
+        </p>
+      {:else}
+        <ul class="kinds" aria-label="What's inside {course.name}">
+          {#each course.kinds as kind (kind.id)}
+            <li class:warn={kind.failed > 0}>
+              {kind.label}
+              <span class="num"
+                >{kind.done}{#if kind.failed}<span class="of"> of {kind.total}</span>{/if}</span
+              >
+            </li>
+          {/each}
+        </ul>
+      {/if}
       {#if course.failures.length}
         <details>
           <summary
@@ -156,6 +175,9 @@
     overflow-wrap: anywhere;
   }
   .meta {
+    overflow-wrap: anywhere;
+  }
+  .news {
     overflow-wrap: anywhere;
   }
   .kinds {

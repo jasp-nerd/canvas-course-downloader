@@ -1,5 +1,5 @@
 import { defineBackground } from '#imports';
-import { browser, type Browser } from 'wxt/browser';
+import { browser } from 'wxt/browser';
 import { csrfKey } from '../app/course-package';
 import { githubStars } from '../app/github';
 import { markNewUser, onboardingFor } from '../app/onboarding';
@@ -43,13 +43,6 @@ export default defineBackground(() => {
   onMessage('openOptions', () => browser.runtime.openOptionsPage());
   onMessage('fontData', () => readFonts());
   onMessage('githubStars', () => githubStars());
-  onMessage('setBadge', async (message) => {
-    // @webext-core/messaging types `sender` with @types/chrome, which WXT doesn't install.
-    const tabId = (message.sender as Browser.runtime.MessageSender).tab?.id;
-    if (tabId === undefined) return;
-    await browser.action.setBadgeText({ text: message.data, tabId });
-    await browser.action.setBadgeBackgroundColor({ color: '#0b5cad', tabId });
-  });
 
   browser.commands.onCommand.addListener((command) => {
     if (command !== 'download-current') return;

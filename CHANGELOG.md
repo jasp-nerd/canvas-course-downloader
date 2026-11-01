@@ -11,7 +11,8 @@ A rewrite of the whole extension. Your settings and the list of files you alread
 - **Firefox and Edge** are supported properly, next to Chrome.
 - **Save into a folder you choose** (Chrome, Edge), for example one inside Google Drive, OneDrive or Dropbox. Large ZIPs are written straight to disk there.
 - **An overview page in every export** (`Open me - <Course>.html`): the course by module, everything else by kind, and what couldn't be saved and why.
-- **New files on your dashboard.** Courses you downloaded before show how many files are new, with a button to download only those. Optionally, they download automatically when you open Canvas.
+- **New files on your dashboard.** Courses you downloaded before get a short note on the Canvas Dashboard that names what's new, with a button to download only that. It updates while Canvas is open, without reloading. Hiding it keeps it away until something else comes in, and offers to stop showing it altogether. Optionally, new files download automatically instead.
+- **Updates say what they brought.** Downloading only what's new ends with a list of the new and changed files, announcements, pages and assignments, and the notification after an automatic download names them too.
 - **Study packs for AI.** A download can be a pack for NotebookLM, ChatGPT or Claude: a course guide with deadlines and grading, one Markdown file per module, and the slides and PDFs, split into several notebooks or projects when a course has too many files. It never contains other students' work.
 - **Files for coding agents.** A Markdown copy with front matter on every page, plus `AGENTS.md`, `llms.txt` and `course.json`.
 - **Teachers' copies leave students' work out** unless you turn on "Include students' work": no roster, submissions, gradebook, quiz attempts or named discussion replies in a copy you might share. Questions, rubrics and prompts are still saved.

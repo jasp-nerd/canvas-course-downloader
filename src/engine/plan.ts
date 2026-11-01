@@ -277,8 +277,10 @@ function finalize(
   }
 
   // Exporting only what's new: drop files saved before that haven't changed, and
-  // flag changed ones. Generated documents are always written again.
+  // flag changed ones. Generated documents are always written again; the ones
+  // Canvas changed since the last export are flagged, to say what's new.
   const changed = new Set<Entry>();
+  const news = new Map<Entry, 'new' | 'updated'>();
   let skippedUnchanged = 0;
   if (onlyNew) {
     for (let i = entries.length - 1; i >= 0; i--) {
@@ -295,13 +297,22 @@ function finalize(
             ? {}
             : undefined);
       const current = fromV3 ? e : { size: e.size, modifiedAt: e.canvasUpdatedAt || e.modifiedAt };
-      if (!saved) continue;
+      if (!saved) {
+        news.set(e, 'new');
+        continue;
+      }
       if (fileChanged(saved, current)) {
         changed.add(e);
+        news.set(e, 'updated');
       } else {
         entries.splice(i, 1);
         skippedUnchanged++;
       }
+    }
+    const since = onlyNew.savedAt ?? 0;
+    for (const e of since ? entries : []) {
+      if (e.kind !== 'document' || !(Date.parse(e.changedAt ?? '') > since)) continue;
+      news.set(e, Date.parse(e.createdAt ?? '') > since ? 'new' : 'updated');
     }
   }
 
@@ -353,7 +364,7 @@ function finalize(
   const agentPack = agents ? agentPackInput(ctx, entries, paths, localPaths) : undefined;
   const agentDocs = new Map(agentPack?.documents.map((d) => [d.path, d]));
 
-  const files: PlannedFile[] = entries.map((entry, i) => {
+  const planned: PlannedFile[] = entries.map((entry, i) => {
     const path = paths[i]!;
     if (entry.kind === 'remote') {
       return {
@@ -384,6 +395,12 @@ function finalize(
       };
     }
     return { path, source: { kind: 'text', content } };
+  });
+  const files: PlannedFile[] = planned.map((f, i) => {
+    const entry = entries[i]!;
+    const flag = news.get(entry);
+    if (!flag) return f;
+    return { ...f, news: flag, ...(entry.kind === 'document' ? { title: entry.title } : {}) };
   });
 
   const deadlines = deadlineEvents(ctx, entries);

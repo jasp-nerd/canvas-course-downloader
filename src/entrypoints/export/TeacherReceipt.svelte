@@ -6,6 +6,7 @@
   import Pip from '../../ui/Pip.svelte';
   import { openSettings } from './actions';
   import Inside from './Inside.svelte';
+  import WhatsNew from './WhatsNew.svelte';
   import { joined, sizeOf, whenLine } from './lines';
   import Notices from './Notices.svelte';
   import OpeningIt from './OpeningIt.svelte';
@@ -29,7 +30,7 @@
 
 <section class="card archive">
   <div class="band-text">
-    <h1 class="display">{course.name} is archived</h1>
+    <h1 class="display">{course.name} is {course.update ? 'up to date' : 'archived'}</h1>
     <p class="band-meta num">
       {joined(included ? 'Content and student work' : 'Course content only', size)}, saved as
       <span>{course.savedAs}</span>
@@ -71,11 +72,18 @@
 
 <main class="teacher-grid">
   <section class="card inside-card" aria-labelledby="inside-title">
-    <div class="card-head">
-      <h2 class="heading" id="inside-title">What's inside</h2>
-      <span class="small num">{joined(`${files} ${files === 1 ? 'file' : 'files'}`, size)}</span>
-    </div>
-    <Inside {course} labelledby="inside-title" columns={2} />
+    {#if course.update}
+      <div class="card-head">
+        <h2 class="heading" id="inside-title">What's new</h2>
+      </div>
+      <WhatsNew {course} labelledby="inside-title" />
+    {:else}
+      <div class="card-head">
+        <h2 class="heading" id="inside-title">What's inside</h2>
+        <span class="small num">{joined(`${files} ${files === 1 ? 'file' : 'files'}`, size)}</span>
+      </div>
+      <Inside {course} labelledby="inside-title" columns={2} />
+    {/if}
     <div class="notes">
       <Notices {course} />
     </div>

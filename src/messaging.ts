@@ -54,8 +54,6 @@ interface ProtocolMap {
   courseInfo(): CourseInfo | null;
   /** Popup → content script: open the course picker. */
   openPicker(): void;
-  /** Content script → background: the number on the toolbar icon for this tab ("" clears it). */
-  setBadge(text: string): void;
   /** Content script → background: our typefaces, which Canvas pages can't load from the extension. */
   fontData(): FontData[];
   /** Content script → background: the project's GitHub star count, null when unknown. */

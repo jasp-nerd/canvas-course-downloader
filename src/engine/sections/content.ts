@@ -25,6 +25,8 @@ export interface Assignment {
   points_possible?: number;
   submission_types?: string[];
   rubric?: RubricCriterion[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 const linked = async (ctx: CourseExport, html: string | undefined, source: string) => {
@@ -85,6 +87,8 @@ export async function exportAssignmentDocs(
       canvasUrls: [courseUrl(ctx, `assignments/${a.id}`)],
       ...(a.due_at ? { dueAt: a.due_at } : {}),
       ...(a.points_possible != null ? { points: a.points_possible } : {}),
+      ...(a.created_at ? { createdAt: a.created_at } : {}),
+      ...(a.updated_at ? { changedAt: a.updated_at } : {}),
     });
   }
 }
@@ -119,6 +123,7 @@ export async function exportAnnouncements(ctx: CourseExport): Promise<number> {
         courseUrl(ctx, `discussion_topics/${a.id}`),
         courseUrl(ctx, `announcements/${a.id}`),
       ],
+      ...(a.posted_at ? { createdAt: a.posted_at, changedAt: a.posted_at } : {}),
     });
   }
   return announcements.length;
@@ -360,7 +365,13 @@ export async function exportModules(ctx: CourseExport, pageSlugs: Set<string>): 
  */
 export async function exportPages(ctx: CourseExport, slugs: Set<string>): Promise<void> {
   for (const slug of slugs) {
-    let page: { url: string; title: string; body?: string };
+    let page: {
+      url: string;
+      title: string;
+      body?: string;
+      created_at?: string;
+      updated_at?: string;
+    };
     try {
       page = await ctx.canvas.get(`/courses/${ctx.courseId}/pages/${slug}`);
     } catch (error) {
@@ -375,6 +386,8 @@ export async function exportPages(ctx: CourseExport, slugs: Set<string>): Promis
         stem: page.url,
         folder: 'Pages/',
         canvasUrls: [courseUrl(ctx, `pages/${page.url}`)],
+        ...(page.created_at ? { createdAt: page.created_at } : {}),
+        ...(page.updated_at ? { changedAt: page.updated_at } : {}),
       });
       ctx.counts.pages++;
     }

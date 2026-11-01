@@ -5,16 +5,20 @@ import { saveInventory } from '../storage/inventory';
 import {
   checkForUpdates,
   countNew,
-  describeNew,
-  downloadNewLabel,
-  totalNew,
+  dismissUpdates,
+  loadUpdateCheck,
   markExported,
+  noteDetails,
+  notePreview,
+  noteTitle,
   pendingUpdates,
   saveUpdateCheck,
+  type UpdateCheck,
 } from './updates';
 
 const ORIGIN = 'https://school.instructure.com';
-const HOUR = 60 * 60 * 1000;
+const MINUTE = 60 * 1000;
+const HOUR = 60 * MINUTE;
 const NOW = Date.UTC(2026, 9, 20, 12);
 
 beforeEach(() => fakeBrowser.reset());
@@ -56,19 +60,24 @@ describe('countNew', () => {
 });
 
 describe('checkForUpdates', () => {
-  it('checks saved courses and caches the result for a few hours', async () => {
+  it('checks saved courses, names what is new, and asks Canvas again after 15 minutes', async () => {
     await saveInventory(ORIGIN, '103', inventory);
     const { canvas, calls } = fakeCanvas([
       { id: 1, url: 'u', size: 100, modified_at: '2026-09-01T00:00:00Z' },
-      { id: 2, url: 'u', size: 5 },
+      { id: 2, url: 'u', size: 5, display_name: 'Week 2.pdf', modified_at: '2026-10-02T00:00:00Z' },
     ]);
     const first = await checkForUpdates(canvas, ORIGIN, NOW);
-    expect(pendingUpdates(first)).toEqual([
-      { courseId: '103', courseName: 'Linear Algebra', newFiles: 1 },
+    expect(pendingUpdates(first, NOW)).toEqual([
+      {
+        courseId: '103',
+        courseName: 'Linear Algebra',
+        newFiles: 1,
+        items: [{ key: 'file:2:2026-10-02T00:00:00Z:5', name: 'Week 2.pdf', kind: 'file' }],
+      },
     ]);
-    await checkForUpdates(canvas, ORIGIN, NOW + HOUR);
+    await checkForUpdates(canvas, ORIGIN, NOW + 14 * MINUTE);
     expect(calls()).toBe(1);
-    await checkForUpdates(canvas, ORIGIN, NOW + 4 * HOUR);
+    await checkForUpdates(canvas, ORIGIN, NOW + 15 * MINUTE);
     expect(calls()).toBe(2);
   });
 
@@ -78,21 +87,63 @@ describe('checkForUpdates', () => {
     expect(calls()).toBe(0);
   });
 
-  it('clears a course once it is exported, and hides results the user dismissed', async () => {
+  it('clears a course once it is exported', async () => {
     await saveUpdateCheck(ORIGIN, {
       checkedAt: NOW,
       courses: [{ courseId: '103', courseName: 'X', newFiles: 2 }],
     });
     await markExported(ORIGIN, '103');
     const { canvas } = fakeCanvas([]);
-    expect(pendingUpdates(await checkForUpdates(canvas, ORIGIN, NOW))).toEqual([]);
-    expect(
-      pendingUpdates({
-        checkedAt: NOW,
-        dismissedAt: NOW,
-        courses: [{ courseId: '1', courseName: 'Y', newFiles: 1 }],
-      }),
-    ).toEqual([]);
+    expect(pendingUpdates(await checkForUpdates(canvas, ORIGIN, NOW), NOW)).toEqual([]);
+  });
+});
+
+describe('hiding the note', () => {
+  const file = (id: number, name: string) => ({
+    key: `file:${id}`,
+    name,
+    kind: 'file' as const,
+  });
+  const check = (...items: ReturnType<typeof file>[]): UpdateCheck => ({
+    checkedAt: NOW,
+    courses: [{ courseId: '103', courseName: 'X', newFiles: items.length, items }],
+  });
+  const DAY = 24 * HOUR;
+
+  it('keeps what it listed hidden for good, everywhere', async () => {
+    await saveUpdateCheck(ORIGIN, check(file(1, 'Week 1.pdf')));
+    await dismissUpdates(ORIGIN, NOW);
+    const hidden = await loadUpdateCheck(ORIGIN);
+    expect(pendingUpdates(hidden, NOW + HOUR)).toEqual([]);
+    expect(pendingUpdates(hidden, NOW + 30 * DAY)).toEqual([]);
+  });
+
+  it('comes back for something it did not list, but not within a day of hiding it', async () => {
+    await saveUpdateCheck(ORIGIN, check(file(1, 'Week 1.pdf')));
+    await dismissUpdates(ORIGIN, NOW);
+    const later = {
+      ...(await loadUpdateCheck(ORIGIN))!,
+      ...check(file(1, 'Week 1.pdf'), file(2, 'Week 2.pdf')),
+    };
+    expect(pendingUpdates(later, NOW + 2 * HOUR)).toEqual([]);
+    // Then it lists everything that's new, as the download gets all of it.
+    expect(pendingUpdates(later, NOW + DAY)[0]?.items?.map((i) => i.name)).toEqual([
+      'Week 1.pdf',
+      'Week 2.pdf',
+    ]);
+  });
+
+  it('remembers what was hidden across checks, and forgets names that are gone', async () => {
+    await saveInventory(ORIGIN, '103', inventory);
+    const canvas = (ids: number[]) =>
+      fakeCanvas(ids.map((id) => ({ id, url: 'u', size: id, modified_at: '2026-10-02T00:00:00Z' })))
+        .canvas;
+    await checkForUpdates(canvas([2, 3]), ORIGIN, NOW);
+    await dismissUpdates(ORIGIN, NOW);
+    await checkForUpdates(canvas([3]), ORIGIN, NOW + DAY);
+    const next = await loadUpdateCheck(ORIGIN);
+    expect(next?.dismissed).toEqual(['file:3:2026-10-02T00:00:00Z:3']);
+    expect(pendingUpdates(next, NOW + 2 * DAY)).toEqual([]);
   });
 });
 
@@ -104,65 +155,93 @@ describe('what else changed since the last save', () => {
   it('counts announcements posted, and pages and assignments added or edited, since then', async () => {
     await saveInventory(ORIGIN, '103', saved);
     const { canvas } = fakeCanvas([], {
-      '/discussion_topics': [{ posted_at: after }, { posted_at: before }],
-      '/pages': [{ updated_at: after }, { updated_at: after }, { updated_at: before }],
-      '/assignments': [{ updated_at: after }, { updated_at: before }],
+      '/discussion_topics': [
+        { id: 7, title: 'Exam moved', posted_at: after },
+        { id: 6, title: 'Welcome', posted_at: before },
+      ],
+      '/pages': [
+        { page_id: 8, title: 'Week 3', created_at: after, updated_at: after },
+        { page_id: 9, title: 'Syllabus', created_at: before, updated_at: after },
+        { page_id: 5, title: 'Old', updated_at: before },
+      ],
+      '/assignments': [
+        { id: 10, name: 'Essay 1', created_at: before, updated_at: after },
+        { id: 4, name: 'Quiz', updated_at: before },
+      ],
     });
-    expect(pendingUpdates(await checkForUpdates(canvas, ORIGIN, NOW))).toEqual([
+    expect(pendingUpdates(await checkForUpdates(canvas, ORIGIN, NOW), NOW)).toEqual([
       {
         courseId: '103',
         courseName: 'Linear Algebra',
         newFiles: 0,
         newAnnouncements: 1,
         changedDocuments: 3,
+        items: [
+          { key: `announcement:7:${after}`, name: 'Exam moved', kind: 'announcement' },
+          { key: `page:8:${after}`, name: 'Week 3', kind: 'page' },
+          { key: `page:9:${after}`, name: 'Syllabus', kind: 'page', updated: true },
+          { key: `assignment:10:${after}`, name: 'Essay 1', kind: 'assignment', updated: true },
+        ],
       },
     ]);
   });
 
   it('still reports files when Canvas hides pages or announcements', async () => {
     await saveInventory(ORIGIN, '103', saved);
-    const { canvas } = fakeCanvas([{ id: 2, url: 'u', size: 5 }], {
+    const { canvas } = fakeCanvas([{ id: 2, url: 'u', size: 5, display_name: 'b.pdf' }], {
       '/pages': new CanvasError('permanent', '/pages', 404),
       '/discussion_topics': new CanvasError('permanent', '/discussion_topics', 403),
     });
-    expect(pendingUpdates(await checkForUpdates(canvas, ORIGIN, NOW))).toEqual([
-      { courseId: '103', courseName: 'Linear Algebra', newFiles: 1 },
+    expect(pendingUpdates(await checkForUpdates(canvas, ORIGIN, NOW), NOW)).toEqual([
+      {
+        courseId: '103',
+        courseName: 'Linear Algebra',
+        newFiles: 1,
+        items: [{ key: 'file:2::5', name: 'b.pdf', kind: 'file' }],
+      },
     ]);
   });
 
   it('counts only files for courses saved by v2, which kept no date', async () => {
     await saveInventory(ORIGIN, '103', { ...saved, savedAt: 0 });
     const { canvas } = fakeCanvas([], { '/discussion_topics': [{ posted_at: after }] });
-    expect(pendingUpdates(await checkForUpdates(canvas, ORIGIN, NOW))).toEqual([]);
+    expect(pendingUpdates(await checkForUpdates(canvas, ORIGIN, NOW), NOW)).toEqual([]);
   });
 });
 
 describe('how what is new reads', () => {
-  it('names files only when only files changed, and every kind otherwise', () => {
-    expect(describeNew({ newFiles: 1 })).toBe('1 new file');
-    expect(describeNew({ newFiles: 3 })).toBe('3 new files');
-    expect(describeNew({ newFiles: 2, newAnnouncements: 1 })).toBe(
-      '2 new files and 1 new announcement',
+  it('names what is new in the note, grouped by course when there are several', () => {
+    const a = {
+      courseId: '1',
+      courseName: 'Statistics',
+      newFiles: 3,
+      items: [
+        { key: 'a', name: 'Week 5.pdf', kind: 'file' as const },
+        { key: 'b', name: 'Week 6.pdf', kind: 'file' as const },
+        { key: 'c', name: 'Week 7.pdf', kind: 'file' as const, updated: true },
+      ],
+    };
+    const b = {
+      courseId: '2',
+      courseName: 'Ethics',
+      newFiles: 0,
+      changedDocuments: 1,
+      items: [{ key: 'd', name: 'Final essay', kind: 'assignment' as const }],
+    };
+    expect(noteTitle([a])).toBe('3 new files in Statistics');
+    expect(notePreview([a])).toBe('Week 5.pdf, Week 6.pdf and Week 7.pdf');
+    // A new assignment is called one, not an "updated page".
+    expect(noteTitle([b])).toBe('1 new assignment in Ethics');
+    expect(noteTitle([a, b])).toBe('4 changes in 2 courses');
+    expect(notePreview([a, b])).toBe(
+      'Statistics: Week 5.pdf, Week 6.pdf and Week 7.pdf; Ethics: Final essay',
     );
-    expect(describeNew({ newFiles: 0, newAnnouncements: 2, changedDocuments: 1 })).toBe(
-      '2 new announcements and 1 updated page',
+    expect(noteDetails([a, b])).toBe(
+      'Statistics\n  Week 5.pdf\n  Week 6.pdf\n  Week 7.pdf (updated)\nEthics\n  Final essay',
     );
-    expect(describeNew({ newFiles: 1, newAnnouncements: 1, changedDocuments: 4 })).toBe(
-      '1 new file, 1 new announcement and 4 updated pages',
-    );
-  });
-
-  it("offers to download the new files, or what's new when there's more than files", () => {
-    expect(downloadNewLabel({ newFiles: 2 })).toBe('Download 2 new files');
-    expect(downloadNewLabel({ newFiles: 2, changedDocuments: 1 })).toBe("Download what's new");
-  });
-
-  it('adds up several courses', () => {
-    expect(
-      totalNew([
-        { courseId: '1', courseName: 'A', newFiles: 1 },
-        { courseId: '2', courseName: 'B', newFiles: 2, newAnnouncements: 1 },
-      ]),
-    ).toEqual({ newFiles: 3, newAnnouncements: 1, changedDocuments: 0 });
+    // Results from before names were kept say where, at least.
+    const counted = { courseId: '1', courseName: 'Statistics', newFiles: 2 };
+    expect(noteTitle([counted])).toBe('2 new files in Statistics');
+    expect(notePreview([counted])).toBe('Statistics (2)');
   });
 });

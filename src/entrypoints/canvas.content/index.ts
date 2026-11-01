@@ -4,10 +4,12 @@ import { browser } from 'wxt/browser';
 import { csrfTokenFrom } from '../../app/course-package';
 import { answerProfile, shouldAskProfile, type ProfileAnswer } from '../../app/onboarding';
 import {
-  newItems,
   checkForUpdates,
+  dismissUpdates,
+  newItems,
   pendingUpdates,
   saveUpdateCheck,
+  updatesKey,
   type UpdateCheck,
 } from '../../app/updates';
 import { createCanvasClient } from '../../canvas/client';
@@ -15,7 +17,7 @@ import { teaches, type CourseSummary } from '../../canvas/courses';
 import { courseIdFromPath, isCanvasPage } from '../../canvas/detect';
 import { onMessage, sendMessage } from '../../messaging';
 import { loadInventory } from '../../storage/inventory';
-import { loadSettings } from '../../storage/settings';
+import { loadSettings, saveSettings } from '../../storage/settings';
 // With cssInjectionMode 'ui', WXT puts these (and the components' styles) in
 // each of our shadow roots, never in the Canvas page itself.
 import '../../ui/theme.css';
@@ -121,79 +123,162 @@ export default defineContentScript({
     // Canvas renders parts of the page late (the dashboard is React); mount when the anchor appears.
     button.autoMount();
 
-    await showUpdates(ctx, { courseId, onDashboard, startExport });
+    await watchUpdates(ctx, { courseId, onDashboard, startExport });
   },
 });
 
-/** The "what's new" check for courses saved before: badge, "N new" chip, dashboard note, auto-download. */
-async function showUpdates(
+/**
+ * The "what's new" check for courses saved before: the "N new" chip, the
+ * Dashboard note and automatic downloads. It keeps going while the page is
+ * open: every minute it reads the last results (Canvas itself is asked at most
+ * every CHECK_EVERY_MS, and only while the tab is visible), and it follows
+ * other tabs' checks and finished downloads as they're stored.
+ */
+async function watchUpdates(
   ctx: ContentScriptContext,
   page: { courseId: string | null; onDashboard: boolean; startExport: StartExport },
 ) {
-  let check: UpdateCheck | null;
-  try {
-    check = await checkForUpdates(createCanvasClient({ origin: location.origin }), location.origin);
-  } catch {
-    return; // Signed out, or Canvas is busy; try again on the next page.
-  }
-  pageState.newByCourse = Object.fromEntries(
-    (check?.courses ?? []).map((c) => [c.courseId, newItems(c)]),
-  );
-  const pending = pendingUpdates(check);
-  const total = pending.reduce((n, c) => n + newItems(c), 0);
-  void sendMessage('setBadge', total ? String(total) : '');
-  const here = pending.find((c) => c.courseId === page.courseId);
-  if (here) {
-    pageState.savedAt = (await loadInventory(location.origin, here.courseId))?.savedAt ?? 0;
-    pageState.newFiles = newItems(here);
-  }
-  if (!check || pending.length === 0) return;
+  const origin = location.origin;
+  const canvas = createCanvasClient({ origin });
+  let note: { remove: () => void } | null = null;
+  let latest: UpdateCheck | null = null;
+  /** Courses whose download the note started: hidden here until newer results. */
+  let started = { ids: new Set<string>(), at: 0 };
 
-  const settings = await loadSettings();
-  if (settings.autoDownloadNew) {
-    // Once per check: every Canvas page runs this script.
-    if (!check.autoStartedAt || check.autoStartedAt < check.checkedAt) {
-      await saveUpdateCheck(location.origin, { ...check, autoStartedAt: Date.now() });
-      page.startExport(
-        pending.map((c) => c.courseId),
-        { onlyNew: true, quiet: true },
-      );
+  const hideNote = () => {
+    note?.remove();
+    note = null;
+  };
+
+  async function render(check: UpdateCheck | null) {
+    latest = check;
+    const pending = pendingUpdates(check).filter(
+      (c) => !(started.ids.has(c.courseId) && (check?.checkedAt ?? 0) <= started.at),
+    );
+    pageState.newByCourse = Object.fromEntries(
+      (check?.courses ?? []).map((c) => [c.courseId, newItems(c)]),
+    );
+    const here = pending.find((c) => c.courseId === page.courseId);
+    if (here) pageState.savedAt = (await loadInventory(origin, here.courseId))?.savedAt ?? 0;
+    pageState.newFiles = here ? newItems(here) : 0;
+    pageState.pending = pending;
+
+    const settings = await loadSettings();
+    const wanted =
+      page.onDashboard &&
+      !settings.autoDownloadNew &&
+      (pageState.note !== 'news' || (settings.updatesNote && pending.length > 0));
+    if (wanted && !note) note = await mountNote();
+    if (!wanted) hideNote();
+    return { pending, settings };
+  }
+  // One at a time, so two quick changes can't mount the note twice.
+  let queue: Promise<unknown> = Promise.resolve();
+  const show = (check: UpdateCheck | null) => {
+    const next = queue.then(() => render(check));
+    queue = next.catch(() => {});
+    return next;
+  };
+
+  // A refresh asked for while one runs (the tab came back mid-check) runs after it.
+  let checking = false;
+  let again = false;
+  async function refresh() {
+    if (checking) {
+      again = true;
+      return;
     }
-    return;
+    checking = true;
+    try {
+      const check = await checkForUpdates(canvas, origin);
+      const { pending, settings } = await show(check);
+      // Once per check: every Canvas page runs this script.
+      if (
+        check &&
+        pending.length &&
+        settings.autoDownloadNew &&
+        (!check.autoStartedAt || check.autoStartedAt < check.checkedAt)
+      ) {
+        await saveUpdateCheck(origin, { ...check, autoStartedAt: Date.now() });
+        page.startExport(
+          pending.map((c) => c.courseId),
+          { onlyNew: true, quiet: true },
+        );
+      }
+    } catch {
+      // Signed out, or Canvas is busy: the next round tries again.
+    } finally {
+      checking = false;
+      if (again) {
+        again = false;
+        void refresh();
+      }
+    }
   }
 
-  if (!page.onDashboard) return;
-  const latest = check;
-  const note = await createShadowRootUi(ctx, {
-    name: 'ccd-updates-note',
-    position: 'inline',
-    anchor: '#dashboard_header_container, .ic-Dashboard-header__layout',
-    append: 'after',
-    onMount: (container) => {
-      void loadCanvasFonts();
-      return mount(UpdatesNote, {
-        target: container,
-        props: {
-          updates: pending,
-          ondownload: () => {
-            note.remove();
-            page.startExport(
-              pending.map((c) => c.courseId),
-              { onlyNew: true },
-            );
+  async function mountNote() {
+    const ui = await createShadowRootUi(ctx, {
+      name: 'ccd-updates-note',
+      position: 'inline',
+      anchor: '#dashboard_header_container, .ic-Dashboard-header__layout',
+      append: 'after',
+      onMount: (container) => {
+        void loadCanvasFonts();
+        return mount(UpdatesNote, {
+          target: container,
+          props: {
+            ondownload: () => {
+              const ids = pageState.pending.map((c) => c.courseId);
+              started = { ids: new Set(ids), at: latest?.checkedAt ?? 0 };
+              hideNote();
+              page.startExport(ids, { onlyNew: true });
+            },
+            // Hiding says what it did and offers the way out, for a few seconds.
+            ondismiss: () => {
+              pageState.note = 'hidden';
+              void dismissUpdates(origin);
+            },
+            onturnoff: () => {
+              pageState.note = 'off';
+              void saveSettings({ updatesNote: false });
+            },
+            onundo: () => {
+              pageState.note = 'hidden';
+              void saveSettings({ updatesNote: true });
+            },
+            onclose: () => {
+              pageState.note = 'news';
+              hideNote();
+            },
           },
-          ondismiss: () => {
-            note.remove();
-            void saveUpdateCheck(location.origin, { ...latest, dismissedAt: Date.now() });
-          },
-        },
-      });
-    },
-    onRemove: (app) => {
-      if (app) void unmount(app);
-    },
+        });
+      },
+      onRemove: (app) => {
+        if (app) void unmount(app);
+      },
+    });
+    ui.autoMount({ once: true });
+    return ui;
+  }
+
+  const onStorage = (changes: Record<string, { newValue?: unknown }>, area: string) => {
+    const key = updatesKey(origin);
+    if (area === 'local' && key in changes)
+      void show((changes[key]!.newValue as UpdateCheck | undefined) ?? null);
+    else if (area === 'sync' && ('updatesNote' in changes || 'autoDownloadNew' in changes))
+      void show(latest);
+  };
+  browser.storage.onChanged.addListener(onStorage);
+  ctx.onInvalidated(() => browser.storage.onChanged.removeListener(onStorage));
+
+  await refresh();
+  const visible = () => document.visibilityState === 'visible';
+  ctx.setInterval(() => {
+    if (visible()) void refresh();
+  }, 60_000);
+  ctx.addEventListener(document, 'visibilitychange', () => {
+    if (visible()) void refresh();
   });
-  note.autoMount({ once: true });
 }
 
 async function showPicker(ctx: ContentScriptContext, startExport: StartExport) {

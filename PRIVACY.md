@@ -1,6 +1,6 @@
 # Privacy policy
 
-**Last updated:** October 2026 (version 3.0)
+**Last updated:** November 2026 (version 3.0)
 
 ## Overview
 
@@ -15,7 +15,7 @@ Canvas Course Downloader is a free, open-source browser extension. This policy e
 - The extension runs entirely in your browser.
 - It talks **only** to the Canvas site you are logged into (and Canvas's own file server for the files themselves), using your existing browser session. It never asks for your password or an access token.
 - Exports run in a browser tab the extension opens, and are saved to your Downloads folder or to a folder you choose.
-- If you have downloaded a course before, opening Canvas makes the extension ask that same Canvas site, at most every few hours, whether the course has new files, announcements or changed pages, so it can show what's new on your dashboard. This request goes only to Canvas.
+- If you have downloaded a course before, while Canvas is open in a visible tab the extension asks that same Canvas site, at most every 15 minutes, whether the course has new files, announcements or changed pages, so it can show what's new on your dashboard. This request goes only to Canvas.
 - To show how many stars the project has on GitHub, the extension asks GitHub's public API for that one number, at most once a day, without cookies. Nothing about you or your courses is sent; GitHub sees only that someone asked, like any visit to a web page.
 - If you teach a course and turn on "Also save Canvas's course package" (off by default), the extension asks your Canvas to build the course's own export file (.imscc) and downloads it. This is the only time it asks Canvas to create anything. Canvas lists that export under the course's Settings › Export Course Content, where your co-teachers can see it, and keeps it for 30 days. The security token Canvas puts in the page is used for that one request, kept only in memory, and never stored or sent anywhere else.
 - "Download new files automatically" is off unless you turn it on in the settings.
@@ -28,7 +28,7 @@ Everything below stays in your browser, in storage that only this extension can 
 |---|---|
 | Your settings | So your choices are remembered. Browsers that sync extension settings (such as Chrome with sync on) copy them between your own devices |
 | A list of files you downloaded per course (Canvas file id, name, size, date) | To download only what's new next time, and to show "new files" |
-| When Canvas was last checked for new files | So it's checked at most every few hours |
+| When Canvas was last checked, the names of what was new then, and which of those you hid | So it's checked at most every 15 minutes, and a note you hid stays hidden |
 | Whether you've seen or dismissed the review card, or the question at your first download | So they're not shown again |
 | The folder you chose to save into, if you chose one | So exports can go there. The extension can only write inside that folder, and only after your browser has asked for your OK |
 

@@ -32,6 +32,14 @@ export interface SaveHow {
   updates: boolean;
 }
 
+/** Something an update brought: a new or changed file, or a page Canvas changed since. */
+export interface NewThing {
+  path: string;
+  news: 'new' | 'updated';
+  /** A page's, assignment's or announcement's title. */
+  title?: string;
+}
+
 /** A file as the page shows it, with its size when it's known. */
 export interface FileInfo {
   path: string;
@@ -64,6 +72,8 @@ export interface CourseState {
   how: SaveHow;
   /** This run adds only what's new to an earlier copy. */
   update: boolean;
+  /** In an update: what it brought, without what failed; pages written again are left out. */
+  whatsNew?: NewThing[];
   /** Planned files per kind, counted as they're saved. */
   kinds: KindCount[];
   /** The last files saved, newest first. */
@@ -291,7 +301,9 @@ export async function exportCourses(input: {
         origin: input.origin,
         courseId: course.id,
         options,
-        ...(onlyNew ? { onlyNew: { files: inventory?.files ?? {}, legacy } } : {}),
+        ...(onlyNew
+          ? { onlyNew: { files: inventory?.files ?? {}, legacy, savedAt: inventory?.savedAt ?? 0 } }
+          : {}),
         ...(studyPack ? { studyPack } : {}),
         ...(settings.profile === 'agents' ? { agents: true } : {}),
         onProgress: (message) => update(course, { message }),
@@ -324,6 +336,15 @@ export async function exportCourses(input: {
         total: plan.files.length,
         skipped: plan.skippedUnchanged,
         update: onlyNew,
+        ...(onlyNew
+          ? {
+              whatsNew: plan.files.flatMap((f) =>
+                f.news
+                  ? [{ path: f.path, news: f.news, ...(f.title ? { title: f.title } : {}) }]
+                  : [],
+              ),
+            }
+          : {}),
         kinds: countKinds(
           plan.files.map((f) => f.path),
           pack,
@@ -468,10 +489,14 @@ export async function exportCourses(input: {
         });
         await markExported(input.origin, course.id);
       }
+      const failedPaths = new Set(result.failed.map((f) => f.path));
       update(course, {
         phase: 'finished',
         outcome: result.outcome,
         failures: result.failed,
+        ...(course.whatsNew
+          ? { whatsNew: course.whatsNew.filter((t) => !failedPaths.has(t.path)) }
+          : {}),
         done: result.written,
         failed: result.failed.length,
         kinds: settleKinds(

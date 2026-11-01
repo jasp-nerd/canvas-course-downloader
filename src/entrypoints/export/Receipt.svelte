@@ -11,6 +11,7 @@
   import ShowInFolder from './ShowInFolder.svelte';
   import type { SupportCardMode } from '../../app/support';
   import SupportCard from './SupportCard.svelte';
+  import WhatsNew from './WhatsNew.svelte';
 
   let {
     course,
@@ -22,6 +23,7 @@
   const agents = $derived(course.how.profile === 'agents');
   const zip = $derived(course.how.zip);
   const files = $derived(course.kinds.reduce((n, k) => n + k.done, 0));
+  const news = $derived(course.whatsNew?.length ?? 0);
   const size = $derived(sizeOf(course));
   // Windows gets the steps for opening a ZIP without asking; elsewhere they're a click away.
   let explainChoice = $state<boolean | undefined>(undefined);
@@ -39,7 +41,7 @@
     {:else}
       <span class="chip chip-mint band-chip"><Icon name="check" />Saved</span>
     {/if}
-    <h1 class="display">{course.name} is saved</h1>
+    <h1 class="display">{course.name} is {course.update ? 'up to date' : 'saved'}</h1>
     <p class="band-meta num">
       {size ? `${size}, saved as` : 'Saved as'} <span>{course.savedAs}</span>
     </p>
@@ -61,11 +63,19 @@
 
 <main class="receipt-grid">
   <section class="card inside-card" aria-labelledby="inside-title">
-    <div class="card-head">
-      <h2 class="heading" id="inside-title">What's inside</h2>
-      <span class="small num">{files} {files === 1 ? 'file' : 'files'}</span>
-    </div>
-    <Inside {course} labelledby="inside-title" />
+    {#if course.update}
+      <div class="card-head">
+        <h2 class="heading" id="inside-title">What's new</h2>
+        {#if news}<span class="small num">{news} {news === 1 ? 'change' : 'changes'}</span>{/if}
+      </div>
+      <WhatsNew {course} labelledby="inside-title" />
+    {:else}
+      <div class="card-head">
+        <h2 class="heading" id="inside-title">What's inside</h2>
+        <span class="small num">{files} {files === 1 ? 'file' : 'files'}</span>
+      </div>
+      <Inside {course} labelledby="inside-title" />
+    {/if}
     <div class="card-foot">
       <span class="small num">{whenLine(course)}</span>
       {#if size}<span class="num size">{size}</span>{/if}

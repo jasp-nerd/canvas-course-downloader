@@ -163,3 +163,24 @@ export function folderOf(full: string, relative: string): string {
   const parts = full.split(/[/\\]/);
   return parts.slice(0, parts.length - relative.split('/').length).join(separator);
 }
+
+/**
+ * How an update's receipt lists what it brought, files first, in the receipt's
+ * order of kinds: the name, then a hint, which is a file's folder ("Lectures")
+ * or what a document is ("page").
+ */
+export function listNews<T extends { path: string; news: 'new' | 'updated'; title?: string }>(
+  things: T[],
+): (T & { name: string; kind: KindId; what?: string })[] {
+  const order = (id: KindId) => KINDS.findIndex(([k]) => k === id);
+  return things
+    .map((t) => {
+      const kind = kindOf(t.path, false);
+      const file = describeFile(t.path, false);
+      const parts = file.name.split(' / ');
+      const name = t.title ?? parts.at(-1)!;
+      const what = file.kind ?? (parts.length > 1 ? parts.slice(0, -1).join(' / ') : undefined);
+      return { ...t, kind, name, ...(what ? { what } : {}) };
+    })
+    .sort((a, b) => order(a.kind) - order(b.kind));
+}

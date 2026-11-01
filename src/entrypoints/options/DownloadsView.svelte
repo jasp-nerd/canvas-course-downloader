@@ -213,7 +213,7 @@
   {/if}
 </Setting>
 
-<Setting id="s-up" title="Updates" text="Download a course again and only the new parts are added.">
+<Setting id="s-up" title="Updates" text="What happens when a course you saved gets something new.">
   <div class="rows wide">
     <SwitchRow
       title="Only add what's new"
@@ -222,8 +222,14 @@
       onchange={(on: boolean) => save({ incrementalMode: on })}
     />
     <SwitchRow
+      title="Show what's new on the Dashboard"
+      text="A short note when a course you saved has new files, announcements, pages or assignments. Hiding it keeps it away until something else comes in."
+      checked={settings.updatesNote}
+      onchange={(on: boolean) => save({ updatesNote: on })}
+    />
+    <SwitchRow
       title="Download new files automatically"
-      text="When you open Canvas, courses you saved are checked every few hours and new files are saved quietly."
+      text="While Canvas is open, courses you saved are checked every 15 minutes and new files are saved quietly."
       checked={settings.autoDownloadNew}
       onchange={(on: boolean) => save({ autoDownloadNew: on })}
     />
