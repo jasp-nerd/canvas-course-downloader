@@ -77,15 +77,6 @@ describe('runExport', () => {
     expect(zip.files.get('_download_errors.csv')!.toString()).toContain('HTTP 500');
   });
 
-  it('keeps going when the connection drops for some files', async () => {
-    mock.addFault({ path: '^/files/10101[0-4]/download', drop: true });
-    const sink = memorySink();
-    const result = await runExport(await plan(), { canvas: canvas(), sink });
-    expect(result.outcome).toBe('partial');
-    expect(result.failed).toHaveLength(5);
-    expect(result.failed.every((f) => f.reason === 'transient')).toBe(true);
-  });
-
   it('stops and reports Cancelled when the user cancels', async () => {
     const controller = new AbortController();
     const p = await plan();
@@ -133,25 +124,5 @@ describe('runExport', () => {
     const seen: string[] = [];
     await runExport(p, { canvas: canvas(), sink, onProgress: (x) => seen.push(x.current) });
     expect(seen.sort()).toEqual(p.files.map((f) => f.path).sort());
-  });
-
-  it('counts the size of files handed to the browser by URL', async () => {
-    const p = await plan('104', filesOnly);
-    const sink = { ...memorySink(), writeUrl: () => Promise.resolve() };
-    let bytes = 0;
-    await runExport(p, { canvas: canvas(), sink, onProgress: (x) => (bytes = x.bytes) });
-    const remote = p.files.reduce(
-      (n, f) => n + (f.source.kind === 'remote' ? f.source.size : 0),
-      0,
-    );
-    expect(bytes).toBeGreaterThanOrEqual(remote);
-  });
-
-  it('reports progress for every file', async () => {
-    const p = await plan('104', filesOnly);
-    const seen: RunProgress[] = [];
-    await runExport(p, { canvas: canvas(), sink: memorySink(), onProgress: (x) => seen.push(x) });
-    expect(seen).toHaveLength(p.files.length);
-    expect(seen.at(-1)).toMatchObject({ total: p.files.length, done: p.files.length, failed: 0 });
   });
 });

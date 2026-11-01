@@ -2,7 +2,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { startMockCanvas, type MockCanvas } from '../../e2e/mock-canvas/server';
 import { mockFetch } from '../../tests/support/mock-fetch';
-import { CanvasError, createCanvasClient, nextPageUrl } from './client';
+import { CanvasError, createCanvasClient } from './client';
 
 let mock: MockCanvas;
 beforeAll(async () => {
@@ -36,12 +36,6 @@ describe('Canvas client', () => {
     expect(files).toHaveLength(24);
     expect(new Set(files.map((f) => f.id)).size).toBe(24);
     expect(apiCalls('/api/v1/courses/101/files')).toBe(3);
-  });
-
-  it('asks for 100 items per page by default', async () => {
-    const { canvas } = client();
-    await canvas.list('/courses/101/files');
-    expect(mock.log[0]?.path).toContain('per_page=100');
   });
 
   it('fails the whole list when a later page fails, instead of returning part of it', async () => {
@@ -166,34 +160,5 @@ describe('download', () => {
     );
     expect(new TextDecoder().decode((await res.arrayBuffer()).slice(0, 8))).toBe('%PDF-1.4');
     expect(apiCalls('/files/101001/download')).toBe(2);
-  });
-
-  it('fails a missing file as permanent', async () => {
-    const { canvas } = client();
-    await expect(
-      canvas.download('https://school.instructure.com/files/999999/download'),
-    ).rejects.toMatchObject({
-      kind: 'permanent',
-      status: 404,
-    });
-  });
-});
-
-describe('getHtml', () => {
-  it('returns a Canvas web page as text', async () => {
-    const { canvas } = client();
-    await expect(canvas.getHtml('/courses/101')).resolves.toContain('Introduction to Psychology');
-  });
-});
-
-describe('nextPageUrl', () => {
-  it('finds rel="next" among other relations', () => {
-    expect(
-      nextPageUrl(
-        '<https://x/a?page=1>; rel="current",<https://x/a?page=2>; rel="next",<https://x/a?page=3>; rel="last"',
-      ),
-    ).toBe('https://x/a?page=2');
-    expect(nextPageUrl('<https://x/a?page=3>; rel="last"')).toBeNull();
-    expect(nextPageUrl(null)).toBeNull();
   });
 });

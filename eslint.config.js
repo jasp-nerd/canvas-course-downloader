@@ -11,7 +11,6 @@ export default defineConfig(
       '.output/',
       '.wxt/',
       '.claude/',
-      'legacy/',
       'marketing/',
       'media/',
       'node_modules/',

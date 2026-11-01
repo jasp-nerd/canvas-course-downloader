@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { browser } from 'wxt/browser';
+  import { shortDay } from '../../app/day';
   import { WHATS_NEW_3 } from '../../app/onboarding';
   import {
-    dayLabel,
     modeLine,
     savedAtLabel,
     savedCourseRows,
@@ -177,7 +177,7 @@
       {/if}
       {#if page.saved && hasNew}
         <span class="chip chip-mint num">
-          <Icon name="refresh" />{page.newFiles} new since {dayLabel(page.saved.savedAt)}
+          <Icon name="refresh" />{page.newFiles} new since {shortDay(page.saved.savedAt)}
         </span>
       {:else if page.saved && page.newFiles === 0}
         <span class="small up-to-date"><Icon name="check" size={16} />Up to date</span>
@@ -244,7 +244,7 @@
               {:else if row.newFiles === 0}
                 <span class="small up-to-date"><Icon name="check" size={16} />Up to date</span>
               {:else}
-                <span class="small num">Saved {dayLabel(row.savedAt)}</span>
+                <span class="small num">Saved {shortDay(row.savedAt)}</span>
               {/if}
             </li>
           {/each}

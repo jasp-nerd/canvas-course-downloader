@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { loadV2Helpers } from '../../tests/legacy/v2';
 import { sanitizeFilename, type NameKind } from './filenames';
 
 // Ports of the browsers' own checks. A name that fails either one makes
@@ -153,25 +152,26 @@ describe('sanitizeFilename', () => {
   });
 });
 
+// What v2.11.0 named these. Existing copies and v2's records of saved files use these
+// names, so ordinary input must keep them.
 describe('sanitizeFilename keeps v2.11.0 names for ordinary input', () => {
-  const v2 = loadV2Helpers();
   it.each([
-    'Lecture 01 - What is psychology?.pdf',
-    'Week 4 - Background article.pdf',
-    'Introduction to Psychology',
-    'Assignment 2: part B',
-    'Q&A session (week 3)',
-    'Room change for Thursday',
-    'Welcome to the course!',
-    'Café notes – week 1.docx',
-    'report.final.v2.pdf',
-    'CON',
-    'nul.txt',
-    '...dots at start',
-    'trailing dots...',
-    'Course "quoted" <name>',
-    '50% done | review*',
-  ])('%j', (input) => {
-    expect(sanitizeFilename(input)).toBe(v2.sanitizeFilename(input));
+    ['Lecture 01 - What is psychology?.pdf', 'Lecture 01 - What is psychology-.pdf'],
+    ['Week 4 - Background article.pdf', 'Week 4 - Background article.pdf'],
+    ['Introduction to Psychology', 'Introduction to Psychology'],
+    ['Assignment 2: part B', 'Assignment 2- part B'],
+    ['Q&A session (week 3)', 'Q&A session (week 3)'],
+    ['Room change for Thursday', 'Room change for Thursday'],
+    ['Welcome to the course!', 'Welcome to the course!'],
+    ['Café notes – week 1.docx', 'Café notes – week 1.docx'],
+    ['report.final.v2.pdf', 'report.final.v2.pdf'],
+    ['CON', '_CON'],
+    ['nul.txt', '_nul.txt'],
+    ['...dots at start', 'dots at start'],
+    ['trailing dots...', 'trailing dots'],
+    ['Course "quoted" <name>', 'Course -quoted- -name-'],
+    ['50% done | review*', '50- done - review-'],
+  ])('%j', (input, v2) => {
+    expect(sanitizeFilename(input)).toBe(v2);
   });
 });

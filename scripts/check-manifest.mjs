@@ -19,7 +19,13 @@ const SNAPSHOT = 'manifest.snapshot.json';
 // Add an entry only after checking that page.
 const NO_WARNING = new Set(['alarms', 'offscreen', 'unlimitedStorage']);
 
-const v2 = JSON.parse(readFileSync('legacy/v2/manifest.json', 'utf8'));
+// What v2.11.0, the last 2.x release, asked for. Required access beyond this would disable
+// the extension for v2 users on update. (Its manifest is in git history before 3.0.)
+const baseline = {
+  permissions: ['activeTab', 'declarativeNetRequest', 'downloads', 'notifications', 'storage'],
+  host_permissions: ['*://*.instructure.com/*'],
+  content_script_matches: ['https://*/*'],
+};
 const sorted = (list = []) => [...new Set(list)].sort();
 
 function summarize(manifest) {
@@ -34,7 +40,6 @@ function summarize(manifest) {
   };
 }
 
-const baseline = summarize(v2);
 const actual = Object.fromEntries(
   TARGETS.map((t) => [
     t,

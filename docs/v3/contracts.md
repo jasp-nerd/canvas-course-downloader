@@ -2,7 +2,7 @@
 
 Behaviours v3 must keep, taken from the v2.11.0 code (`legacy/v2/`), its git history and its issues. Each line becomes a test. Where v3 deliberately differs, the difference is listed in `parity-diffs.md`.
 
-Source: a code audit of v2.11.0 (2026-10-19). File references are to `legacy/v2/`.
+Source: a code audit of v2.11.0 (2026-10-19). File references are to `legacy/v2/`, which was removed from the repo on 2026-11-01; `git show v2.11.0:<file>` or any commit before then has it.
 
 ## Parity checklist
 

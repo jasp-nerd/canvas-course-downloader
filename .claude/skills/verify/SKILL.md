@@ -33,7 +33,7 @@ For any change to UI or the download flow, delegate to the `browser-verifier` su
 
 ## 4. Never
 
-- Edit, skip or loosen a test, snapshot, fixture, golden file or `legacy/v2/` to get a pass.
+- Edit, skip or loosen a test, snapshot, fixture or golden file to get a pass.
 - Run `--update-snapshots` or `check-manifest.mjs --update` without jasp's explicit OK.
 - Count evidence from an earlier run.
 

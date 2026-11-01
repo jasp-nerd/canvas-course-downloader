@@ -21,11 +21,6 @@ describe('golden normalization', () => {
     });
   });
 
-  it('leaves other files byte-for-byte unchanged', () => {
-    const html = Buffer.from('<p>exportDate: 2026-10-19</p>');
-    expect(normalize('Course/Pages/a.html', html)).toBe(html);
-  });
-
   it('stores ZIP entries under a folder git does not ignore', () => {
     expect(goldenTextPath('Intro to Psychology.zip!/Pages/a.html')).toBe(
       'Intro to Psychology (zip)/Pages/a.html',

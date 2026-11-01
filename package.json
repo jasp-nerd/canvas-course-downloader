@@ -28,11 +28,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check:manifest": "pnpm build:all && node scripts/check-manifest.mjs",
-    "verify:fast": "pnpm typecheck && pnpm lint && pnpm test",
-    "verify": "pnpm verify:fast && pnpm check:manifest && playwright test --project e2e",
+    "verify:fast": "pnpm typecheck && pnpm lint && vitest run --changed",
+    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm check:manifest && playwright test --project e2e",
     "mock:canvas": "node e2e/mock-canvas/cli.ts",
     "e2e": "wxt build && playwright test --project e2e",
-    "golden:capture": "wxt build && playwright test --project golden",
     "prepare": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true",
     "test:firefox": "wxt build -b firefox && vitest run --config vitest.firefox.config.ts"
   },

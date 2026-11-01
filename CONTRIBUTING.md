@@ -19,11 +19,11 @@ Don't share or install a `pnpm dev` build: in development WXT adds permissions t
 ## Checking your change
 
 ```bash
-pnpm verify:fast      # type checks, lint, unit tests: run while you work
+pnpm verify:fast      # type checks, lint, the unit tests related to your changes
 pnpm verify           # everything: also the builds, the permission check and the browser tests
 ```
 
-A change is done when `pnpm verify` passes. The browser tests run Chrome for Testing against a mock Canvas in `e2e/mock-canvas/`, so you don't need a Canvas account for them. Run `pnpm exec playwright install chromium` once first.
+CI runs `pnpm verify` on every push. The few browser tests run Chrome for Testing against a mock Canvas in `e2e/mock-canvas/`, so you don't need a Canvas account for them. Run `pnpm exec playwright install chromium` once first.
 
 ## How the code is organized
 
@@ -32,13 +32,12 @@ A change is done when `pnpm verify` passes. The browser tests run Chrome for Tes
 - `src/engine/`: works out what to export, one module per part of a course, into a plan of files
 - `src/export/`: turns the plan into HTML, Markdown, file names, the overview page, study packs and agent files
 - `src/sinks/`: where files go: a ZIP, the Downloads folder, or a folder the user chose
-- `legacy/v2/`: version 2.11, kept unchanged as the reference for what v3 must produce
 
 ## Rules worth knowing
 
 - **Output must match v2.** The tests compare v3's exports with exports v2 made of the mock Canvas. Every intended difference is listed in `docs/v3/parity-diffs.md` with a reason.
 - **Permissions don't change.** A new required permission makes Chrome disable the extension for every existing user until they accept it. `pnpm check:manifest` fails if the manifest asks for more. New access to a site goes in `optional_host_permissions` and is requested from a click.
-- **Test first.** For a bug, write a test that fails, then fix it. Don't change or loosen existing tests, fixtures or golden files to make something pass.
+- **Few tests, where they matter.** Test what can really break (export paths, the list of saved files, storage, the sanitizer, permissions), not wording or layout. Check visual changes with screenshots. Don't loosen existing tests, fixtures or golden files to make something pass.
 - **Canvas content is untrusted.** Insert it as text; HTML only through the sanitizer in `src/export/sanitize.ts`.
 - **No real data.** Test data is invented. Never commit real course content, names or Canvas addresses of real people.
 - **Settings and export paths are contracts.** Users have them stored and saved; changing one needs a migration and a test.

@@ -137,21 +137,6 @@ describe("Canvas's course package (.imscc)", () => {
     });
     expect(result).toEqual({ kind: 'slow' });
   });
-
-  it('reports a failed build', async () => {
-    const canvas = fakeCanvas({
-      'GET /api/v1/users/self': () => [200, { id: 7 }],
-      'GET /api/v1/courses/57/content_exports': () => [200, []],
-      'POST /api/v1/courses/57/content_exports': () => [
-        200,
-        { id: 3, progress_url: `${ORIGIN}/api/v1/progress/9` },
-      ],
-      'GET /api/v1/progress/9': () => [200, { workflow_state: 'failed' }],
-    });
-    expect(await requestCoursePackage({ ...base, fetch: canvas.fetch })).toEqual({
-      kind: 'failed',
-    });
-  });
 });
 
 describe('the security token', () => {

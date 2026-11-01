@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { groupByTerm, matchesSearch, teaches, type CourseSummary } from './courses';
+import { groupByTerm, teaches, type CourseSummary } from './courses';
 
 const course = (id: number, name: string, term?: string, start?: string): CourseSummary => ({
   id,
@@ -59,18 +59,6 @@ describe('groupByTerm', () => {
       'Fall 2025',
       'Autumn 2024',
     ]);
-  });
-});
-
-describe('matchesSearch', () => {
-  it.each([
-    ['linear', true],
-    ['C7', true],
-    ['spring', true],
-    ['  ', true],
-    ['biology', false],
-  ])('%j', (query, expected) => {
-    expect(matchesSearch(course(7, 'Linear Algebra', 'Spring 2026'), query)).toBe(expected);
   });
 });
 

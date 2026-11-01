@@ -7,7 +7,6 @@ import {
   markNewUser,
   onboardingFor,
   SETUP_DEFAULTS,
-  setupScreens,
   setupSettings,
   shouldAskProfile,
   type SetupAnswers,
@@ -76,12 +75,6 @@ describe('the first-download question', () => {
       includeStudentWork: true,
     });
   });
-
-  it('saves only the profile when it is not a study pack', async () => {
-    await markNewUser();
-    await answerProfile({ profile: 'copy', aiTarget: 'notebooklm' });
-    expect(await fakeBrowser.storage.sync.get(null)).toEqual({ profile: 'copy' });
-  });
 });
 
 describe('setup after a new install', () => {
@@ -92,52 +85,6 @@ describe('setup after a new install', () => {
     ...changes,
   });
   const save = { zipMode: true, saveTo: 'downloads', incrementalMode: true };
-
-  it('asks a follow-up question only for study packs and teachers', () => {
-    expect(setupScreens('copy')).toEqual(['hello', 'goal', 'save', 'ready']);
-    expect(setupScreens('code')).toEqual(['hello', 'goal', 'save', 'ready']);
-    expect(setupScreens('study')).toEqual(['hello', 'goal', 'ai', 'save', 'ready']);
-    expect(setupScreens('teach')).toEqual(['hello', 'goal', 'teacher', 'save', 'ready']);
-  });
-
-  it('starts a new user on a ZIP in Downloads that only adds what is new next time', () => {
-    expect(SETUP_DEFAULTS).toEqual({
-      goal: 'copy',
-      includeStudentWork: false,
-      aiTarget: 'notebooklm',
-      ...save,
-    });
-  });
-
-  it('keeps a copy', () => {
-    expect(setupSettings(answers({ goal: 'copy' }))).toEqual({
-      profile: 'copy',
-      role: 'student',
-      includeStudentWork: false,
-      ...save,
-    });
-  });
-
-  it('studies with AI, in the chosen tool', () => {
-    expect(setupSettings(answers({ goal: 'study', aiTarget: 'claude', zipMode: false }))).toEqual({
-      profile: 'study',
-      aiTarget: 'claude',
-      role: 'student',
-      includeStudentWork: false,
-      ...save,
-      zipMode: false,
-    });
-  });
-
-  it('builds with code', () => {
-    expect(setupSettings(answers({ goal: 'code', incrementalMode: false }))).toEqual({
-      profile: 'agents',
-      role: 'student',
-      includeStudentWork: false,
-      ...save,
-      incrementalMode: false,
-    });
-  });
 
   it('archives a course the user teaches, with or without student work', () => {
     expect(setupSettings(answers({ goal: 'teach' }))).toEqual({

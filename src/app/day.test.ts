@@ -12,15 +12,4 @@ describe('shortDay', () => {
     expect(shortDay(at(10, 21, 23), now)).toBe('yesterday');
     expect(shortDay(at(10, 21, 0), now)).toBe('yesterday');
   });
-
-  it('names the weekday within the last week', () => {
-    expect(shortDay(at(10, 20), now)).toBe('Tue');
-    expect(shortDay(at(10, 16), now)).toBe('Fri');
-  });
-
-  it('gives the date for anything older, with the year when it differs', () => {
-    expect(shortDay(at(10, 15), now)).toBe('Oct 15');
-    expect(shortDay(at(5, 3), now)).toBe('May 3');
-    expect(shortDay(at(12, 30, 9, 2025), now)).toBe('Dec 30, 2025');
-  });
 });

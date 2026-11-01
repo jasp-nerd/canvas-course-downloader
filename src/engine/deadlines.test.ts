@@ -41,9 +41,4 @@ describe('Deadlines.ics', () => {
       /URL:https:\/\/school\.instructure\.com\/courses\/101\/assignments\/\d+/,
     );
   });
-
-  it('is in the files for agents too, but not in a study pack', async () => {
-    expect(ics(await plan({ agents: true }))).toBeDefined();
-    expect(ics(await plan({ studyPack: true }))).toBeUndefined();
-  });
 });

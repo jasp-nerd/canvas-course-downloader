@@ -1,8 +1,5 @@
 // Playwright fixtures: one Chrome for Testing per worker with the extension
 // loaded and the mock Canvas hosts mapped to an in-process mock server.
-//
-// Use `test.use({ extensionPath: V2_BUILD })` to run the same scenario
-// against the v2.11.0 reference build.
 import {
   chromium,
   expect,
@@ -19,7 +16,6 @@ import type { browser } from 'wxt/browser';
 import { MOCK_HOSTS, startMockCanvas, type MockCanvas } from './mock-canvas/server.ts';
 
 export const V3_BUILD = path.resolve('.output/chrome-mv3');
-export const V2_BUILD = path.resolve('.output/legacy-v2');
 
 export const CANVAS = `https://${MOCK_HOSTS.instructure}`;
 export const CUSTOM_DOMAIN_CANVAS = `https://${MOCK_HOSTS.customDomain}`;
@@ -190,34 +186,6 @@ export async function waitForExport(tab: Page, timeout = 60_000) {
   await expect(tab.getByRole('status').filter({ hasText: /^Finished/ })).toHaveCount(1, {
     timeout,
   });
-}
-
-/**
- * Opens the real toolbar popup for the focused window (as a click on the
- * extension icon does) and returns it. The popup is a separate target that
- * the persistent context doesn't attach to, so it's reached over CDP.
- */
-export async function openActionPopup(sw: Worker, cdpPort: number) {
-  await sw.evaluate(() =>
-    (globalThis as unknown as { chrome: typeof browser }).chrome.action.openPopup(),
-  );
-  const cdp = await chromium.connectOverCDP(`http://127.0.0.1:${cdpPort}`);
-  for (let i = 0; i < 50; i++) {
-    const popup = cdp
-      .contexts()
-      .flatMap((c) => c.pages())
-      .find((p) => p.url().endsWith('/popup.html'));
-    if (popup) {
-      const close = async () => {
-        await popup.close().catch(() => {});
-        await cdp.close();
-      };
-      return { popup, close };
-    }
-    await new Promise((r) => setTimeout(r, 100));
-  }
-  await cdp.close();
-  throw new Error('The action popup did not open');
 }
 
 /** Clears extension storage and writes the given storage.sync settings, from the service worker. */

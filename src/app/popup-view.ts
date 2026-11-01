@@ -4,9 +4,8 @@ import type { CourseInventory } from '../storage/inventory';
 import type { Settings } from '../storage/settings';
 import { AI_TARGETS } from '../export/study-pack';
 import type { UpdateCheck } from './updates';
+import { shortDay } from './day';
 import { newItems } from './updates';
-
-const DAY = 24 * 60 * 60 * 1000;
 
 /** "One ZIP per course in Downloads": how a download is saved and where, in plain words. */
 export function modeLine(settings: Settings, saveTo?: string): string {
@@ -19,22 +18,6 @@ export function modeLine(settings: Settings, saveTo?: string): string {
           ? 'One ZIP per course'
           : 'Folders';
   return saveTo ? `${makes} in ${saveTo}` : makes;
-}
-
-const startOfDay = (at: number) => new Date(at).setHours(0, 0, 0, 0);
-
-/** "today", "yesterday", "Tue" within a week, else "Oct 15" (with the year when it isn't this year). */
-export function dayLabel(at: number, now = Date.now()): string {
-  const days = Math.round((startOfDay(now) - startOfDay(at)) / DAY);
-  if (days <= 0) return 'today';
-  if (days === 1) return 'yesterday';
-  if (days < 7) return new Date(at).toLocaleDateString('en', { weekday: 'short' });
-  const sameYear = new Date(at).getFullYear() === new Date(now).getFullYear();
-  return new Date(at).toLocaleDateString('en', {
-    month: 'short',
-    day: 'numeric',
-    ...(sameYear ? {} : { year: 'numeric' }),
-  });
 }
 
 /** The user's own clock style (14:02 or 2:02 PM), with English words around it. */
@@ -52,7 +35,7 @@ export function savedAtLabel(
     minute: '2-digit',
     hourCycle,
   });
-  return `${dayLabel(at, now)} ${time}`;
+  return `${shortDay(at, now)} ${time}`;
 }
 
 export interface SavedCourseRow {

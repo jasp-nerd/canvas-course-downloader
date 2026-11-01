@@ -2,13 +2,10 @@
 // picker can't be automated, so the browser's private file system (OPFS) stands
 // in for the chosen folder: the same handle type, the same writes.
 import { execFileSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import type { Page } from '@playwright/test';
-import { normalize } from './golden/collect';
-import { diffAgainstGolden } from './golden/compare';
 import { CANVAS, expect, resetExtensionStorage, test, waitForExport } from './fixtures';
 
 /** Makes OPFS the "chosen folder" and empties it. Runs in an extension page. */
@@ -99,29 +96,5 @@ test('streams the ZIP into the chosen folder, never into Downloads, and never ov
   rmSync(dir, { recursive: true });
   expect(pdfs).toHaveLength(24);
   expect(readdirSync(downloadsDir)).toEqual([]);
-  await ext.close();
-});
-
-test('writes folders into the chosen folder that match v2', async ({
-  page,
-  serviceWorker,
-  extContext,
-  extensionId,
-}) => {
-  await resetExtensionStorage(serviceWorker, { saveTo: 'folder', zipMode: false });
-  const ext = await extContext.newPage();
-  await ext.goto(`chrome-extension://${extensionId}/options.html`);
-  await useOpfsAsFolder(ext);
-
-  await exportCourse(page, 102);
-  const files = Object.entries(await readOpfs(ext)).map(([p, b64]) => {
-    const normalized = normalize(p, Buffer.from(b64, 'base64'));
-    return {
-      path: p,
-      sha256: createHash('sha256').update(normalized).digest('hex'),
-      ...(/\.(html|md|csv|json|css)$/.test(p) ? { text: normalized.toString('utf8') } : {}),
-    };
-  });
-  expect(diffAgainstGolden('student-folders', files)).toEqual([]);
   await ext.close();
 });

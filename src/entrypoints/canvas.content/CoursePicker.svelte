@@ -19,7 +19,7 @@
   import Icon from '../../ui/Icon.svelte';
   import type { IconName } from '../../ui/icons';
   import Logo from '../../ui/Logo.svelte';
-  import { shortDay } from './day';
+  import { shortDay } from '../../app/day';
   import { pageState } from './state.svelte';
 
   let {

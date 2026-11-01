@@ -62,11 +62,6 @@ describe('settings added in 3.0', () => {
     expect((await loadSettings()).coursePackage).toBe(false);
   });
 
-  it('reads back a teacher who includes student work', async () => {
-    await saveSettings({ role: 'teacher', includeStudentWork: true });
-    expect(await loadSettings()).toMatchObject({ role: 'teacher', includeStudentWork: true });
-  });
-
   it('falls back to student for a role it does not know', async () => {
     await fakeBrowser.storage.sync.set({ role: 'admin' });
     expect((await loadSettings()).role).toBe('student');

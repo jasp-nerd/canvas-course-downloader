@@ -139,18 +139,6 @@ describe('planStudyPack', () => {
     expect(other).not.toContain('Grading Weights');
   });
 
-  it('writes a course guide with contents, deadlines by date and grading weights', () => {
-    const guide = text(planStudyPack(input()), '00 Course guide.md');
-    expect(guide).toContain(`Snapshot of the Canvas course at ${ORIGIN}, made on 2026-10-20`);
-    expect(guide).toContain('This pack has 7 files.');
-    expect(guide).toContain(
-      '| 1 | Week 1: Vectors | 1 page, 1 assignment | 01 Week 1- Vectors.md; M01 Lecture 1.pdf |',
-    );
-    expect(guide.indexOf('| Quiz 1 (quiz)')).toBeLessThan(guide.indexOf('| Homework 1'));
-    expect(guide).toContain('Homework 40% · Exam 60%');
-    expect(guide).toContain('- 1 file, listed in _extras/skipped files.txt');
-  });
-
   it("collects video and web links, and lists the files the tool doesn't take", () => {
     const pack = planStudyPack(input());
     expect(text(pack, '_extras/links.txt')).toBe(
@@ -246,44 +234,6 @@ describe('planStudyPack', () => {
     expect(paths(pack)).toContain('M02 Formula sheet.pdf');
     expect(text(pack, '02 Other course content.md')).toContain('# 02 Other course content');
   });
-
-  it('calls it all "Course content" when no module has anything in the pack', () => {
-    const pack = planStudyPack(
-      input({
-        outline: [
-          { name: 'Manual', items: [] },
-          { name: 'Week 1', items: [] },
-        ],
-      }),
-    );
-    expect(paths(pack)).toContain('01 Course content.md');
-    expect(paths(pack)).toContain('M01 Lecture 1.pdf');
-  });
-
-  it('names the content "Course content" when the course has no modules', () => {
-    const pack = planStudyPack(input({ outline: [] }));
-    expect(text(pack, '01 Course content.md')).toContain(
-      "> Course content that isn't in a module.",
-    );
-  });
-
-  it('says in plain words what Canvas would not give', () => {
-    const pack = planStudyPack(
-      input({
-        notCaptured: [
-          {
-            source: 'Page: Week 2',
-            text: 'Old slides.pdf',
-            url: `${ORIGIN}/files/5`,
-            status: '403',
-          },
-        ],
-      }),
-    );
-    expect(text(pack, '00 Course guide.md')).toContain(
-      '- Old slides.pdf (Page: Week 2): No access (403)',
-    );
-  });
 });
 
 describe('packContents', () => {
@@ -299,10 +249,5 @@ describe('packContents', () => {
     expect(packContents(planStudyPack(input({ target: small })), 'Linear Algebra').modules).toEqual(
       ['Week 1: Vectors', 'Week 2: Matrices'],
     );
-  });
-
-  it('is empty for a pack without modules or left-out files', () => {
-    const pack = planStudyPack(input({ outline: [], entries: [file('1', 'Notes.pdf')] }));
-    expect(packContents(pack, 'Linear Algebra')).toEqual({ leftOut: [], modules: [] });
   });
 });

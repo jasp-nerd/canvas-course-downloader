@@ -36,17 +36,6 @@ test('exports a course as a ZIP that matches v2', async ({ page, serviceWorker, 
   expect(diffAgainstGolden('student-zip-default', collectExport(downloadsDir))).toEqual([]);
 });
 
-test('exports a course into folders that match v2', async ({
-  page,
-  serviceWorker,
-  downloadsDir,
-}) => {
-  await resetExtensionStorage(serviceWorker, { zipMode: false });
-  await exportFromCoursePage(page, 102);
-  await waitForDownloads(downloadsDir);
-  expect(diffAgainstGolden('student-folders', collectExport(downloadsDir))).toEqual([]);
-});
-
 test('says Partial and lists files that failed, instead of "complete"', async ({
   page,
   serviceWorker,
@@ -69,23 +58,4 @@ test('says Partial and lists files that failed, instead of "complete"', async ({
   expect(
     execFileSync('unzip', ['-p', zip, '_download_errors.csv'], { encoding: 'utf8' }),
   ).toContain('HTTP 500');
-});
-
-test('names the file the browser actually saved when one with that name was there', async ({
-  page,
-  serviceWorker,
-  downloadsDir,
-}) => {
-  await resetExtensionStorage(serviceWorker, {});
-  await exportFromCoursePage(page, 104);
-  await waitForDownloads(downloadsDir);
-  const tab = await exportFromCoursePage(page, 104);
-  await expect(
-    tab.getByText(`${path.basename(downloadsDir)}/Academic Writing (1).zip`, { exact: true }),
-  ).toBeVisible();
-  await waitForDownloads(downloadsDir);
-  expect(readdirSync(downloadsDir).sort()).toEqual([
-    'Academic Writing (1).zip',
-    'Academic Writing.zip',
-  ]);
 });

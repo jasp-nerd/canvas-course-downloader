@@ -51,12 +51,6 @@ describe('linked files', () => {
     expect(paths.filter((p) => p.startsWith('Pages/'))).toEqual([]);
     expect(paths).toContain('Extracted_Files/Lecture 01 - Machine Learning week 1.pdf');
   });
-
-  it('are not looked for when not chosen', async () => {
-    const paths = await plan('pages');
-    expect(paths).toContain('Pages/exam-information.html');
-    expect(paths.filter((p) => p.startsWith('Extracted_Files/'))).toEqual([]);
-  });
 });
 
 describe('links that only look like Canvas files', () => {

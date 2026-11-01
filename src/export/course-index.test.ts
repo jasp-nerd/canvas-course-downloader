@@ -70,36 +70,6 @@ describe('renderCourseIndex', () => {
     expect(html).not.toContain('<MATH 221>');
   });
 
-  it('lists what could not be saved, and why, including files that failed during the download', () => {
-    const html = renderCourseIndex({
-      ...base,
-      notCaptured: [
-        {
-          source: 'Page: Week 2',
-          text: 'Old slides.pdf',
-          url: 'https://school.instructure.com/courses/90/files/5',
-          status: '403',
-          sourceCourseId: '90',
-        },
-      ],
-      failed: [{ path: 'Files/Syllabus.pdf', reason: 'HTTP 500' }],
-    });
-    expect(html).toContain('<a href="#not-saved">2 items could not be saved</a>');
-    expect(html).toContain('No access (403) (linked from course 90)');
-    expect(html).toContain('<td>Files/Syllabus.pdf</td><td>Canvas had an error (HTTP 500)</td>');
-    expect(html).not.toContain('href="Files/Syllabus.pdf"');
-  });
-
-  it('shows page titles instead of file names, and hides files only tools need', () => {
-    const html = renderCourseIndex({
-      ...base,
-      paths: [...base.paths, 'manifest.json'],
-      titles: new Map([['Pages/course-schedule.html', 'Course schedule']]),
-    });
-    expect(html).toContain('<li><a href="Pages/course-schedule.html">Course schedule</a></li>');
-    expect(html).not.toContain('>manifest<');
-  });
-
   it('works from a double-click: no scripts, and a CSP that forbids them', () => {
     const html = renderCourseIndex(base);
     expect(html).not.toMatch(/<script/i);

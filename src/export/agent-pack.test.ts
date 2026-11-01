@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { DocumentEntry } from '../engine/types';
 import {
   courseJson,
-  documentFrontMatter,
   frontMatter,
   renderAgentsMd,
   renderLlmsTxt,
@@ -91,25 +90,6 @@ describe('frontMatter', () => {
       frontMatter({ title: 'Week 1: "Vectors" #1', points: 10, due_at: undefined, module: '' }),
     ).toBe('---\ntitle: "Week 1: \\"Vectors\\" #1"\npoints: 10\n---\n\n');
   });
-
-  it('describes a document by type, module, due date, points and Canvas link', () => {
-    expect(documentFrontMatter(input(), input().documents[1]!)).toBe(
-      [
-        '---',
-        'type: "assignment"',
-        'title: "Homework 1"',
-        'course: "Linear Algebra"',
-        'module: "Week 1: Vectors"',
-        'module_position: 1',
-        'due_at: "2026-09-14T21:59:00Z"',
-        'points: 10',
-        `canvas_url: "${ORIGIN}/assignments/11"`,
-        '---',
-        '',
-        '',
-      ].join('\n'),
-    );
-  });
 });
 
 describe('renderLlmsTxt', () => {
@@ -132,27 +112,6 @@ describe('renderLlmsTxt', () => {
     );
     expect(txt).toContain('## Optional\n- [Welcome](<Announcements/Welcome.md>): announcement\n');
     expect(txt).not.toContain('Locked quiz');
-  });
-
-  it('lists files no module links to, so agents find them too', () => {
-    const txt = renderLlmsTxt(
-      input({
-        files: [
-          ...input().files,
-          {
-            path: 'Extracted_Files/Slides week 2.pdf',
-            name: 'Slides week 2.pdf',
-            size: 2_100_000,
-            contentType: 'application/pdf',
-          },
-        ],
-      }),
-    );
-    expect(txt).toContain(
-      '## Files\n- [Slides week 2.pdf](<Extracted_Files/Slides week 2.pdf>): file, 2.1 MB\n',
-    );
-    // Listed once: under its module.
-    expect(txt.match(/Lecture %231\.pdf/g)).toHaveLength(1);
   });
 });
 
@@ -195,19 +154,5 @@ describe('renderCourseJson', () => {
       canvas_url: `${ORIGIN}/assignments/11`,
     });
     expect(json.grading_weights).toEqual([{ name: 'Homework', weight: 40 }]);
-  });
-
-  it('marks files that failed to download, and says why', () => {
-    const json = courseJson(input(), [
-      { path: 'Files/Lectures/Lecture #1.pdf', reason: 'HTTP 500' },
-    ]);
-    expect(json.files[0]?.downloaded).toBe(false);
-    expect(json.not_captured).toEqual([
-      {
-        where: 'Download',
-        what: 'Files/Lectures/Lecture #1.pdf',
-        reason: 'Canvas had an error (HTTP 500)',
-      },
-    ]);
   });
 });

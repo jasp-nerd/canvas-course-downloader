@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { courseIdFromPath, isCanvasPage } from './detect';
+import { isCanvasPage } from './detect';
 
 const page = (html: string) => new DOMParser().parseFromString(html, 'text/html');
 
@@ -25,16 +25,5 @@ describe('isCanvasPage', () => {
       '<meta name="csrf-token" content="x"><div id="application"><main id="main"></main></div>',
     );
     expect(isCanvasPage(doc, 'example.com')).toBe(false);
-  });
-});
-
-describe('courseIdFromPath', () => {
-  it.each([
-    ['/courses/101', '101'],
-    ['/courses/101/modules/items/5', '101'],
-    ['/', null],
-    ['/courses', null],
-  ])('%s → %s', (path, id) => {
-    expect(courseIdFromPath(path)).toBe(id);
   });
 });

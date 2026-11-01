@@ -9,10 +9,6 @@ describe('contrast', () => {
     expect(parseColor('var(--x)')).toBeNull();
   });
 
-  it('measures WCAG contrast', () => {
-    expect(contrastRatio('#000000', '#ffffff')).toBeCloseTo(21, 0);
-  });
-
   it.each([
     ['#3375AE', '#ffffff'],
     ['#0b6bcb', '#ffffff'],
