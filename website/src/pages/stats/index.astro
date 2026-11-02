@@ -96,7 +96,7 @@ import Base from '../../layouts/Base.astro';
   }
 
   const logo = (name: string) =>
-    `<svg class="icon" aria-hidden="true"><use href="#i-${name.toLowerCase()}"></use></svg> `;
+    `<img class="logo" src="${import.meta.env.BASE_URL}logos/${name.toLowerCase()}.svg" alt="" width="22" height="22"> `;
 
   function store(name: string, s: Stats | undefined, measure: string) {
     if (!s || s.missing || s.error)
@@ -212,9 +212,8 @@ import Base from '../../layouts/Base.astro';
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
   }
-  .stats .store h2 .icon {
+  .stats .store h2 .logo {
     align-self: center;
-    color: var(--red);
   }
   .stats .pills {
     display: flex;

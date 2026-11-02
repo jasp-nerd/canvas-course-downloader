@@ -22,13 +22,24 @@ Free and open source. No account, no API token and no tracking: it talks only to
 
 ## Install
 
-| | Browser | Install from |
-| :-: | --- | --- |
-| <img src="media/readme/chrome.svg" width="22" alt=""> | Chrome, Brave and other Chromium browsers | [Chrome Web Store](https://chromewebstore.google.com/detail/mmnmcnffbkcnhcjiidmdnaclpfeekiol) |
-| <img src="media/readme/edge.svg" width="22" alt=""> | Edge | [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/emhdfhcmiabgphmeohfplkbeloeamjak) |
-| <img src="media/readme/firefox.svg" width="22" alt=""> | Firefox 140 or later | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/canvas-course-downloader/) |
+<table align="center">
+  <tr>
+    <td align="center" width="230">
+      <a href="https://chromewebstore.google.com/detail/mmnmcnffbkcnhcjiidmdnaclpfeekiol"><img src="media/readme/chrome.svg" width="48" height="48" alt=""><br><b>Chrome Web Store</b></a><br>
+      <sub>Chrome, Brave and other Chromium</sub>
+    </td>
+    <td align="center" width="230">
+      <a href="https://microsoftedge.microsoft.com/addons/detail/emhdfhcmiabgphmeohfplkbeloeamjak"><img src="media/readme/edge.svg" width="48" height="48" alt=""><br><b>Edge Add-ons</b></a><br>
+      <sub>Microsoft Edge</sub>
+    </td>
+    <td align="center" width="230">
+      <a href="https://addons.mozilla.org/firefox/addon/canvas-course-downloader/"><img src="media/readme/firefox.svg" width="48" height="48" alt=""><br><b>Firefox Add-ons</b></a><br>
+      <sub>Firefox 140 or later</sub>
+    </td>
+  </tr>
+</table>
 
-Every [release](https://github.com/jasp-nerd/canvas-course-downloader/releases/latest) also has a zip per browser, to load by hand. That copy doesn't update itself, so use a store if you can. Browser icons: [Tabler Icons](https://tabler.io/icons) (MIT).
+Every [release](https://github.com/jasp-nerd/canvas-course-downloader/releases/latest) also has a zip per browser to load by hand. That copy doesn't update itself, so use a store if you can.
 
 ## Why
 

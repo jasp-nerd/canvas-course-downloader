@@ -1523,10 +1523,10 @@ ol {
   margin: 0;
   font-size: 26px;
 }
-.install-card h2 .icon {
-  width: 28px;
-  height: 28px;
-  color: var(--red);
+.install-card h2 .logo {
+  width: 32px;
+  height: 32px;
+  flex: none;
 }
 .install-card .btn {
   max-width: 100%;
