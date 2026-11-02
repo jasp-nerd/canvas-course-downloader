@@ -4,7 +4,7 @@ export const PRODUCT = 'Canvas Course Downloader';
 
 /** Until 3.0 is in the stores, the site describes features the store version lacks, so search
  * engines are asked not to index it. Set to true on the day 3.0 is published. */
-export const LAUNCHED = false;
+export const LAUNCHED = true;
 
 /** Visit counts, on our own Umami (stats.coursedownloader.com): no cookies, shared with no one.
  * The tag only counts visits on coursedownloader.com itself, so previews and forks add nothing. */
