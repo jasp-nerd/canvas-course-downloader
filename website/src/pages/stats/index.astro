@@ -1,0 +1,288 @@
+---
+// jasp's own dashboard: every number about the extension in one place. Behind a password on the
+// server (a Traefik route, see website/scripts/stats-server.sh); the numbers come from
+// /stats/data/, which scripts/collect-stats.mjs refreshes hourly.
+import Base from '../../layouts/Base.astro';
+---
+
+<Base
+  title="Stats – Canvas Course Downloader"
+  description="Users, ratings, installs and visits from every store, in one place."
+  noindex
+>
+  <section class="wrap page-head">
+    <h1>Stats</h1>
+    <p class="lead" id="updated">Loading…</p>
+  </section>
+
+  <main class="wrap stats" id="stats" aria-live="polite">
+    <section class="hero card">
+      <div>
+        <p class="label">People using it</p>
+        <p class="big num" id="total">–</p>
+        <p class="small muted">Chrome's weekly users, Firefox's daily users and Edge's installs, added up.</p>
+      </div>
+      <figure class="chart" id="chart" aria-label="Users over time"></figure>
+    </section>
+
+    <section class="stores" id="stores"></section>
+
+    <div class="two">
+      <section class="card" id="chrome-detail"></section>
+      <section class="card" id="countries"></section>
+    </div>
+
+    <div class="two">
+      <section class="card" id="website"></section>
+      <section class="card" id="github"></section>
+    </div>
+  </main>
+</Base>
+
+<script>
+  type Num = number | null | undefined;
+  type Stats = Record<string, any>;
+
+  const $ = (id: string) => document.getElementById(id)!;
+  const fmt = (n: Num) => (typeof n === 'number' ? n.toLocaleString('en-US') : '–');
+  const esc = (s: unknown) =>
+    String(s ?? '').replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+  const stat = (label: string, value: string, hint = '') =>
+    `<div class="stat"><p class="label">${label}</p><p class="value num">${value}</p>${hint ? `<p class="small muted">${hint}</p>` : ''}</div>`;
+  const rating = (s: Stats) =>
+    typeof s.rating === 'number'
+      ? `${s.rating.toFixed(1)} ★ <span class="muted">(${fmt(s.ratings)})</span>`
+      : `${fmt(s.ratings)} <span class="muted">ratings</span>`;
+
+  /** A line chart of each series over time, in plain SVG. */
+  function chart(rows: { date: string; [k: string]: Num | string }[], series: [string, string, string][]) {
+    const points = rows.filter((r) => series.some(([k]) => typeof r[k] === 'number'));
+    if (points.length < 2) return '<p class="small muted empty">A chart appears after a few days of numbers.</p>';
+    const W = 640, H = 200, P = 28;
+    const values = points.flatMap((r) => series.map(([k]) => r[k]).filter((v): v is number => typeof v === 'number'));
+    const max = Math.max(...values) * 1.1 || 1;
+    const x = (i: number) => P + (i / (points.length - 1)) * (W - 2 * P);
+    const y = (v: number) => H - P - (v / max) * (H - 2 * P);
+    const lines = series
+      .map(([k, label, colour]) => {
+        const d = points
+          .map((r, i) => (typeof r[k] === 'number' ? `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(r[k] as number).toFixed(1)}` : ''))
+          .filter(Boolean)
+          .join(' ');
+        return d ? `<path d="${d}" fill="none" stroke="${colour}" stroke-width="2.5" stroke-linejoin="round"><title>${label}</title></path>` : '';
+      })
+      .join('');
+    const legend = series
+      .filter(([k]) => points.some((r) => typeof r[k] === 'number'))
+      .map(([, label, colour]) => `<span><i style="background:${colour}"></i>${label}</span>`)
+      .join('');
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Users over time">
+      <line x1="${P}" x2="${W - P}" y1="${H - P}" y2="${H - P}" stroke="var(--mist-2)" />
+      <text x="${P}" y="${H - 8}" class="tick">${esc(points[0]!.date)}</text>
+      <text x="${W - P}" y="${H - 8}" class="tick" text-anchor="end">${esc(points.at(-1)!.date)}</text>
+      <text x="${P}" y="${P - 10}" class="tick">${fmt(Math.round(max / 1.1))}</text>
+      ${lines}</svg><figcaption class="legend">${legend}</figcaption>`;
+  }
+
+  function store(name: string, s: Stats | undefined, measure: string) {
+    if (!s || s.missing || s.error)
+      return `<article class="card store off"><h2>${name}</h2><p class="small muted">${esc(s?.missing ?? s?.error ?? 'No numbers yet.')}</p></article>`;
+    return `<article class="card store"><h2>${name}${s.url ? ` <a class="small" href="${esc(s.url)}" target="_blank" rel="noopener">Listing</a>` : ''}</h2>
+      ${stat(measure, fmt(s.users), s.source === 'listing' ? 'Rounded, from the public listing' : s.asOf ? `As of ${esc(s.asOf)}` : '')}
+      ${stat('Rating', rating(s))}</article>`;
+  }
+
+  function render(now: Stats, history: Stats[]) {
+    const when = new Date(now.collectedAt);
+    $('updated').textContent = `Updated ${when.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}, every hour.`;
+    $('total').textContent = fmt(now.totalUsers);
+
+    // Chrome's own daily history goes back further than ours; ours adds Firefox and Edge.
+    const byDate = new Map<string, Stats>(history.map((r) => [r.date, { ...r }]));
+    for (const d of now.chrome?.daily ?? []) {
+      const row = byDate.get(d.date) ?? { date: d.date };
+      if (typeof d.users === 'number') row.chrome ??= d.users;
+      byDate.set(d.date, row);
+    }
+    const rows = [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+    $('chart').innerHTML = chart(rows, [
+      ['total', 'All stores', 'var(--ink)'],
+      ['chrome', 'Chrome', 'var(--red)'],
+      ['firefox', 'Firefox', '#E66000'],
+      ['edge', 'Edge', '#0E7CD3'],
+    ]);
+
+    $('stores').innerHTML =
+      store('Chrome', now.chrome, 'Weekly users') +
+      store('Firefox', now.firefox, 'Daily users') +
+      store('Edge', now.edge, 'Active installs');
+
+    const c = now.chrome ?? {};
+    $('chrome-detail').innerHTML =
+      c.source === 'api'
+        ? `<h2>Chrome, last 7 days</h2><div class="grid">
+            ${stat('Installs', fmt(c.installs7d))}${stat('Uninstalls', fmt(c.uninstalls7d))}
+            ${stat('Store impressions', fmt(c.impressions7d))}${stat('Listing views', fmt(c.pageViews7d))}
+            ${stat('Daily users', fmt(c.dailyUsers))}${stat('Reviews with text', fmt(c.reviews))}</div>
+            ${c.stars ? `<p class="small muted stars">${[5, 4, 3, 2, 1].map((n) => `${n} ★ ${fmt(c.stars[n - 1])}`).join('&emsp;')}</p>` : ''}`
+        : `<h2>Chrome, last 7 days</h2><p class="small muted">Installs, uninstalls, impressions and reviews show here once the Chrome Web Store API key is on the server.</p>`;
+    $('countries').innerHTML = c.byCountry?.length
+      ? `<h2>Chrome users by country</h2><table>${c.byCountry
+          .map((r: Stats) => `<tr><td>${esc(r.key)}</td><td class="num">${fmt(r.users)}</td></tr>`)
+          .join('')}</table>`
+      : `<h2>Chrome users by country</h2><p class="small muted">Comes with the Chrome Web Store API too.</p>`;
+
+    const w = now.website ?? {};
+    const list = (rows: Stats[] = []) =>
+      rows.length ? `<table>${rows.map((r) => `<tr><td>${esc(r.key || '(direct)')}</td><td class="num">${fmt(r.count)}</td></tr>`).join('')}</table>` : '';
+    $('website').innerHTML = w.missing || w.error
+      ? `<h2>coursedownloader.com</h2><p class="small muted">${esc(w.missing ?? w.error)}</p>`
+      : `<h2>coursedownloader.com ${w.url ? `<a class="small" href="${esc(w.url)}" target="_blank" rel="noopener">Umami</a>` : ''}</h2>
+         <div class="grid">${stat('Visitors, 7 days', fmt(w.visitors7d))}${stat('Visitors, 30 days', fmt(w.visitors30d))}
+         ${stat('Page views, 7 days', fmt(w.pageviews7d))}${stat('Page views, 30 days', fmt(w.pageviews30d))}</div>
+         ${w.topPages?.length ? `<h3>Top pages, 30 days</h3>${list(w.topPages)}` : ''}
+         ${w.topReferrers?.length ? `<h3>Where visitors came from</h3>${list(w.topReferrers)}` : ''}`;
+
+    const g = now.github ?? {};
+    $('github').innerHTML = g.error
+      ? `<h2>GitHub</h2><p class="small muted">${esc(g.error)}</p>`
+      : `<h2>GitHub <a class="small" href="${esc(g.url)}" target="_blank" rel="noopener">Repo</a></h2><div class="grid">
+         ${stat('Stars', fmt(g.stars))}${stat('Forks', fmt(g.forks))}
+         ${stat('Open issues and PRs', fmt(g.openIssues))}${stat('Release downloads', fmt(g.releaseDownloads), g.latestRelease ? `Latest ${esc(g.latestRelease)}` : '')}</div>`;
+  }
+
+  Promise.all([
+    fetch('data/stats.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : Promise.reject(r.status))),
+    fetch('data/history.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : [])),
+  ])
+    .then(([now, history]) => render(now, history))
+    .catch(() => {
+      $('updated').textContent = 'No numbers yet: the hourly job hasn’t run on this server.';
+    });
+</script>
+
+<style is:global>
+  .stats {
+    display: grid;
+    gap: 20px;
+    padding-bottom: 64px;
+  }
+  .stats .card {
+    background: #fff;
+    border-radius: var(--r-card);
+    box-shadow: inset 0 0 0 1px var(--line);
+    padding: 22px 24px;
+  }
+  .stats .hero {
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr) 2fr;
+    gap: 24px;
+    align-items: center;
+  }
+  .stats .label {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ink-2);
+  }
+  .stats .big {
+    margin: 4px 0 6px;
+    font: 800 64px/1 var(--font-display, inherit);
+    letter-spacing: -0.02em;
+  }
+  .stats .muted {
+    color: var(--ink-3);
+  }
+  .stats .stores {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .stats .store.off {
+    background: var(--mist);
+    box-shadow: none;
+  }
+  .stats h2 {
+    font-size: 18px;
+    margin: 0 0 12px;
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+  }
+  .stats h3 {
+    font-size: 15px;
+    margin: 18px 0 6px;
+  }
+  .stats .stat + .stat {
+    margin-top: 10px;
+  }
+  .stats .value {
+    margin: 2px 0 0;
+    font-size: 26px;
+    font-weight: 700;
+  }
+  .stats .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 20px;
+  }
+  .stats .grid .stat + .stat {
+    margin-top: 0;
+  }
+  .stats .two {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .stats table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .stats td {
+    padding: 6px 0;
+    border-top: 1px solid var(--mist-2);
+    overflow-wrap: anywhere;
+  }
+  .stats td.num {
+    text-align: right;
+    font-weight: 600;
+    padding-left: 12px;
+  }
+  .stats .chart {
+    margin: 0;
+  }
+  .stats .chart svg {
+    width: 100%;
+    height: auto;
+  }
+  .stats .chart .tick {
+    font-size: 11px;
+    fill: var(--ink-3);
+  }
+  .stats .chart .legend {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .stats .chart .legend i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .stats .stars {
+    margin-top: 14px;
+  }
+  @media (max-width: 760px) {
+    .stats .hero,
+    .stats .stores,
+    .stats .two {
+      grid-template-columns: 1fr;
+    }
+    .stats .big {
+      font-size: 48px;
+    }
+  }
+</style>

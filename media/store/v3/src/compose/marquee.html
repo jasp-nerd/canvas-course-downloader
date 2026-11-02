@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Marquee</title>
+<link rel="stylesheet" href="store.css">
+<style>
+  body {
+    width: 1400px;
+    height: 560px;
+    background: var(--mist);
+  }
+  .words {
+    position: absolute;
+    left: 72px;
+    top: 0;
+    bottom: 0;
+    width: 420px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 22px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font: 800 20px/1 var(--font-display);
+    letter-spacing: -0.01em;
+  }
+  .brand img {
+    width: 38px;
+    height: 38px;
+  }
+  h1 {
+    margin: 0;
+    font: 800 64px/0.95 var(--font-display);
+    letter-spacing: -0.04em;
+    color: var(--ink);
+  }
+  .lead {
+    margin: 0;
+    font: 500 22px/1.4 var(--font-ui);
+    color: var(--ink-2);
+  }
+  /* The course page, stepping back behind the finished card, as on the website's hero. */
+  .win {
+    left: 552px;
+    right: 48px;
+    top: 52px;
+    bottom: -30px;
+    box-shadow:
+      0 24px 60px rgba(20, 32, 47, 0.16),
+      0 2px 6px rgba(20, 32, 47, 0.08);
+  }
+  .page::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.55);
+  }
+  .card {
+    position: absolute;
+    right: 172px;
+    bottom: 44px;
+    width: 430px;
+    border-radius: var(--r-card);
+    background: #fff;
+    padding: 24px 26px 22px;
+    box-shadow:
+      0 24px 60px rgba(20, 32, 47, 0.3),
+      0 2px 6px rgba(20, 32, 47, 0.12);
+  }
+  .top {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 18px;
+    align-items: center;
+  }
+  .top img {
+    width: 72px;
+    height: 72px;
+  }
+  .pct {
+    font: 800 36px/1 var(--font-display);
+    letter-spacing: -0.03em;
+    color: var(--mint-ink);
+  }
+  .name {
+    margin-top: 5px;
+    font: 700 19px/1.2 var(--font-display);
+  }
+  .count {
+    margin-top: 2px;
+    font-size: 15px;
+    color: var(--ink-2);
+  }
+  .bar-done {
+    height: 8px;
+    margin: 18px 0 14px;
+    border-radius: 99px;
+    background: var(--mint);
+  }
+  ul {
+    display: grid;
+    gap: 7px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 15px;
+    color: var(--ink-2);
+  }
+  li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  li svg {
+    width: 17px;
+    height: 17px;
+    color: var(--mint-ink);
+  }
+  .pip {
+    position: absolute;
+    right: 44px;
+    bottom: 26px;
+    width: 116px;
+    z-index: 2;
+  }
+</style>
+</head>
+<body>
+  <div class="words">
+    <div class="brand"><img src="../../../../../media/brand/logo.svg" alt="">Canvas Course Downloader</div>
+    <h1>Download your Canvas courses</h1>
+    <p class="lead">Every file, page and grade, in one click</p>
+  </div>
+  <div class="win">
+    <div class="bar"><i></i><span class="addr"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 10.5V8a4.5 4.5 0 0 1 9 0v2.5M5.5 10.5h13v9.5h-13z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>school.instructure.com/courses/104</span></div>
+    <div class="page" style="--w: 1024px; --s: 0.7813">
+      <img class="cap-img" src="../captures/course-page.png" alt="">
+    </div>
+  </div>
+  <img class="pip" src="../../../../../public/pip/wave.webp" alt="">
+  <div class="card">
+    <div class="top">
+      <img src="../../../../../media/brand/logo.svg" alt="">
+      <div>
+        <div class="pct">100%</div>
+        <div class="name">Academic Writing is saved</div>
+        <div class="count">54 files, 27 MB, in Downloads</div>
+      </div>
+    </div>
+    <div class="bar-done"></div>
+    <ul>
+      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Files, pages and assignments</li>
+      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Quizzes, discussions and announcements</li>
+      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Your grades and every deadline</li>
+    </ul>
+  </div>
+</body>
+</html>

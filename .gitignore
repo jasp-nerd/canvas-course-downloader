@@ -45,3 +45,6 @@ video/.hyperframes/
 
 # Marketing material lives outside the repo (it once held a browser profile)
 marketing/
+
+# Raw screenshots for the store images; capture.ts makes them again.
+media/store/v3/src/captures/

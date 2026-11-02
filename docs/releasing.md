@@ -36,7 +36,7 @@ Before the first real submission, run `submit.yml` by hand with `dry_run` on.
 
 ## What stays manual
 
-- The first Firefox and Edge listings: neither API can create one.
+- The first Edge listing: Microsoft's API can't create one. Firefox's can: the first listed upload creates the add-on (`web-ext sign --channel listed --amo-metadata …`, see docs/store/), after which `wxt submit` updates it. `wxt submit` alone fails until the add-on exists, because it looks the add-on up first.
 - Store text, screenshots, the video link, privacy forms, the Chrome Web Store's Official URL, and AMO's notes to reviewers (point them at `SOURCE_CODE_REVIEW.md`).
 - The version bump, the changelog, the tag, publishing the draft, approving the submission.
 
