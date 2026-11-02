@@ -12,9 +12,13 @@ export default defineConfig({
   // WXT defaults Firefox to MV2, which drops optional_host_permissions.
   manifestVersion: 3,
   manifest: ({ browser }) => ({
-    name: 'Canvas Course Downloader & Exporter',
+    // Store limits on the name: Chrome 75 characters, Firefox Add-ons 50, Edge Add-ons 45.
+    name:
+      browser === 'chrome'
+        ? 'Canvas Course Downloader: Save Canvas LMS Files, Pages and Grades'
+        : 'Canvas Course Downloader for Canvas LMS',
     description:
-      'Download, export, and back up Canvas LMS course files, pages, assignments, grades, and more into organized folders.',
+      'Download your Canvas courses in one click, before you lose access: every file, page, assignment and grade. Free, no API token.',
     icons: { 16: '/icons/icon-16.png', 48: '/icons/icon-48.png', 128: '/icons/icon-128.png' },
     permissions: ['activeTab', 'declarativeNetRequest', 'downloads', 'notifications', 'storage'],
     host_permissions: ['*://*.instructure.com/*'],
