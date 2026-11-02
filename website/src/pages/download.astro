@@ -24,8 +24,8 @@ const mail = mailToSelf(Astro.site!);
 
   <section class="wrap narrow install-grid" aria-label="Browsers">
     <div class="install-card">
-      <h2><svg class="icon" aria-hidden="true"><use href="#i-chrome"></use></svg> Chrome or Brave</h2>
-      <p class="muted">From the Chrome Web Store. Updates come by themselves.</p>
+      <h2><svg class="icon" aria-hidden="true"><use href="#i-chrome"></use></svg> Chrome</h2>
+      <p class="muted">Also Brave and other Chromium browsers. Updates come by themselves.</p>
       <p><a class="btn btn-primary" href={tracked(STORE.chrome, 'download')}>Add to Chrome</a></p>
     </div>
     <div class="install-card">
@@ -33,7 +33,7 @@ const mail = mailToSelf(Astro.site!);
       {
         STORE.edge ? (
           <>
-            <p class="muted">From Edge Add-ons. Updates come by themselves.</p>
+            <p class="muted">From Edge Add&#8209;ons. Updates come by themselves.</p>
             <p><a class="btn btn-primary" href={STORE.edge}>Add to Edge</a></p>
           </>
         ) : (
@@ -52,7 +52,7 @@ const mail = mailToSelf(Astro.site!);
       {
         STORE.firefox ? (
           <>
-            <p class="muted">From Firefox Add-ons. Needs Firefox 140 or later.</p>
+            <p class="muted">From Firefox Add&#8209;ons. Needs Firefox 140 or later.</p>
             <p><a class="btn btn-primary" href={STORE.firefox}>Add to Firefox</a></p>
           </>
         ) : (

@@ -1507,8 +1507,9 @@ ol {
 .install-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  /* Heading, text, button: the text row grows, so the three buttons line up. */
+  grid-template-rows: auto 1fr auto;
   gap: 12px;
-  align-content: start;
   justify-items: start;
   min-width: 0;
   padding: 24px;
