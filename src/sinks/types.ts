@@ -16,7 +16,12 @@ export interface FileSink {
    * Hands over a file by URL instead of its bytes, when the sink can fetch it
    * itself (the browser's download manager can, and can resume it).
    */
-  writeUrl?(path: string, url: string): Promise<void>;
+  writeUrl?(path: string, url: string, contentType?: string): Promise<void>;
+  /**
+   * Waits for what was handed over so far and reports the files that failed, each once.
+   * For a sink that only learns later, so the overview written after this can list them.
+   */
+  settle?(): Promise<SinkFailure[]>;
   /** Finishes the output once everything is on disk, reporting files that failed late. */
   close(): Promise<SinkFailure[] | void>;
   abort(reason?: unknown): Promise<void>;

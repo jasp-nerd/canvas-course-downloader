@@ -84,6 +84,75 @@ describe('downloadsSink', () => {
     await expect(sink.close()).resolves.toEqual([{ path: 'big.mp4', reason: 'NETWORK_FAILED' }]);
   });
 
+  it('reports a download the browser refuses, and goes on with the next', async () => {
+    const fake = fakeDownloads();
+    const download = fake.api.download;
+    fake.api.download = vi.fn(download).mockRejectedValueOnce(new Error('Invalid filename'));
+    const sink = downloadsSink({
+      folder: '',
+      conflictAction: 'uniquify',
+      downloads: fake.api as never,
+      concurrency: 1,
+    });
+    await sink.writeUrl!('a.pdf', 'https://x/a');
+    await sink.writeUrl!('b.pdf', 'https://x/b');
+    fake.finish(1, 'complete');
+    await expect(sink.close()).resolves.toEqual([{ path: 'a.pdf', reason: 'Invalid filename' }]);
+  });
+
+  it('settle waits for running downloads and reports each failure once', async () => {
+    const fake = fakeDownloads();
+    const sink = downloadsSink({
+      folder: '',
+      conflictAction: 'uniquify',
+      downloads: fake.api as never,
+    });
+    await sink.writeUrl!('a.pdf', 'https://x/a');
+    let settled = false;
+    const settling = sink.settle!().then((failures) => {
+      settled = true;
+      return failures;
+    });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(settled).toBe(false);
+    fake.finish(1, 'interrupted', 'SERVER_BAD_CONTENT');
+    await expect(settling).resolves.toEqual([{ path: 'a.pdf', reason: 'SERVER_BAD_CONTENT' }]);
+    await expect(sink.close()).resolves.toEqual([]);
+  });
+
+  it('fails a file that came back as a web page, deletes it, and keeps real web pages', async () => {
+    const fake = fakeDownloads();
+    const removeFile = vi.fn(() => Promise.resolve());
+    const api = { ...fake.api, removeFile, search: () => Promise.resolve([{ mime: 'text/html' }]) };
+    const sink = downloadsSink({ folder: '', conflictAction: 'uniquify', downloads: api as never });
+    await sink.writeUrl!('slides.pdf', 'https://x/a', 'application/pdf');
+    await sink.writeUrl!('notes.html', 'https://x/b', '');
+    await sink.writeUrl!('site', 'https://x/c', 'text/html');
+    for (const id of [1, 2, 3]) fake.finish(id, 'complete');
+    await expect(sink.close()).resolves.toEqual([{ path: 'slides.pdf', reason: 'NOT_A_FILE' }]);
+    expect(removeFile).toHaveBeenCalledTimes(1);
+    expect(removeFile).toHaveBeenCalledWith(1);
+  });
+
+  it('gives up on a download the browser never answers for, and goes on', async () => {
+    vi.useFakeTimers();
+    try {
+      const fake = fakeDownloads();
+      fake.api.download = vi.fn(() => new Promise<number>(() => {}));
+      const sink = downloadsSink({
+        folder: '',
+        conflictAction: 'uniquify',
+        downloads: fake.api as never,
+      });
+      const writing = sink.writeUrl!('a.pdf', 'https://x/a');
+      await vi.advanceTimersByTimeAsync(2 * 60_000);
+      await writing;
+      await expect(sink.close()).resolves.toEqual([{ path: 'a.pdf', reason: 'DOWNLOAD_STUCK' }]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('saves generated files from blob URLs and revokes them when done', async () => {
     const fake = fakeDownloads();
     const revoke = vi.spyOn(URL, 'revokeObjectURL');

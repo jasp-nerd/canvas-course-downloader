@@ -1,7 +1,8 @@
 // Writes a planned export to a sink: fetches file bodies in parallel, keeps a
 // ZIP's entries in order, and records every file that couldn't be saved.
 import { CanvasError, type CanvasClient } from '../canvas/client';
-import type { FileSink } from '../sinks/types';
+import { isWebPageInstead, NOT_A_FILE } from '../sinks/downloads';
+import type { FileSink, SinkFailure } from '../sinks/types';
 import { csvRow } from './render';
 import type { ExportPlan, PlannedFile } from './types';
 
@@ -34,6 +35,8 @@ export interface RunOptions {
 /** Files up to this size are fetched ahead of their turn in a ZIP; larger ones stream when it's their turn. */
 const PREFETCH_MAX_BYTES = 16 * 1024 * 1024;
 
+const ERRORS_CSV = '_download_errors.csv';
+
 type Body =
   { ok: true; data: ReadableStream<Uint8Array> | Uint8Array } | { ok: false; reason: string };
 
@@ -57,7 +60,7 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
     current: '',
   };
   // Several files are written at once, so each report names its own file.
-  const report = (file: PlannedFile) => {
+  const report = (file: { path: string }) => {
     progress.current = file.path;
     options.onProgress?.({ ...progress });
   };
@@ -66,6 +69,10 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
     if (file.source.kind === 'text') return { ok: true, data: encoder.encode(file.source.content) };
     try {
       const res = await canvas.download(file.source.url);
+      if (isWebPageInstead(file.path, file.source.contentType, res.headers.get('content-type'))) {
+        void res.body?.cancel().catch(() => {});
+        return { ok: false, reason: NOT_A_FILE };
+      }
       if (!buffer || !res.body) return { ok: true, data: res.body ?? new Uint8Array() };
       return { ok: true, data: new Uint8Array(await res.arrayBuffer()) };
     } catch (error) {
@@ -104,7 +111,8 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
 
   async function passUrl(file: PlannedFile, url: string) {
     try {
-      await sink.writeUrl!(file.path, url);
+      const type = file.source.kind === 'remote' ? file.source.contentType : undefined;
+      await sink.writeUrl!(file.path, url, type);
       progress.done++;
       // The browser fetches it, so Canvas's size is the one there is.
       progress.bytes += file.source.kind === 'remote' ? file.source.size : 0;
@@ -115,6 +123,18 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
     }
     report(file);
   }
+
+  /** Files the sink counted as written at first, and only later found had failed. */
+  const failedLate = (failures: SinkFailure[] | void) => {
+    for (const failure of failures ?? []) {
+      // After a closed save window the error list itself is skipped. It isn't a course file.
+      if (failure.path === ERRORS_CSV) continue;
+      failed.push(failure);
+      progress.done--;
+      progress.failed++;
+      report(failure);
+    }
+  };
 
   // Pages like the overview are written last, when every other file's outcome is known.
   const late = plan.files.filter((f) => f.source.kind === 'text' && f.source.render);
@@ -154,19 +174,16 @@ export async function runExport(plan: ExportPlan, options: RunOptions): Promise<
       await Promise.all(Array.from({ length: concurrency }, worker));
     }
 
+    failedLate(await sink.settle?.());
     if (failed.length) {
       const rows = [csvRow(['path', 'reason']), ...failed.map((f) => csvRow([f.path, f.reason]))];
-      await sink.write('_download_errors.csv', encoder.encode(rows.join('\n')), {});
+      await sink.write(ERRORS_CSV, encoder.encode(rows.join('\n')), {});
     }
     for (const file of late) {
       if (file.source.kind !== 'text' || !file.source.render) continue;
       await write(file, { ok: true, data: encoder.encode(file.source.render(failed)) });
     }
-    for (const late of (await sink.close()) ?? []) {
-      failed.push(late);
-      progress.done--;
-      progress.failed++;
-    }
+    failedLate(await sink.close());
   } catch (error) {
     await sink.abort(error);
     if (error instanceof CanvasError && error.kind === 'aborted') {

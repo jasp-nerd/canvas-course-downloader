@@ -125,4 +125,41 @@ describe('runExport', () => {
     await runExport(p, { canvas: canvas(), sink, onProgress: (x) => seen.push(x.current) });
     expect(seen.sort()).toEqual(p.files.map((f) => f.path).sort());
   });
+
+  it('fails a file Canvas answers with a login page, so it is tried again next time', async () => {
+    const p = await plan();
+    const file = p.files.find((f) => f.source.kind === 'remote' && !/html/.test(f.path))!;
+    if (file.source.kind !== 'remote') throw new Error('no remote file');
+    mock.addFault({ path: new URL(file.source.url).pathname, loginPage: true });
+    const memory = memorySink();
+    const result = await runExport(p, { canvas: canvas(), sink: memory });
+    expect(result.failed).toEqual([{ path: file.path, reason: 'NOT_A_FILE' }]);
+    expect(memory.files.has(file.path)).toBe(false);
+  });
+
+  it('lists a file the browser fails on later in the overview and the error list (folders)', async () => {
+    const p = await plan('104');
+    const lost = p.files.find((f) => f.source.kind === 'remote')!.path;
+    const memory = memorySink();
+    const pending = [{ path: lost, reason: 'SERVER_BAD_CONTENT' }];
+    const result = await runExport(p, {
+      canvas: canvas(),
+      sink: {
+        ...memory,
+        writeUrl: (path) => memory.write(path, new Uint8Array(), {}),
+        settle: () => Promise.resolve(pending.splice(0)),
+      },
+    });
+
+    // What the export job leaves out of the inventory, so the file is tried again next time.
+    expect(result.failed).toEqual([{ path: lost, reason: 'SERVER_BAD_CONTENT' }]);
+    expect(result.outcome).toBe('partial');
+    expect(result.written).toBe(p.files.length - 1);
+    const text = (name: string) => new TextDecoder().decode(memory.files.get(name));
+    expect(text('_download_errors.csv')).toContain(lost);
+    const overview = text('index.html');
+    expect(overview).toContain('1 item could not be saved');
+    expect(overview).toContain(`<td>${lost}</td><td>Not found in Canvas (SERVER_BAD_CONTENT)</td>`);
+    expect(overview).not.toContain(`href="${lost.split('/').map(encodeURIComponent).join('/')}"`);
+  });
 });

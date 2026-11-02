@@ -16,7 +16,22 @@ const MIME_TYPES: Record<string, string> = {
 export const mimeTypeFor = (path: string) =>
   MIME_TYPES[path.slice(path.lastIndexOf('.') + 1).toLowerCase()] ?? 'application/octet-stream';
 
-type DownloadsApi = Pick<typeof browser.downloads, 'download' | 'onChanged'>;
+type DownloadsApi = Pick<
+  typeof browser.downloads,
+  'download' | 'onChanged' | 'search' | 'removeFile' | 'cancel'
+>;
+
+/** The answer was a web page, not the file: what Canvas sends when a session ended mid-download. */
+export const NOT_A_FILE = 'NOT_A_FILE';
+/** The browser never said whether it started the download. Seen after a 404. */
+const DOWNLOAD_STUCK = 'DOWNLOAD_STUCK';
+const START_TIMEOUT_MS = 2 * 60_000;
+
+/** Whether a file came back as a web page though neither Canvas nor its name says it is one. */
+export const isWebPageInstead = (path: string, expected: string, served?: string | null) =>
+  /^(text\/html|application\/xhtml)/i.test(served ?? '') &&
+  !/html/i.test(expected) &&
+  !/\.[sx]?html?$/i.test(path);
 
 /** Danger states that let a download go on by itself. */
 const SAFE = new Set(['safe', 'accepted', 'allowlistedByPolicy', 'deepScannedSafe']);
@@ -32,10 +47,18 @@ interface Options {
   onStarted?: (path: string, id: number) => void;
 }
 
+interface Job {
+  path: string;
+  done: () => void;
+  blobUrl?: string;
+  /** Canvas's type for a file the browser fetches itself. Our own files need no check. */
+  expected?: string;
+}
+
 export function downloadsSink(options: Options): FileSink {
   const { downloads, folder } = options;
   const limit = options.concurrency ?? 4;
-  const running = new Map<number, { path: string; done: () => void; blobUrl?: string }>();
+  const running = new Map<number, Job>();
   const failures: SinkFailure[] = [];
   const waiting: (() => void)[] = [];
   // Reserved before download() resolves, so writes arriving together can't all pass the limit.
@@ -45,13 +68,39 @@ export function downloadsSink(options: Options): FileSink {
   // A closed save window: with "Ask where to save each file" on, Chromium asks for every
   // file even with saveAs: false. One "no" stops the rest instead of opening hundreds more.
   let cancelled = false;
-  const release = (id: number, job: { path: string; done: () => void; blobUrl?: string }) => {
+  const release = (id: number, job: Job) => {
     if (job.blobUrl) URL.revokeObjectURL(job.blobUrl);
     running.delete(id);
     active--;
     job.done();
     waiting.shift()?.();
   };
+  /** A login page saved as the file would count as saved and never be fetched again. */
+  async function checkFinished(id: number, job: Job) {
+    try {
+      const [item] = await downloads.search({ id });
+      if (isWebPageInstead(job.path, job.expected ?? '', item?.mime)) {
+        failures.push({ path: job.path, reason: NOT_A_FILE });
+        await downloads.removeFile(id);
+      }
+    } catch {
+      // Can't tell, or it's already gone. The file stays as the browser saved it.
+    }
+    release(id, job);
+  }
+  /** download(), but a browser that never answers can't stop the export. */
+  function begin(request: Browser.downloads.DownloadOptions): Promise<number> {
+    const started = downloads.download(request);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const stuck = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        // If it starts after all, it's already reported as failed.
+        void started.then((id) => downloads.cancel(id)).catch(() => {});
+        reject(new Error(DOWNLOAD_STUCK));
+      }, START_TIMEOUT_MS);
+    });
+    return Promise.race([started, stuck]).finally(() => clearTimeout(timer));
+  }
   const listener = (delta: Browser.downloads.DownloadDelta) => {
     const job = running.get(delta.id);
     if (!job) return;
@@ -69,12 +118,15 @@ export function downloadsSink(options: Options): FileSink {
       const reason = delta.error?.current ?? 'interrupted';
       if (reason === 'USER_CANCELED') cancelled = true;
       failures.push({ path: job.path, reason });
+    } else if (job.expected !== undefined) {
+      void checkFinished(delta.id, job);
+      return;
     }
     release(delta.id, job);
   };
   downloads.onChanged.addListener(listener);
 
-  async function start(path: string, url: string, blobUrl?: string) {
+  async function start(path: string, url: string, blobUrl?: string, expected?: string) {
     while (active >= limit) await new Promise<void>((r) => waiting.push(r));
     if (cancelled) {
       failures.push({ path, reason: 'SKIPPED_AFTER_CANCEL' });
@@ -86,25 +138,37 @@ export function downloadsSink(options: Options): FileSink {
     let done!: () => void;
     finished.push(new Promise<void>((r) => (done = r)));
     // saveAs: false so Firefox doesn't ask per file when "always ask" is on.
-    const id = await downloads.download({
-      url,
-      filename: folder + path,
-      conflictAction: options.conflictAction,
-      saveAs: false,
-    });
-    running.set(id, { path, done, blobUrl });
+    let id: number;
+    try {
+      id = await begin({
+        url,
+        filename: folder + path,
+        conflictAction: options.conflictAction,
+        saveAs: false,
+      });
+    } catch (error) {
+      // Refused outright, e.g. a file name the browser won't take: no events will follow.
+      failures.push({ path, reason: error instanceof Error ? error.message : String(error) });
+      release(-1, { path, done, blobUrl });
+      return;
+    }
+    running.set(id, { path, done, blobUrl, expected });
     options.onStarted?.(path, id);
   }
 
   return {
     ordered: false,
-    writeUrl: (path, url) => start(path, url),
+    writeUrl: (path, url, contentType) => start(path, url, undefined, contentType ?? ''),
     async write(path, body) {
       const bytes =
         body instanceof Uint8Array ? body : new Uint8Array(await new Response(body).arrayBuffer());
       // Blob URLs from this extension page; never data: URLs, which Firefox rejects.
       const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: mimeTypeFor(path) }));
       await start(path, url, url);
+    },
+    async settle() {
+      await Promise.all(finished);
+      return failures.splice(0);
     },
     async close() {
       await Promise.all(finished);

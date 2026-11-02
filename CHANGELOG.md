@@ -35,6 +35,9 @@ A rewrite of the whole extension. Your settings and the list of files you alread
 - Links on other websites that merely contain `/files/<number>` are no longer mistaken for Canvas files.
 - Course parts a course has turned off (such as Pages or Quizzes) are no longer reported as missing.
 - Page titles and course content are escaped and sanitized more strictly.
+- Saving as folders: a file that fails now gets a reason in plain words, and is listed on the overview page and in `_download_errors.csv`, as in a ZIP.
+- A login page is no longer saved as if it were the file. When Canvas sends one, for example after you're logged out, that file is listed as not saved and the next download tries it again.
+- A download the browser never starts no longer leaves the export stuck on "Saving".
 
 ### Changed
 

@@ -39,9 +39,35 @@ export function reasonText(reason: string): string {
     USER_CANCELED: 'The save window was closed',
     SKIPPED_AFTER_CANCEL: 'Not saved after a save window was closed',
     HELD_BY_BROWSER: 'Held by your browser until you allow it',
+    NOT_A_FILE: 'Canvas sent a web page instead of the file. You may have been logged out',
+    DOWNLOAD_STUCK: "Your browser didn't start the download",
+    // The browser's own codes, when it downloads a file itself (saving as folders).
+    SERVER_BAD_CONTENT: 'Not found in Canvas',
+    SERVER_FORBIDDEN: 'No access',
+    SERVER_UNAUTHORIZED: 'No access',
+    SERVER_UNREACHABLE: 'Connection problem',
+    SERVER_CONTENT_LENGTH_MISMATCH: 'The download was cut off',
+    SERVER_NO_RANGE: 'The download was cut off',
+    FILE_TOO_SHORT: 'The download was cut off',
+    FILE_NO_SPACE: 'Your disk is full',
+    FILE_TOO_LARGE: 'Too large for your disk',
+    FILE_NAME_TOO_LONG: 'The file name or folder path is too long',
+    FILE_ACCESS_DENIED: "Your computer didn't allow saving it there",
+    FILE_VIRUS_INFECTED: 'Blocked by your antivirus',
+    FILE_BLOCKED: 'Blocked by a policy on this computer',
+    FILE_SECURITY_CHECK_FAILED: "Failed your browser's security check",
+    USER_SHUTDOWN: 'Your browser closed during the download',
+    CRASH: 'Your browser closed during the download',
+    interrupted: 'The download was interrupted',
+    // Any other code the browser has now or adds later.
+    SERVER_: 'Canvas had an error',
+    NETWORK_: 'Connection problem',
+    FILE_: "Couldn't be written to your computer",
   };
   const code = /\d{3}/.exec(reason)?.[0];
-  const plain = (code ? words[code] : undefined) ?? words[reason];
+  const family = /^(?:SERVER|NETWORK|FILE)_/.exec(reason)?.[0];
+  const plain =
+    (code ? words[code] : undefined) ?? words[reason] ?? (family ? words[family] : undefined);
   return plain ? `${plain} (${reason})` : reason;
 }
 
