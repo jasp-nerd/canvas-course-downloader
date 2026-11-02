@@ -67,8 +67,9 @@ async function chromeFromApi(email, key, publisher) {
   const token = await googleToken(email, key);
   const auth = { authorization: `Bearer ${token}` };
   const item = `https://chromewebstore.googleapis.com/v2/publishers/${publisher}/items/${CHROME_ID}`;
-  const query = async (metrics, days, dimension) => {
-    const last = new Date(Date.now() - DAY);
+  /** Rows for `days` days up to `lastDate` (default yesterday). */
+  const query = async (metrics, days, dimension, lastDate) => {
+    const last = lastDate ? new Date(`${lastDate}T00:00:00Z`) : new Date(Date.now() - DAY);
     const first = new Date(last.getTime() - (days - 1) * DAY);
     const params = new URLSearchParams({ pageSize: '1000' });
     for (const m of metrics) params.append('metrics', m);
@@ -96,9 +97,9 @@ async function chromeFromApi(email, key, publisher) {
   const latest = [...daily].reverse().find((r) => r['users-7d'] != null) ?? {};
   const week = daily.slice(-7);
   const sum = (key) => week.reduce((n, r) => n + (r[key] ?? 0), 0);
+  // On the same day as "now": Google has no countries yet for the newest day or two.
   const byCountry = latest.date
-    ? (await query(['users-7d'], 1, 'country').catch(() => []))
-        .filter((r) => r.date === latest.date || true)
+    ? (await query(['users-7d'], 1, 'country', latest.date).catch(() => []))
         .map((r) => ({ key: r.key, users: r['users-7d'] }))
         .sort((a, b) => b.users - a.users)
         .slice(0, 15)
