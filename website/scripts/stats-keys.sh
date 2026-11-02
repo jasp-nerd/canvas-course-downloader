@@ -22,6 +22,9 @@ umask 077
   true
 } | ssh hetzner "umask 077 && cat > $ENV_FILE && chmod 600 $ENV_FILE"
 
+# The newest collector too, so a fix to it doesn't need stats-server.sh again.
+scp -q "$(dirname "$0")/../../scripts/collect-stats.mjs" hetzner:/data/coursedownloader/stats/collect-stats.mjs
+
 # Collect once now, so the page has the numbers straight away.
 ssh hetzner "docker run --rm --memory 128m --env-file $ENV_FILE -v /data/coursedownloader/stats:/app:ro -v /data/coursedownloader/site/stats/data:/out node:24-alpine node /app/collect-stats.mjs /out" | tail -5
 echo "Done. Open https://coursedownloader.com/stats/"

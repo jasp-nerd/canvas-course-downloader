@@ -215,7 +215,8 @@ async function website() {
   const { websiteId, token } = await json(`${UMAMI_URL}/api/share/${share}`);
   const get = (p, params) =>
     json(`${UMAMI_URL}/api/websites/${websiteId}/${p}?${new URLSearchParams(params)}`, {
-      headers: { 'x-umami-share-token': token },
+      // Umami 3 also wants x-umami-share-context, or it answers 401.
+      headers: { 'x-umami-share-token': token, 'x-umami-share-context': '1' },
     });
   const since = (days) => ({ startAt: String(Date.now() - days * DAY), endAt: String(Date.now()) });
   const value = (v) => (typeof v === 'object' && v !== null ? v.value : v) ?? null;
