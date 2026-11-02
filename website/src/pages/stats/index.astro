@@ -84,10 +84,25 @@ import Base from '../../layouts/Base.astro';
       ${lines}</svg><figcaption class="legend">${legend}</figcaption>`;
   }
 
+  /** What's live in a store, and what it's still reviewing. */
+  function status(s: Stats | undefined) {
+    const st = s?.status;
+    if (!st) return '';
+    const parts = [];
+    if (st.live) parts.push(`<span class="pill live">Live ${esc(st.live)}</span>`);
+    else parts.push('<span class="pill">Not public</span>');
+    if (st.review) parts.push(`<span class="pill review">In review ${esc(st.review)}</span>`);
+    return `<p class="pills">${parts.join(' ')}</p>`;
+  }
+
+  const logo = (name: string) =>
+    `<svg class="icon" aria-hidden="true"><use href="#i-${name.toLowerCase()}"></use></svg> `;
+
   function store(name: string, s: Stats | undefined, measure: string) {
     if (!s || s.missing || s.error)
-      return `<article class="card store off"><h2>${name}</h2><p class="small muted">${esc(s?.missing ?? s?.error ?? 'No numbers yet.')}</p></article>`;
-    return `<article class="card store"><h2>${name}${s.url ? ` <a class="small" href="${esc(s.url)}" target="_blank" rel="noopener">Listing</a>` : ''}</h2>
+      return `<article class="card store off"><h2>${logo(name)}${name}</h2>${status(s)}<p class="small muted">${esc(s?.missing ?? s?.error ?? 'No numbers yet.')}</p></article>`;
+    return `<article class="card store"><h2>${logo(name)}${name}${s.url ? ` <a class="small" href="${esc(s.url)}" target="_blank" rel="noopener">Listing</a>` : ''}</h2>
+      ${status(s)}
       ${stat(measure, fmt(s.users), s.source === 'listing' ? 'Rounded, from the public listing' : s.asOf ? `As of ${esc(s.asOf)}` : '')}
       ${stat('Rating', rating(s))}</article>`;
   }
@@ -196,6 +211,33 @@ import Base from '../../layouts/Base.astro';
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
+  }
+  .stats .store h2 .icon {
+    align-self: center;
+    color: var(--red);
+  }
+  .stats .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin: 4px 0 12px;
+  }
+  .stats .pill {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--mist-2);
+    color: var(--ink);
+  }
+  .stats .pill.live {
+    background: #d6f2df;
+    color: #135c2b;
+  }
+  .stats .pill.review {
+    background: #fff0c2;
+    color: #6b4e00;
   }
   .stats .store.off {
     background: var(--mist);

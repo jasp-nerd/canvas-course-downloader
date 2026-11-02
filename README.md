@@ -22,12 +22,13 @@ Free and open source. No account, no API token and no tracking: it talks only to
 
 ## Install
 
-- **Chrome, Brave and other Chromium browsers:** [Chrome Web Store](https://chromewebstore.google.com/detail/mmnmcnffbkcnhcjiidmdnaclpfeekiol)
-- **Edge:** [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/emhdfhcmiabgphmeohfplkbeloeamjak)
-- **Firefox** (140 or later): [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/canvas-course-downloader/)
-- **By hand:** every [release](https://github.com/jasp-nerd/canvas-course-downloader/releases/latest) has a zip per browser. A copy loaded by hand doesn't update itself, so use a store if you can.
+| | Browser | Install from |
+| :-: | --- | --- |
+| <img src="media/readme/chrome.svg" width="22" alt=""> | Chrome, Brave and other Chromium browsers | [Chrome Web Store](https://chromewebstore.google.com/detail/mmnmcnffbkcnhcjiidmdnaclpfeekiol) |
+| <img src="media/readme/edge.svg" width="22" alt=""> | Edge | [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/emhdfhcmiabgphmeohfplkbeloeamjak) |
+| <img src="media/readme/firefox.svg" width="22" alt=""> | Firefox 140 or later | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/canvas-course-downloader/) |
 
-From 3.0 on, each [release](https://github.com/jasp-nerd/canvas-course-downloader/releases) on GitHub also has the packages and their source, for reviewers and testing. Use the store if you can: it keeps the extension up to date.
+Every [release](https://github.com/jasp-nerd/canvas-course-downloader/releases/latest) also has a zip per browser, to load by hand. That copy doesn't update itself, so use a store if you can. Browser icons: [Tabler Icons](https://tabler.io/icons) (MIT).
 
 ## Why
 

@@ -1516,8 +1516,16 @@ ol {
   background: var(--mist);
 }
 .install-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0;
   font-size: 26px;
+}
+.install-card h2 .icon {
+  width: 28px;
+  height: 28px;
+  color: var(--red);
 }
 .install-card .btn {
   max-width: 100%;

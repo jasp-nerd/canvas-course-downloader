@@ -6,7 +6,10 @@ set -eu
 DIR="$HOME/.config/canvas-downloader"
 KEY="$DIR/cws-key.json"
 ENV_FILE=/data/coursedownloader/stats/env
-[ -f "$KEY" ] && [ -f "$DIR/cws.env" ] && [ -f "$DIR/edge.env" ] || { echo "Missing key files in $DIR"; exit 1; }
+[ -f "$KEY" ] && [ -f "$DIR/cws.env" ] && [ -f "$DIR/edge.env" ] && [ -f "$DIR/amo.env" ] || { echo "Missing key files in $DIR"; exit 1; }
+
+# Keep the Umami share id already on the server when none is given.
+[ -n "${UMAMI_SHARE_ID:-}" ] || UMAMI_SHARE_ID=$(ssh hetzner "grep -E '^UMAMI_SHARE_ID=' $ENV_FILE | cut -d= -f2-" 2>/dev/null || true)
 
 # docker --env-file takes each line literally: no quotes, the key's newlines written as \n.
 umask 077
@@ -18,6 +21,7 @@ umask 077
   ' "$KEY"
   grep -E '^CHROME_(PUBLISHER|EXTENSION)_ID=' "$DIR/cws.env"
   grep -E '^EDGE_CRX_ID=' "$DIR/edge.env"
+  grep -E '^FIREFOX_JWT_(ISSUER|SECRET)=' "$DIR/amo.env"
   [ -n "${UMAMI_SHARE_ID:-}" ] && echo "UMAMI_SHARE_ID=$UMAMI_SHARE_ID"
   true
 } | ssh hetzner "umask 077 && cat > $ENV_FILE && chmod 600 $ENV_FILE"

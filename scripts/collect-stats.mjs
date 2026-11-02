@@ -14,7 +14,7 @@
 // - Edge: the store's public product JSON, once EDGE_CRX_ID (the id in the Edge store URL) is set.
 // - GitHub: stars, forks, open issues and release downloads, from the public API.
 // - Website: Umami through a share link (no password), when UMAMI_SHARE_ID is set.
-import { createSign } from 'node:crypto';
+import { createHmac, createSign, randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
@@ -104,8 +104,17 @@ async function chromeFromApi(email, key, publisher) {
         .slice(0, 15)
     : [];
   const rating = await json(`${item}/ratingSummary`, { headers: auth });
+  // Which version is live, and which one Google is still reviewing.
+  const state = await json(`${item}:fetchStatus`, { headers: auth }).catch(() => null);
+  const version = (s) => s?.distributionChannels?.[0]?.crxVersion ?? null;
+  const submitted = state?.submittedItemRevisionStatus;
   return {
     source: 'api',
+    status: {
+      live: version(state?.publishedItemRevisionStatus),
+      review: submitted && submitted.state !== 'PUBLISHED' ? version(submitted) : null,
+      reviewState: submitted?.state ?? null,
+    },
     asOf: latest.date ?? null,
     users: latest['users-7d'] ?? null,
     dailyUsers: latest.users ?? null,
@@ -157,11 +166,29 @@ async function chrome() {
   return chromeFromListing();
 }
 
+/** A JWT for addons.mozilla.org, from the key in FIREFOX_JWT_ISSUER and FIREFOX_JWT_SECRET. */
+function amoAuth() {
+  const { FIREFOX_JWT_ISSUER: iss, FIREFOX_JWT_SECRET: secret } = process.env;
+  if (!iss || !secret) return {};
+  const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
+  const now = Math.floor(Date.now() / 1000);
+  const unsigned = `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ iss, jti: randomUUID(), iat: now, exp: now + 60 })}`;
+  const signature = createHmac('sha256', secret).update(unsigned).digest('base64url');
+  return { authorization: `JWT ${unsigned}.${signature}` };
+}
+
 async function firefox() {
+  const base = `https://addons.mozilla.org/api/v5/addons/addon/${encodeURIComponent(FIREFOX_ID)}`;
   try {
-    const a = await json(
-      `https://addons.mozilla.org/api/v5/addons/addon/${encodeURIComponent(FIREFOX_ID)}/`,
+    // With the key, AMO also answers before the listing is public, and says what's in review.
+    const a = await json(`${base}/`, { headers: amoAuth() });
+    const versions = await json(`${base}/versions/?filter=all_with_unlisted&page_size=5`, {
+      headers: amoAuth(),
+    }).catch(() => null);
+    const waiting = (versions?.results ?? []).find(
+      (v) => v.channel === 'listed' && v.file?.status === 'unreviewed',
     );
+    const live = a.status === 'public' ? (a.current_version?.version ?? null) : null;
     return {
       users: a.average_daily_users ?? null,
       weeklyDownloads: a.weekly_downloads ?? null,
@@ -169,10 +196,11 @@ async function firefox() {
       ratings: a.ratings?.count ?? null,
       reviews: a.ratings?.text_count ?? null,
       version: a.current_version?.version ?? null,
+      status: { live, review: waiting?.version ?? null, reviewState: a.status ?? null },
       url: a.url,
     };
   } catch (error) {
-    if (/^404/.test(error.message)) return { missing: 'Not on Firefox Add-ons yet.' };
+    if (/^(401|404)/.test(error.message)) return { missing: 'Not public on Firefox Add-ons yet.' };
     throw error;
   }
 }
@@ -180,9 +208,20 @@ async function firefox() {
 async function edge() {
   const id = process.env.EDGE_CRX_ID;
   if (!id) return { missing: 'Not on Edge Add-ons yet.' };
-  // Undocumented, but what the Edge store's own pages use.
-  const p = await json(`https://microsoftedge.microsoft.com/addons/getproductdetailsbycrxid/${id}`);
+  // Undocumented, but what the Edge store's own pages use. It knows only what's public: Edge's
+  // API has no way to ask whether a version is in review.
+  let p;
+  try {
+    p = await json(`https://microsoftedge.microsoft.com/addons/getproductdetailsbycrxid/${id}`);
+  } catch (error) {
+    if (!/^404/.test(error.message)) throw error;
+    return {
+      missing: "Not public on Edge Add-ons yet. Edge's API doesn't say whether it's in review.",
+      status: { live: null, review: null, reviewState: 'NOT_PUBLIC' },
+    };
+  }
   return {
+    status: { live: p.version ?? null, review: null, reviewState: 'PUBLISHED' },
     users: p.activeInstallCount ?? null,
     rating: p.averageRating || null,
     ratings: p.ratingCount ?? null,

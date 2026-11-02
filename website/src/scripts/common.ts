@@ -17,8 +17,8 @@ for (const a of document.querySelectorAll<HTMLAnchorElement>('[data-install]')) 
   if (own) a.href = own;
   else if (firefox && a.dataset.fallback) a.href = a.dataset.fallback;
   if (!firefox && !edge) continue;
-  // The Chrome logo would be wrong here.
-  a.querySelector('svg')?.remove();
+  // Their own logo instead of Chrome's.
+  a.querySelector('use')?.setAttribute('href', firefox ? '#i-firefox' : '#i-edge');
   const text = a.lastChild;
   if (text?.textContent) {
     text.textContent = firefox && !own ? 'Install' : text.textContent.replace('Chrome', name);
