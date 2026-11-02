@@ -17,9 +17,9 @@ export const SHORT = 'Course Downloader';
 
 export const STORE = {
   chrome: 'https://chromewebstore.google.com/detail/mmnmcnffbkcnhcjiidmdnaclpfeekiol',
-  // Empty until the listing exists; pages then point Firefox and Edge users to what works today.
-  firefox: '',
-  edge: '',
+  // Empty means no listing: pages then send Firefox and Edge visitors to what works today.
+  firefox: 'https://addons.mozilla.org/firefox/addon/canvas-course-downloader/',
+  edge: 'https://microsoftedge.microsoft.com/addons/detail/emhdfhcmiabgphmeohfplkbeloeamjak',
 };
 
 export const LINKS = {

@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0.0 (unreleased)
+## 3.0.0 (2026-11-02)
 
 A rewrite of the whole extension. Your settings and the list of files you already downloaded carry over.
 

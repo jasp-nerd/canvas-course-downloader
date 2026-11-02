@@ -6,8 +6,8 @@ const mail = mailToSelf(Astro.site!);
 ---
 
 <Base
-  title="Install Canvas Course Downloader on Chrome, Edge or Brave"
-  description="Add Canvas Course Downloader to Chrome, Edge or Brave in one click, then download any Canvas course. A Firefox version is coming."
+  title="Install Canvas Course Downloader on Chrome, Edge, Firefox or Brave"
+  description="Add Canvas Course Downloader to Chrome, Edge, Firefox or Brave in one click, then download any Canvas course."
   ogTitle="Install Canvas Course Downloader"
   current="/download/"
 >
@@ -30,11 +30,22 @@ const mail = mailToSelf(Astro.site!);
     </div>
     <div class="install-card">
       <h2>Edge</h2>
-      <p class="muted">
-        Edge installs it from the Chrome Web Store too. Choose "Allow extensions from other stores"
-        when Edge asks, then Add to Chrome.
-      </p>
-      <p><a class="btn btn-light" href={tracked(STORE.chrome, 'download-edge')}>Open the store</a></p>
+      {
+        STORE.edge ? (
+          <>
+            <p class="muted">From Edge Add-ons. Updates come by themselves.</p>
+            <p><a class="btn btn-primary" href={STORE.edge}>Add to Edge</a></p>
+          </>
+        ) : (
+          <>
+            <p class="muted">
+              Edge installs it from the Chrome Web Store too. Choose "Allow extensions from other
+              stores" when Edge asks, then Add to Chrome.
+            </p>
+            <p><a class="btn btn-light" href={tracked(STORE.chrome, 'download-edge')}>Open the store</a></p>
+          </>
+        )
+      }
     </div>
     <div class="install-card">
       <h2>Firefox</h2>
@@ -42,7 +53,7 @@ const mail = mailToSelf(Astro.site!);
         STORE.firefox ? (
           <>
             <p class="muted">From Firefox Add-ons. Needs Firefox 140 or later.</p>
-            <p><a class="btn btn-primary" href={tracked(STORE.firefox, 'download')}>Add to Firefox</a></p>
+            <p><a class="btn btn-primary" href={STORE.firefox}>Add to Firefox</a></p>
           </>
         ) : (
           <p class="muted">

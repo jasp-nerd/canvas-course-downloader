@@ -47,7 +47,7 @@ const jsonLd = {
       applicationCategory: 'EducationalApplication',
       applicationSubCategory: 'Browser extension',
       operatingSystem: 'Windows, macOS, Linux, ChromeOS',
-      softwareRequirements: 'Desktop Chrome, Edge or Brave',
+      softwareRequirements: 'Desktop Chrome, Edge, Firefox or Brave',
       softwareVersion: version,
       releaseNotes: new URL(href('/changelog/'), site).toString(),
       license: 'https://opensource.org/licenses/MIT',
@@ -77,7 +77,7 @@ const jsonLd = {
         <div class="cta-row">
           <InstallCta campaign="hero" large />
           <span class="cta-note only-phone">It runs on a laptop or desktop.</span>
-          <span class="cta-note only-desktop">Also on Edge and Brave</span>
+          <span class="cta-note only-desktop">Also on Edge, Firefox and Brave</span>
         </div>
         <p class="trust">
           <span class="stars" aria-hidden="true"
@@ -346,9 +346,9 @@ const jsonLd = {
         <div><h3>Is it allowed?</h3><p>It saves only what you can already open in Canvas with your own login. The copy is for you; your school's rules on sharing course material still apply.</p></div>
         <div><h3>Can it change anything in Canvas?</h3><p>No. It only reads, at a pace Canvas allows, and slows down when Canvas asks it to. It never submits, posts or deletes anything. The one exception is for teachers who turn it on: Canvas then builds its course package, which adds an export file.</p></div>
         <div><h3>Does it save videos?</h3><p>Videos uploaded to Canvas, yes. Recordings on Panopto, Kaltura or Canvas Studio aren't included, and the receipt lists them so you know.</p></div>
-        <div><h3>Which browsers?</h3><p>Chrome, Edge, Brave and other Chromium browsers on a laptop or desktop, from the Chrome Web Store. A Firefox version is coming. Phones and Safari aren't supported.</p></div>
+        <div><h3>Which browsers?</h3><p>Chrome, Brave and other Chromium browsers from the Chrome Web Store, Edge from Edge Add-ons, and Firefox 140 or later from Firefox Add-ons, on a laptop or desktop. Phones and Safari aren't supported.</p></div>
         <div><h3>Does it work with my school?</h3><p>Yes, with any Canvas, also when your school runs it on its own web address.</p></div>
-        <div><h3>How do I remove it?</h3><p>Right-click its icon in the toolbar and choose Remove from Chrome. The courses you saved stay on your computer.</p></div>
+        <div><h3>How do I remove it?</h3><p>Right-click its icon in the toolbar and choose Remove (Remove from Chrome, or Remove Extension in Firefox). The courses you saved stay on your computer.</p></div>
       </div>
     </div>
   </section>
@@ -357,7 +357,7 @@ const jsonLd = {
     <div class="wrap closing">
       <h2 id="closing-title">Save your courses before they close</h2>
       <InstallCta campaign="closing" large />
-      <p class="cta-note only-desktop">Also on Edge and Brave</p>
+      <p class="cta-note only-desktop">Also on Edge, Firefox and Brave</p>
       <p class="cta-note only-phone">It runs on a laptop or desktop.</p>
     </div>
   </section>

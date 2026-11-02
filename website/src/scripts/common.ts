@@ -7,17 +7,21 @@ const onScroll = () => nav?.classList.toggle('scrolled', scrollY > 8);
 addEventListener('scroll', onScroll, { passive: true });
 onScroll();
 
-// Firefox has no listing yet: its visitors go to the install page instead of a store they can't use.
+// Firefox and Edge visitors get their own store. Without a listing, Firefox goes to the install
+// page and Edge to the Chrome Web Store, which Edge can install from.
 const firefox = navigator.userAgent.includes('Firefox/');
 const edge = navigator.userAgent.includes('Edg/');
 for (const a of document.querySelectorAll<HTMLAnchorElement>('[data-install]')) {
-  if (firefox && !STORE.firefox) {
-    if (a.dataset.fallback) a.href = a.dataset.fallback;
-    a.lastChild?.replaceWith(' Install');
-  } else if (edge && !STORE.edge) {
-    // Edge installs from the Chrome Web Store until its own listing exists.
-    const text = a.lastChild;
-    if (text?.textContent) text.textContent = text.textContent.replace('Chrome', 'Edge');
+  const own = firefox ? STORE.firefox : edge ? STORE.edge : '';
+  const name = firefox ? 'Firefox' : 'Edge';
+  if (own) a.href = own;
+  else if (firefox && a.dataset.fallback) a.href = a.dataset.fallback;
+  if (!firefox && !edge) continue;
+  // The Chrome logo would be wrong here.
+  a.querySelector('svg')?.remove();
+  const text = a.lastChild;
+  if (text?.textContent) {
+    text.textContent = firefox && !own ? 'Install' : text.textContent.replace('Chrome', name);
   }
 }
 
