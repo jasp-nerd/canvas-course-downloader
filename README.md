@@ -23,8 +23,9 @@ Free and open source. No account, no API token and no tracking: it talks only to
 ## Install
 
 - **Chrome, Brave and other Chromium browsers:** [Chrome Web Store](https://chromewebstore.google.com/detail/mmnmcnffbkcnhcjiidmdnaclpfeekiol)
-- **Edge:** from the same store page. Edge asks you to allow extensions from other stores first.
-- **Firefox:** coming with version 3.0.
+- **Edge:** [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/emhdfhcmiabgphmeohfplkbeloeamjak)
+- **Firefox** (140 or later): [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/canvas-course-downloader/)
+- **By hand:** every [release](https://github.com/jasp-nerd/canvas-course-downloader/releases/latest) has a zip per browser. A copy loaded by hand doesn't update itself, so use a store if you can.
 
 From 3.0 on, each [release](https://github.com/jasp-nerd/canvas-course-downloader/releases) on GitHub also has the packages and their source, for reviewers and testing. Use the store if you can: it keeps the extension up to date.
 
