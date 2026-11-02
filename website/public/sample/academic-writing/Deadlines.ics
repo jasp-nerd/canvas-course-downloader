@@ -1,0 +1,61 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Course Downloader//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Academic Writing deadlines
+BEGIN:VEVENT
+UID:courses-104-assignments-1040@canvas.yourschool.edu
+DTSTAMP:20261024T140620Z
+DTSTART:20260915T215900Z
+DTEND:20260915T215900Z
+SUMMARY:Assignment 1
+DESCRIPTION:10 points
+URL:https://canvas.yourschool.edu/courses/104/assignments/1040
+END:VEVENT
+BEGIN:VEVENT
+UID:courses-104-quizzes-1041@canvas.yourschool.edu
+DTSTAMP:20261024T140620Z
+DTSTART:20260922T215900Z
+DTEND:20260922T215900Z
+SUMMARY:Week 3 quiz
+DESCRIPTION:5 points
+URL:https://canvas.yourschool.edu/courses/104/quizzes/1041
+END:VEVENT
+BEGIN:VEVENT
+UID:courses-104-assignments-1041@canvas.yourschool.edu
+DTSTAMP:20261024T140620Z
+DTSTART:20260929T215900Z
+DTEND:20260929T215900Z
+SUMMARY:Assignment 2
+DESCRIPTION:10 points
+URL:https://canvas.yourschool.edu/courses/104/assignments/1041
+END:VEVENT
+BEGIN:VEVENT
+UID:courses-104-assignments-1042@canvas.yourschool.edu
+DTSTAMP:20261024T140620Z
+DTSTART:20261013T215900Z
+DTEND:20261013T215900Z
+SUMMARY:Midterm project
+DESCRIPTION:30 points
+URL:https://canvas.yourschool.edu/courses/104/assignments/1042
+END:VEVENT
+BEGIN:VEVENT
+UID:courses-104-assignments-1043@canvas.yourschool.edu
+DTSTAMP:20261024T140620Z
+DTSTART:20261027T215900Z
+DTEND:20261027T215900Z
+SUMMARY:Assignment 3
+DESCRIPTION:10 points
+URL:https://canvas.yourschool.edu/courses/104/assignments/1043
+END:VEVENT
+BEGIN:VEVENT
+UID:courses-104-assignments-1044@canvas.yourschool.edu
+DTSTAMP:20261024T140620Z
+DTSTART:20261110T215900Z
+DTEND:20261110T215900Z
+SUMMARY:Final project
+DESCRIPTION:30 points
+URL:https://canvas.yourschool.edu/courses/104/assignments/1044
+END:VEVENT
+END:VCALENDAR

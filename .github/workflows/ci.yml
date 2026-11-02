@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  pull_request:
+    paths-ignore: [website/**, video/**, media/**, docs/**]
+  push:
+    branches: [main, v3]
+    paths-ignore: [website/**, video/**, media/**, docs/**]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm format:check
+      - run: pnpm verify

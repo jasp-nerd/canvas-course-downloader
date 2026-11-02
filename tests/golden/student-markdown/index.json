@@ -1,0 +1,256 @@
+{
+  "scenario": "student-markdown",
+  "description": "Student, Markdown export format, one ZIP.",
+  "files": [
+    {
+      "path": "Linear Algebra.zip!/Announcements/Room change for Thursday.md",
+      "size": 119,
+      "sha256": "e58525bcdf671fbb8c9c0db816e8553e441c086648d722bc32cd71c78eba4b9b"
+    },
+    {
+      "path": "Linear Algebra.zip!/Announcements/Slides for week 2 are online.md",
+      "size": 127,
+      "sha256": "e4dcbe4b0d2f7fab60b19c7a552947644f90e011e8d9241ff05dcb3aff4f99a5"
+    },
+    {
+      "path": "Linear Algebra.zip!/Announcements/Welcome to the course!.md",
+      "size": 115,
+      "sha256": "40f4a7f30084217fbaf01e87ba938ae8db09018440454ac4057a287a6ea0fc61"
+    },
+    {
+      "path": "Linear Algebra.zip!/Assignments/Assignment 1.md",
+      "size": 125,
+      "sha256": "a01425675a2b34f7619e45484b80c27598dbb2b75f3127eb6bcd97f737b13a0a"
+    },
+    {
+      "path": "Linear Algebra.zip!/Assignments/Assignment 2.md",
+      "size": 125,
+      "sha256": "88f7616446fe2cac68c2368c3c315bd00d0c44ed4250ebd8f34aa7f8605d4953"
+    },
+    {
+      "path": "Linear Algebra.zip!/Assignments/Assignment 3.md",
+      "size": 125,
+      "sha256": "10c3da2c6c7d36e598c1ac545328d1bd3edab9c7fe5c7ad6c68f4a96f7002ce6"
+    },
+    {
+      "path": "Linear Algebra.zip!/Assignments/Final project.md",
+      "size": 127,
+      "sha256": "0a58d1e249411fa4bd9429c7f1179ef46daf41c438157a19cac8ee53e6236325"
+    },
+    {
+      "path": "Linear Algebra.zip!/Assignments/Midterm project.md",
+      "size": 131,
+      "sha256": "babfdd9d65b2ee281c511e82979fd1ee243ef3109926c254387bf8f485a7a5c7"
+    },
+    {
+      "path": "Linear Algebra.zip!/Discussions/Exam preparation.md",
+      "size": 427,
+      "sha256": "ecc28743cc094dc15af81ec155cc7180e0c64d4f71fc7fa8354348ba2e95a641"
+    },
+    {
+      "path": "Linear Algebra.zip!/Discussions/Introduce yourself.md",
+      "size": 431,
+      "sha256": "a54801cfd90dba63a36dbfcb11a3f9e9bda5ef6feb624e96fa5aa7db0773fbd6"
+    },
+    {
+      "path": "Linear Algebra.zip!/Discussions/Questions about assignment 1.md",
+      "size": 451,
+      "sha256": "11d288f27a47fa03cd15c34d336d21a3f8dd7ab0e5b40492276f01cf689984d5"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Assignments/Assignment 1 brief.pdf",
+      "size": 726,
+      "sha256": "7f76764787bc299d865697899f1ef298cbeb53ad30c55d59e057c349dcc755c1"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Assignments/Assignment 2 brief.pdf",
+      "size": 726,
+      "sha256": "8886c97d5aab5b0b9559f159e906bfd618be4c3e53daf0b6d424d627ca815886"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Assignments/Project guidelines.pdf",
+      "size": 726,
+      "sha256": "8c32fc9f6bd21908c43ea098633e07a08d6b670db770ac187823398aab1187a3"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Assignments/Rubric.pdf",
+      "size": 714,
+      "sha256": "ba5f0d6d56f9d454da378d2ca8ab0c477855a40d7612d1082d2016f0eb05f7bf"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Exam prep/Formula sheet.pdf",
+      "size": 721,
+      "sha256": "55de22087d5245508360d621a41cf177436c53bd39124cf32d3742e2809103dd"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Exam prep/Practice exam - solutions.pdf",
+      "size": 733,
+      "sha256": "2b344934a580b85a1114c4b5ca78a77fe4a2dd8027be60a7d47c8e9c90801835"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Exam prep/Practice exam.pdf",
+      "size": 721,
+      "sha256": "1244cf3f9f7db59bdf24e491566c0ed5a67f0d5e9a0008bba1fe0eb7b7f31263"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Lectures/Lecture 01 - Vectors.pdf",
+      "size": 728,
+      "sha256": "9fa7c2f2b4e862e50ad77e184c0e7d81e22f621eb51f9b2c9d359a0c229c9da7"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Lectures/Lecture 02 - Systems of equations.pdf",
+      "size": 741,
+      "sha256": "329673a67e46335a3f75509e1449460b4ccc415d3192fc929827c5c132f98a1a"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Lectures/Lecture 03 - Matrix operations.pdf",
+      "size": 738,
+      "sha256": "b113009f16b49988524ba56464a1703e8972f1c9b65f438b831d2f806d4aa90c"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Lectures/Lecture 04 - Inverses.pdf",
+      "size": 729,
+      "sha256": "bc57ea8fdbb7c7d94a1359ef030ac49c1aa48750a681b72920df7490c93b59c2"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Lectures/Lecture 05 - Determinants.pdf",
+      "size": 733,
+      "sha256": "02249022e93ec34f712ad5ce53f43b5a4a43f002ff3e793141e3e4959f67ddc4"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Lectures/Lecture 06 - Vector spaces.pdf",
+      "size": 734,
+      "sha256": "e3307c1dbea1744398499550c394d683c61db67a9844cf54a94c9f90b5f136a9"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Lectures/Lecture 07 - Basis and dimension.pdf",
+      "size": 740,
+      "sha256": "6448dfdb86218ab7f84e9b10777b97694f897694c0cfadd028cb0ed87eb4d5fa"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Lectures/Lecture 08 - Linear maps.pdf",
+      "size": 732,
+      "sha256": "dfdd54ea0a0b8bc29420efbab8f278d660d2e46fad5c184e12901d47be730541"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Lectures/Lecture 09 - Eigenvalues.pdf",
+      "size": 732,
+      "sha256": "d02ae88b240dd053566a446bbe97f34b562ce91b9478d87f89abec4d171f9da2"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Lectures/Lecture 10 - Diagonalisation.pdf",
+      "size": 736,
+      "sha256": "534f81a98756090c1ed93d83545d018aef24629c49e753ba20e3972756edc772"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Lectures/Lecture 11 - Orthogonality.pdf",
+      "size": 734,
+      "sha256": "c3cd5cc188e03d601132bd703e61c15096c1688c3bf2bd0ff1e1af68ecd300e9"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Lectures/Lecture 12 - Least squares.pdf",
+      "size": 734,
+      "sha256": "70cddb95b7d412aaf2b061ebb01fe01821d561f4140f6668f5fa06fe7a8daa9c"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Readings/Week 1 - Core reading.pdf",
+      "size": 729,
+      "sha256": "7ae6ec1b0d0c2345526aa824262239daccea29918a2e1ed2cc70c167d7220935"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Readings/Week 10 - Further reading.pdf",
+      "size": 733,
+      "sha256": "f4cba60abe54fd70d08ebe263a8161634c58716c975a0399bc053b58782d8b8e"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Readings/Week 4 - Background article.pdf",
+      "size": 735,
+      "sha256": "a22097353cd1cc87f9e7734845767370762b8b852ce7600708bd1360613edfaa"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Readings/Week 7 - Case study.pdf",
+      "size": 727,
+      "sha256": "ee0a418ac7472126e50618f952610b6164baf5e1cc64fb9a06b91cb96fdfd95e"
+    },
+    {
+      "path": "Linear Algebra.zip!/Files/Syllabus.pdf",
+      "size": 716,
+      "sha256": "e27d69fef0967a326fe3deb63b88829f27741b97dd06fed374780ceb51072d3f"
+    },
+    {
+      "path": "Linear Algebra.zip!/Grades.csv",
+      "size": 325,
+      "sha256": "b6ecca7bc171a2b08604a38a869e7b1aa1900327d200c15be347e0396e89a91a"
+    },
+    {
+      "path": "Linear Algebra.zip!/Grading Weights.md",
+      "size": 128,
+      "sha256": "807d6801db39ec30e79e0212e16d4a16dd9c3c0dad013e2c100e1c4c2c5c6986"
+    },
+    {
+      "path": "Linear Algebra.zip!/manifest.json",
+      "size": 563,
+      "sha256": "340697cce59ae80d0e911e824a29c86a9e77118f24ef175fbd5ece273927d78e"
+    },
+    {
+      "path": "Linear Algebra.zip!/Modules.md",
+      "size": 772,
+      "sha256": "b8526636ad6151f88eb8daad2d86fae0582a45c7d26cbdc5b31849f8d2a758e8"
+    },
+    {
+      "path": "Linear Algebra.zip!/Pages/course-schedule.md",
+      "size": 319,
+      "sha256": "2dbfc08a28c8285984fd2c60622c6eb2962df6146b0c75d553a461a9e2bbbf58"
+    },
+    {
+      "path": "Linear Algebra.zip!/Pages/exam-information.md",
+      "size": 123,
+      "sha256": "db56ee4f35f4c710bb4077397b44b8267a22e0804803ba78ac6f3b7ccae7e4f2"
+    },
+    {
+      "path": "Linear Algebra.zip!/Pages/how-to-get-help.md",
+      "size": 137,
+      "sha256": "9976994063497f8b37ead80a8cd183c52411ac45781bd0b3ead9ae0e231072e5"
+    },
+    {
+      "path": "Linear Algebra.zip!/Pages/welcome-to-the-course.md",
+      "size": 150,
+      "sha256": "e421ee1a5b58eb3be4876865eab29b400a07a8ecb1696d152dc747b4f5227af1"
+    },
+    {
+      "path": "Linear Algebra.zip!/Quizzes/Midterm practice quiz/Midterm practice quiz.md",
+      "size": 108,
+      "sha256": "02491b2b213e0e986d6a1eaaa73c1337488f2233f2cb7514230f0d69fe8f7fba"
+    },
+    {
+      "path": "Linear Algebra.zip!/Quizzes/Week 3 quiz/Week 3 quiz.md",
+      "size": 134,
+      "sha256": "6fb4b96e3eca6afd37292f2c9fcee35049159e6399349cbcca640b5fc703c289"
+    },
+    {
+      "path": "Linear Algebra.zip!/Submissions/Assignment 1/You.md",
+      "size": 120,
+      "sha256": "d9de7d70f962c15a8f683e046347b61e33b35c512269f7f95765c9f5ff1c78e5"
+    },
+    {
+      "path": "Linear Algebra.zip!/Submissions/Assignment 2/You.md",
+      "size": 116,
+      "sha256": "c8f9826b911775f16ffaafaa124161bb0ba5be93857fd2f626a6c15e1b7865a5"
+    },
+    {
+      "path": "Linear Algebra.zip!/Submissions/Assignment 3/You.md",
+      "size": 120,
+      "sha256": "bc5e5ff15fdfcf47f166cac7ceba9264ddb272e59f6d0b7a17e7d6cb6d3ebab7"
+    },
+    {
+      "path": "Linear Algebra.zip!/Submissions/Midterm project/You.md",
+      "size": 121,
+      "sha256": "11cfe76bd235a47d5413e84b7555de6405c354941c1fa6624b025ba375f9b79d"
+    },
+    {
+      "path": "Linear Algebra.zip!/Syllabus.md",
+      "size": 396,
+      "sha256": "8722d2ab49fb3ecebad3beeccaf4d003dc2576421cab08c8aad30a1833973014"
+    }
+  ]
+}

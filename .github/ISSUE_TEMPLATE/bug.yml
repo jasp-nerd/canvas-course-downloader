@@ -1,0 +1,37 @@
+name: Something went wrong
+description: A download failed, missed something, or the extension behaved oddly.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for telling me. Please leave out course names, student names and anything else private.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: receipt
+    attributes:
+      label: What did the receipt say?
+      description: The lines about missing files and their reasons, or the error you saw. A screenshot works too.
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      description: Settings › Help shows it, at the bottom left.
+      placeholder: 3.0.0
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options: [Chrome, Edge, Brave, Firefox, Other]
+    validations:
+      required: true
+  - type: dropdown
+    id: role
+    attributes:
+      label: In that course you are a
+      options: [Student, Teacher or TA, Not sure]

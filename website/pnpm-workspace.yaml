@@ -1,0 +1,5 @@
+# Its own pnpm project, so the extension's lockfile (and the AMO source build) never changes for the website.
+# Same supply-chain guard as the root: new versions wait a week, and only esbuild may run install scripts.
+minimumReleaseAge: 10080
+allowBuilds:
+  esbuild: true

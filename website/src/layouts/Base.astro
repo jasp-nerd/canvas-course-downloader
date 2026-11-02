@@ -1,0 +1,133 @@
+---
+// Every page: the head (one canonical URL, social preview, structured data), the bar and the footer.
+import '../../../src/ui/theme.css';
+import '../styles/site.css';
+import gabarito from '../../../public/fonts/gabarito-latin.woff2?url';
+import Icons from '../components/Icons.astro';
+import Logo from '../components/Logo.astro';
+import { ANALYTICS, href, LAUNCHED, LINKS, mailToSelf, SHORT, STORE, tracked } from '../data/site';
+
+interface Props {
+  /** The full <title>. */
+  title: string;
+  description: string;
+  /** The social preview's title, without the brand; the title when left out. */
+  ogTitle?: string;
+  ogType?: 'website' | 'article';
+  jsonLd?: object;
+  /** Pages people shouldn't land on from search, such as the 404. */
+  noindex?: boolean;
+  /** Which nav link is this page. */
+  current?: string;
+}
+const { title, description, ogTitle, ogType = 'website', jsonLd, noindex, current } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const og = new URL(href('/og.png'), Astro.site).toString();
+const nav = [
+  { label: 'How it works', path: '/#everything' },
+  { label: 'For teachers', path: '/for-teachers/' },
+  { label: 'When access ends', path: '/canvas-access-after-graduation/' },
+  { label: 'Privacy', path: '/privacy/' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {(noindex || !LAUNCHED) && <meta name="robots" content="noindex" />}
+    <link rel="preload" href={gabarito} as="font" type="font/woff2" crossorigin />
+    <link rel="icon" href={href('/favicon.ico')} sizes="48x48" />
+    <link rel="icon" href={href('/favicon.svg')} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={href('/apple-touch-icon.png')} />
+    <meta name="theme-color" content="#ffffff" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content="Canvas Course Downloader" />
+    <meta property="og:title" content={ogTitle ?? title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={og} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Canvas Course Downloader: download your Canvas courses" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    {
+      import.meta.env.PROD && (
+        <script
+          is:inline
+          defer
+          src={ANALYTICS.src}
+          data-website-id={ANALYTICS.websiteId}
+          data-domains={ANALYTICS.domain}
+          data-do-not-track="true"
+        />
+      )
+    }
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <Icons />
+    <header class="nav" data-nav>
+      <div class="wrap nav-inner">
+        <a class="brand" href={href('/')}>
+          <Logo />
+          {SHORT}
+        </a>
+        <nav aria-label="Main">
+          <ul class="nav-links">
+            {
+              nav.map((link) => (
+                <li>
+                  <a href={href(link.path)} aria-current={current === link.path ? 'page' : undefined}>
+                    {link.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+        <a class="btn btn-primary only-desktop" href={tracked(STORE.chrome, 'nav')} data-install>Add to Chrome</a>
+        <a class="btn btn-primary only-phone" href={mailToSelf(Astro.site!)}>Get the link</a>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="footer">
+      <div class="wrap">
+        <div class="footer-top">
+          <a class="brand" href={href('/')}><Logo />{SHORT}</a>
+          <nav aria-label="Footer">
+            <ul class="footer-links">
+              <li><a href={href('/download/')}>Install</a></li>
+              <li><a href={href('/for-teachers/')}>For teachers</a></li>
+              <li><a href={href('/canvas-access-after-graduation/')}>When access ends</a></li>
+              <li><a href={href('/privacy/')}>Privacy</a></li>
+              <li><a href={href('/changelog/')}>Changelog</a></li>
+              <li><a href={href('/about/')}>About</a></li>
+              <li><a href={LINKS.github}>GitHub</a></li>
+              <li><a href={tracked(LINKS.koFi, 'footer')}>Buy me a coffee</a></li>
+            </ul>
+          </nav>
+        </div>
+        <p class="disclaimer">
+          Canvas is a trademark of Instructure, Inc. Canvas Course Downloader is an independent
+          open-source project, not affiliated with or endorsed by Instructure. Free, under the MIT
+          license.
+        </p>
+      </div>
+    </footer>
+    <script>
+      import '../scripts/common';
+    </script>
+  </body>
+</html>

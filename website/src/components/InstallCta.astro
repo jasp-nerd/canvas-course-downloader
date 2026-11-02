@@ -1,0 +1,21 @@
+---
+// The install button: the store on a laptop or desktop, an email with the link on a phone.
+import { href, mailToSelf, STORE, tracked } from '../data/site';
+
+interface Props {
+  /** Where on the site it was clicked, for the store's campaign report. */
+  campaign: string;
+  large?: boolean;
+}
+const { campaign, large = false } = Astro.props;
+---
+
+<a
+  class:list={['btn btn-primary only-desktop', { 'btn-lg': large }]}
+  href={tracked(STORE.chrome, campaign)}
+  data-install
+  data-fallback={href('/download/')}
+>
+  <svg class="icon" aria-hidden="true"><use href="#i-chrome"></use></svg>Add to Chrome, it's free
+</a>
+<a class:list={['btn btn-primary only-phone', { 'btn-lg': large }]} href={mailToSelf(Astro.site!)}>Email myself the link</a>

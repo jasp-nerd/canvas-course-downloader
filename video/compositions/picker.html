@@ -1,0 +1,163 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: var(--mist);
+      overflow: hidden;
+    }
+    #pk-t {
+      position: absolute;
+      left: 160px;
+      top: 430px;
+      width: 700px;
+    }
+    #pk-cam {
+      position: absolute;
+      inset: 0;
+      transform-origin: 1390px 540px;
+    }
+    /* The real course picker, captured with 0, 1, 2 and 3 courses ticked, at 1.34x. */
+    .pk-pop {
+      position: absolute;
+      left: 960px;
+      top: 110px;
+      width: 860px;
+      height: 860px;
+      border-radius: 27px;
+      box-shadow: 0 30px 80px rgba(20, 32, 47, 0.16);
+      background-size: 860px 860px;
+    }
+    #pk-0 {
+      background-image: url('assets/ui/popup-0.webp');
+    }
+    #pk-1 {
+      background-image: url('assets/ui/popup-1.webp');
+    }
+    #pk-2 {
+      background-image: url('assets/ui/popup-2.webp');
+    }
+    #pk-3 {
+      background-image: url('assets/ui/popup-3.webp');
+    }
+    /* Its Download 3 courses button, pressed. */
+    #pk-press {
+      position: absolute;
+      left: 555px;
+      top: 777px;
+      width: 278px;
+      height: 62px;
+      border-radius: 999px;
+      background: #14202f;
+      opacity: 0;
+    }
+    /* The export tab's list of courses, which the picker becomes. */
+    #pk-list {
+      position: absolute;
+      left: 960px;
+      top: 300px;
+      width: 860px;
+      padding: 40px 48px;
+      border-radius: 40px;
+      background: #fff;
+      opacity: 0;
+    }
+    .pk-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+      font: 700 34px Gabarito, sans-serif;
+    }
+    .pk-head span {
+      font: 500 26px Figtree, sans-serif;
+      color: var(--ink-3);
+    }
+    .pk-row {
+      display: grid;
+      grid-template-columns: 76px 1fr auto;
+      gap: 22px;
+      align-items: center;
+      height: 112px;
+      border-top: 2px solid var(--line);
+      font: 600 32px/1.2 Figtree, sans-serif;
+    }
+    .pk-row svg {
+      width: 76px;
+      height: 76px;
+    }
+    .pk-row b {
+      font: 600 26px Figtree, sans-serif;
+      color: var(--ink-3);
+      font-variant-numeric: tabular-nums;
+    }
+    .pk-row b.done {
+      color: var(--mint-ink);
+    }
+    #pk-cursor {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+  </style>
+  <div id="root" data-composition-id="picker" data-width="1920" data-height="1080">
+    <p id="pk-t" class="title"><span class="ln">Several courses,</span><span class="ln">one click.</span></p>
+    <div id="pk-cam" data-layout-allow-overflow>
+      <div id="pk-0" class="pk-pop"></div>
+      <div id="pk-1" class="pk-pop"></div>
+      <div id="pk-2" class="pk-pop"></div>
+      <div id="pk-3" class="pk-pop"><div id="pk-press"></div></div>
+      <div id="pk-list">
+        <p class="pk-head">3 courses<span>Saving into Downloads</span></p>
+        <div class="pk-row"><svg class="ring"></svg>Academic Writing<b></b></div>
+        <div class="pk-row"><svg class="ring"></svg>Linear Algebra<b></b></div>
+        <div class="pk-row"><svg class="ring"></svg>Machine Learning<b></b></div>
+      </div>
+      <svg id="pk-cursor" class="cursor" viewBox="0 0 28 28"><path d="M5 3l17 9.5-7.6 1.7L10.8 21z" fill="#14202f" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"></path></svg>
+    </div>
+  </div>
+  <script>
+    const rows = [...document.querySelectorAll('.pk-row')];
+    const rings = rows.map((r) => r.querySelector('svg'));
+    rings.forEach((svg) => window.drawLogo(svg));
+    // One after the other, as the export tab saves them.
+    const progress = { p: 0 };
+    const paint = () => {
+      rows.forEach((row, i) => {
+        const p = Math.min(1, Math.max(0, progress.p * 3 - i));
+        window.fillLogo(rings[i], p);
+        const status = row.querySelector('b');
+        status.textContent = p >= 1 ? 'Saved' : p > 0 ? `${Math.min(99, Math.round(p * 100))}%` : 'Waiting';
+        status.className = p >= 1 ? 'done' : '';
+      });
+    };
+
+    const tl = gsap.timeline({ paused: true });
+    window.enterTitle(tl, '#pk-t', 0.15);
+    window.pushIn(tl, '#pk-cam', 0, 6, 1.03);
+    // Three ticks on the beat: 0.5, 1.0 and 1.5. The cursor's tip is 11, 7 px into its box.
+    const ticks = [
+      [989, 402, 0.5, '#pk-1'],
+      [989, 627, 1.0, '#pk-2'],
+      [989, 702, 1.5, '#pk-3'],
+    ];
+    tl.fromTo('#pk-cursor', { x: 1300, y: 1120 }, { x: 989, y: 402, duration: 0.42, ease: 'power3.out' }, 0.02);
+    ticks.forEach(([x, y, at, still], i) => {
+      if (i > 0) tl.fromTo('#pk-cursor', { x: ticks[i - 1][0], y: ticks[i - 1][1] }, { immediateRender: false, x, y, duration: 0.36, ease: 'power3.inOut' }, at - 0.4);
+      window.press(tl, '#pk-cursor', at - 0.04);
+      tl.fromTo(still, { opacity: 0 }, { opacity: 1, duration: 0.04 }, at);
+    });
+    // To Download 3 courses, pressed at 4.0.
+    tl.fromTo('#pk-cursor', { x: 989, y: 702 }, { immediateRender: false, x: 1643, y: 911, duration: 1.1, ease: 'power3.inOut' }, 2.7);
+    window.press(tl, '#pk-cursor', 3.94);
+    tl.fromTo('#pk-press', { opacity: 0 }, { opacity: 0.2, duration: 0.06 }, 3.94);
+    tl.fromTo('#pk-press', { opacity: 0.2 }, { immediateRender: false, opacity: 0, duration: 0.2 }, 4.06);
+    tl.fromTo('#pk-cursor', { opacity: 1 }, { immediateRender: false, opacity: 0, duration: 0.2 }, 4.15);
+    // The picker becomes the list of courses saving, each ring filling in turn.
+    tl.fromTo('.pk-pop', { scale: 1, opacity: 1 }, { immediateRender: false, scale: 0.94, opacity: 0, duration: 0.2, ease: 'power2.in' }, 4.1);
+    tl.fromTo('#pk-list', { y: 40, opacity: 0, scale: 0.97 }, { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'power3.out' }, 4.3);
+    tl.fromTo(progress, { p: 0 }, { p: 1, duration: 0.75, ease: 'none', onUpdate: paint }, 4.45);
+    paint();
+    window.__timelines['picker'] = tl;
+  </script>
+</template>

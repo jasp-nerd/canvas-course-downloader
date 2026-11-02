@@ -1,0 +1,136 @@
+{
+  "scenario": "student-files-only",
+  "description": "Student, the Files Only preset.",
+  "files": [
+    {
+      "path": "Academic Writing.zip!/Files/Assignments/Assignment 1 brief.pdf",
+      "size": 727,
+      "sha256": "d3f8f3574e71b9c7c3074fa32f7420b808f8e9d093e9de3392a0c966a616e14c"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Assignments/Assignment 2 brief.pdf",
+      "size": 727,
+      "sha256": "8b96ebc5b382ea6acaeea849732373b35893b67c8232fb2f65ab435ccf278574"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Assignments/Project guidelines.pdf",
+      "size": 727,
+      "sha256": "72742bf5d9c1d803ef4424a74b9f777a1853e28e2b2294507df022e51c16d085"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Assignments/Rubric.pdf",
+      "size": 715,
+      "sha256": "c2f315b7a77c4004cda4f3765345893c0ef0f3430e171e26a5d4d8d9b2bcfc2e"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Exam prep/Formula sheet.pdf",
+      "size": 722,
+      "sha256": "d87fcb032d6c62aa33ace5713811dc1db3961be317e117976cb884aa574c8abc"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Exam prep/Practice exam - solutions.pdf",
+      "size": 734,
+      "sha256": "a1665c9397f7d9fe39044d15ddeb683505d67b5ee8312e2cb29cdf98df5b0111"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Exam prep/Practice exam.pdf",
+      "size": 722,
+      "sha256": "755b78d30f7264e4c8b91f557687cd0ca7fa293c7a6f9cc55aecce2761561af8"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Lectures/Lecture 01 - Academic Writing week 1.pdf",
+      "size": 745,
+      "sha256": "c38a4f947201fee1083afaa61101dcb191ea0e4adb8df9f7f889510177c8aa79"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Lectures/Lecture 02 - Academic Writing week 2.pdf",
+      "size": 745,
+      "sha256": "1b42452c61f1114097d22696ca8a17e8c67deb82fbc38445394ee7818b137be8"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Lectures/Lecture 03 - Academic Writing week 3.pdf",
+      "size": 745,
+      "sha256": "c00f4fc121a336e7dd5d0f3fd1321d2a7edda1aa0033d147abd0796096754199"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Lectures/Lecture 04 - Academic Writing week 4.pdf",
+      "size": 745,
+      "sha256": "edbf32d5819ff6c251bd69635473978dd51f4078314a71cd419d8a3462922149"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Lectures/Lecture 05 - Academic Writing week 5.pdf",
+      "size": 745,
+      "sha256": "ac9339708d1e0e201fe9e627a466904c4183a4c736ff691e9d76c88568224924"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Lectures/Lecture 06 - Academic Writing week 6.pdf",
+      "size": 745,
+      "sha256": "c0c4fae0baa9f68da036052942debfa310209c6114a4befa61e482c3a703c32e"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Lectures/Lecture 07 - Academic Writing week 7.pdf",
+      "size": 745,
+      "sha256": "09451c436a54676f2aee865adebe089cdaaee7b9c477fc5a9ca6d0196d8c7177"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Lectures/Lecture 08 - Academic Writing week 8.pdf",
+      "size": 745,
+      "sha256": "542163e6b2f59a5d563e40d6692a5862a2774476d06d8db2fd164a83d578b693"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Lectures/Lecture 09 - Academic Writing week 9.pdf",
+      "size": 745,
+      "sha256": "edb07c29778b0949926a26559fea90e220f672291406e1d8770ef0675ddba65f"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Lectures/Lecture 10 - Academic Writing week 10.pdf",
+      "size": 746,
+      "sha256": "c4606e96dc5e79f4ec3c97fb65375f08bf663397b748d03488ca7265da85eab9"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Lectures/Lecture 11 - Academic Writing week 11.pdf",
+      "size": 746,
+      "sha256": "ec099f20315b6e889cb94f25ce6c572d9b81916ba4fa6b4e114a85c05aa5334e"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Lectures/Lecture 12 - Academic Writing week 12.pdf",
+      "size": 746,
+      "sha256": "5cec0eebc2bd858ab1b7ba7505279356ac6e2ed637335e52d66ed9e34b834d2d"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Readings/Week 1 - Core reading.pdf",
+      "size": 730,
+      "sha256": "65326809fa43697c7fffb9eaa0db3ba87cb735ff036d8dc75d354826bd208bbc"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Readings/Week 10 - Further reading.pdf",
+      "size": 734,
+      "sha256": "7c536ac683bac004d2301cdae56aa065931068b21ae58e3a678f6f6d00496aca"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Readings/Week 4 - Background article.pdf",
+      "size": 736,
+      "sha256": "fd1605530572a3918af670c81c4c9ead133a1285fc5840521bab149c681765cc"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Readings/Week 7 - Case study.pdf",
+      "size": 728,
+      "sha256": "00e29d929dc7bf5290e617372b970c0f52c8687eca677c01f1432a27b8fba9a1"
+    },
+    {
+      "path": "Academic Writing.zip!/Files/Syllabus.pdf",
+      "size": 717,
+      "sha256": "bcde0c25168d44c226e2895fe2e938c2173f0aef7ed438bae05a78c3437abffe"
+    },
+    {
+      "path": "Academic Writing.zip!/manifest.json",
+      "size": 564,
+      "sha256": "cf9401878e6e799ed68e3643168cdd7f2e6b96732a473fc0b453d2144c8758bd"
+    },
+    {
+      "path": "Academic Writing.zip!/styles.css",
+      "size": 991,
+      "sha256": "03f865bd295c6b8931d23f38e880dbc49157909cf5334ac5bc07d441da470ea5"
+    }
+  ]
+}

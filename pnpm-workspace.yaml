@@ -1,0 +1,5 @@
+# Supply-chain guard: new package versions wait a week before they can be installed,
+# and only packages listed under allowBuilds may run install scripts.
+minimumReleaseAge: 10080
+allowBuilds:
+  esbuild: true

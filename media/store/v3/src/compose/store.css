@@ -1,0 +1,171 @@
+/* The store images: the extension's own tokens (src/ui/theme.css) and its bundled fonts, with the
+   website's window and plate. Each page is one image at its exact pixel size; render.ts shoots it. */
+@import '../../../../../src/ui/theme.css';
+
+@font-face {
+  font-family: 'Figtree';
+  font-weight: 300 900;
+  src: url('../../../../../public/fonts/figtree-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Gabarito';
+  font-weight: 400 900;
+  src: url('../../../../../public/fonts/gabarito-latin.woff2') format('woff2');
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+}
+body {
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-ui);
+  color: var(--ink);
+  background: var(--mist);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+img,
+svg {
+  display: block;
+}
+
+/* Screenshots: 1280×800, a caption on a navy or highlighter field, the real capture below. */
+.shot {
+  width: 1280px;
+  height: 800px;
+}
+.navy {
+  background: var(--navy);
+  color: #fff;
+}
+.sun {
+  background: var(--sun);
+  color: var(--ink);
+}
+.cap {
+  position: absolute;
+  left: 72px;
+  right: 72px;
+  top: 0;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+.cap h1 {
+  margin: 0;
+  font: 800 54px/1 var(--font-display);
+  letter-spacing: -0.032em;
+  white-space: nowrap;
+}
+.cap .mark {
+  width: 46px;
+  height: 46px;
+  flex: none;
+}
+
+/* A soft browser window, cut by the bottom edge like a crop of a bigger screen. */
+.win {
+  position: absolute;
+  left: 64px;
+  right: 64px;
+  top: 140px;
+  bottom: -30px;
+  border-radius: 14px 14px 0 0;
+  background: #fff;
+  overflow: hidden;
+}
+.navy .win {
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+.sun .win {
+  box-shadow:
+    0 24px 60px rgba(20, 32, 47, 0.22),
+    0 2px 6px rgba(20, 32, 47, 0.1);
+}
+.bar {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 16px;
+  background: var(--mist);
+  border-bottom: 1px solid var(--line);
+}
+.bar > i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--control);
+  box-shadow:
+    16px 0 0 var(--control),
+    32px 0 0 var(--control);
+}
+.addr {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: 56px;
+  height: 26px;
+  padding: 0 14px 0 10px;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.addr svg,
+.addr img {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--ink-3);
+}
+.addr b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.addr .sep {
+  width: 1px;
+  height: 14px;
+  background: var(--line);
+}
+/* The capture: --w is its width in CSS px (it's shot at 2x), --s the scale, --x/--y the crop. */
+.page {
+  position: relative;
+  height: calc(100% - 38px);
+  overflow: hidden;
+}
+.page > img.cap-img {
+  position: absolute;
+  left: calc(var(--x, 0px) * -1 * var(--s));
+  top: calc(var(--y, 0px) * -1 * var(--s));
+  width: calc(var(--w) * var(--s));
+  max-width: none;
+}
+.cursor {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 2px 3px rgba(20, 32, 47, 0.35));
+}
+
+/* A part of the same page, lifted out beside the window. */
+.lift {
+  position: absolute;
+  border-radius: 16px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow:
+    0 24px 60px rgba(20, 32, 47, 0.3),
+    0 2px 6px rgba(20, 32, 47, 0.12);
+}
+.lift img {
+  width: 100%;
+}

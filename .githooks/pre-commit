@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Blocks commits while formatting, types, lint or unit tests fail.
+# Enabled by `pnpm install` (the prepare script sets core.hooksPath).
+pnpm -s format:check && pnpm -s verify:fast

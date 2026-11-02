@@ -1,0 +1,182 @@
+/* The Download tab's frame and the parts its receipts share: a coloured band
+   with the heading and the mascot, then cards in two columns. Component
+   classes (buttons, cards, notices) come from src/ui/theme.css. */
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--mist);
+  color: var(--ink);
+  font: 15px/1.5 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+.page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 72px 1fr;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 40px;
+}
+
+/* The band at the top of a receipt. */
+.band {
+  margin: 8px 40px 0;
+  border-radius: 28px;
+  padding: 30px 48px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+  overflow: hidden;
+}
+.band-text {
+  display: grid;
+  align-content: center;
+  gap: 12px;
+  padding-bottom: 32px;
+  min-width: 0;
+}
+.band-text h1 {
+  font-size: 52px;
+  overflow-wrap: anywhere;
+}
+.band-chip {
+  justify-self: start;
+  background: #fff;
+}
+.band-meta {
+  font-size: 17px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.band-actions {
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+/* img.band-pip: as specific as the mascot's own styles, so the queries below win. */
+.band > img.band-pip {
+  align-self: end;
+  justify-self: center;
+  margin-bottom: -4px;
+}
+
+/* Cards below the band. */
+.receipt-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 20px;
+  padding: 20px 40px 40px;
+  align-items: start;
+}
+.aside {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+.inside-card {
+  border-radius: 24px;
+  padding: 22px 28px 0;
+  display: grid;
+  overflow: hidden;
+}
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.card-head h2 {
+  overflow-wrap: anywhere;
+}
+.card-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 10px -28px 0;
+  padding: 18px 28px;
+  border-top: 2px solid var(--mist-2);
+}
+.card-foot .size {
+  font-weight: 700;
+  font-size: 16px;
+}
+.side-card {
+  border-radius: 24px;
+  padding: 20px 24px;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+.side-card h2 {
+  font-size: 17px;
+}
+.side-card p {
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+/* Text to copy: a path, a command. */
+.field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 10px 10px 14px;
+  border-radius: 14px;
+  background: var(--mist);
+}
+code {
+  font:
+    500 13px/1.45 ui-monospace,
+    'SF Mono',
+    Menlo,
+    Consolas,
+    monospace;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1040px) {
+  .topbar {
+    padding: 0 16px;
+  }
+  .band {
+    margin: 8px 16px 0;
+    padding: 24px 24px 0;
+  }
+  .band-text h1 {
+    font-size: 40px;
+  }
+  .receipt-grid {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 16px 16px 32px;
+  }
+}
+@media (max-width: 760px) {
+  .band {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .band > img.band-pip {
+    display: none;
+  }
+  .band-text h1 {
+    font-size: 32px;
+  }
+}

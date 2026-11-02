@@ -1,0 +1,31 @@
+---
+// The extension's policy comes from PRIVACY.md in the repo, so the store, GitHub and this page
+// always say the same thing. The section about this website is added here.
+import Base from '../layouts/Base.astro';
+import { Content } from '../../../PRIVACY.md';
+---
+
+<Base
+  title="Privacy – Canvas Course Downloader"
+  description="What the extension and this website collect: nothing about you leaves your browser except requests to your own Canvas. Every permission and why it's needed."
+  ogTitle="Privacy policy"
+  current="/privacy/"
+>
+  <section class="wrap narrow page-head">
+    <h1>Privacy policy</h1>
+    <p class="lead">
+      What the extension and this website do with your data. In short: nothing about you or your
+      courses leaves your browser, apart from the requests to your own Canvas.
+    </p>
+  </section>
+  <article class="wrap narrow prose doc">
+    <Content />
+    <h2>This website</h2>
+    <p>
+      This website sets no cookies. It counts visits with Umami, open-source analytics that runs on
+      our own server in Germany: it stores no IP addresses and can't tell who you are, nothing is
+      shared with anyone, and it skips browsers that send Do Not Track. The server keeps short
+      technical logs, such as IP addresses, for security.
+    </p>
+  </article>
+</Base>

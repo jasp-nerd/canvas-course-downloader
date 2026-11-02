@@ -1,0 +1,24 @@
+{
+  "course": "Academic Writing",
+  "courseId": "104",
+  "sourceUrl": "https://canvas.yourschool.edu/courses/104",
+  "exportDate": "2026-10-24T14:06:20.458Z",
+  "extensionVersion": "3.0.0",
+  "counts": {
+    "files": 24,
+    "pages": 4,
+    "assignments": 5,
+    "announcements": 3,
+    "discussions": 3,
+    "discussionReplies": 12,
+    "studentSubmissions": 4,
+    "gradebookStudents": 0,
+    "quizzes": 2,
+    "modules": 6,
+    "extractedFiles": 0,
+    "inaccessibleLinkedFiles": 0,
+    "skippedIncremental": 0,
+    "skippedFilters": 0,
+    "total": 50
+  }
+}
