@@ -19,7 +19,7 @@ export const STORE = {
   chrome: 'https://chromewebstore.google.com/detail/mmnmcnffbkcnhcjiidmdnaclpfeekiol',
   // Empty means no listing: pages then send Firefox and Edge visitors to what works today.
   firefox: 'https://addons.mozilla.org/firefox/addon/canvas-course-downloader/',
-  edge: 'https://microsoftedge.microsoft.com/addons/detail/emhdfhcmiabgphmeohfplkbeloeamjak',
+  edge: 'https://microsoftedge.microsoft.com/addons/detail/canvas-course-downloader-/emhdfhcmiabgphmeohfplkbeloeamjak',
 };
 
 export const LINKS = {

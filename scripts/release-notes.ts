@@ -25,7 +25,7 @@ export function installFor(version: string): string {
   return [
     '**Install from a store** to get updates by themselves:',
     '[Chrome Web Store](https://chromewebstore.google.com/detail/mmnmcnffbkcnhcjiidmdnaclpfeekiol) (also Brave and other Chromium browsers),',
-    '[Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/emhdfhcmiabgphmeohfplkbeloeamjak),',
+    '[Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/canvas-course-downloader-/emhdfhcmiabgphmeohfplkbeloeamjak),',
     '[Firefox Add-ons](https://addons.mozilla.org/firefox/addon/canvas-course-downloader/). A store can take a few days to show a new version.',
     '',
     '| File | For |',

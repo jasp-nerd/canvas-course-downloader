@@ -29,7 +29,7 @@ Free and open source. No account, no API token and no tracking: it talks only to
       <sub>Chrome, Brave and other Chromium</sub>
     </td>
     <td align="center" width="230">
-      <a href="https://microsoftedge.microsoft.com/addons/detail/emhdfhcmiabgphmeohfplkbeloeamjak"><img src="media/readme/edge.svg" width="48" height="48" alt=""><br><b>Edge Add-ons</b></a><br>
+      <a href="https://microsoftedge.microsoft.com/addons/detail/canvas-course-downloader-/emhdfhcmiabgphmeohfplkbeloeamjak"><img src="media/readme/edge.svg" width="48" height="48" alt=""><br><b>Edge Add-ons</b></a><br>
       <sub>Microsoft Edge</sub>
     </td>
     <td align="center" width="230">
