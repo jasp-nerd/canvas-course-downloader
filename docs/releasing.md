@@ -26,7 +26,7 @@ The website sends people to the stores first: a hand-loaded copy doesn't update 
 | secret | `CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL`, `CHROME_SERVICE_ACCOUNT_PRIVATE_KEY` | a Google Cloud service account added in the Chrome Web Store dashboard (Account). The v1.1 API stopped working on 15 October 2026 |
 | variable | `CHROME_EXTENSION_ID` | `mmnmcnffbkcnhcjiidmdnaclpfeekiol` |
 | variable | `CHROME_PUBLISHER_ID` | the Chrome Web Store dashboard |
-| variable | `CHROME_PUBLISH_TYPE` (optional) | `STAGED_PUBLISH`: after Google approves, you press Publish |
+| variable | `CHROME_PUBLISH_TYPE` (optional, not set) | `STAGED_PUBLISH` makes you press Publish after Google approves. Unset, Chrome publishes on approval, like Firefox and Edge |
 | secret | `FIREFOX_JWT_ISSUER`, `FIREFOX_JWT_SECRET` | addons.mozilla.org › Manage API keys |
 | variable | `FIREFOX_EXTENSION_ID` | `canvas-course-downloader@jasp-nerd` |
 | secret | `EDGE_CLIENT_ID`, `EDGE_API_KEY` | Partner Center › Microsoft Edge › Publish API. The key expires (the current one on 13 January 2027): make a new one there and run `scripts/github-store-setup.sh` again |
@@ -47,7 +47,7 @@ Before the first real submission, run `submit.yml` by hand with `dry_run` on.
 1. Bump `version` in `package.json`. In `CHANGELOG.md`, rename `## X.Y.Z (unreleased)` to `## X.Y.Z (YYYY-MM-DD)`. Run `pnpm verify` and `pnpm test:firefox`.
 2. Merge to `main`, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
 3. Read the draft release and its files on GitHub, then publish it.
-4. Approve `store-submit`. Firefox and Edge publish once their review passes. Once Chrome approves the update, press Publish there if staged publishing is on.
+4. Approve `store-submit`. Each store publishes by itself once its review passes.
 
 ## The website
 

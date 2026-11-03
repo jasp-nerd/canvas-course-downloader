@@ -23,6 +23,7 @@ gh variable set CHROME_EXTENSION_ID -R "$REPO" --body mmnmcnffbkcnhcjiidmdnaclpf
 gh variable set CHROME_PUBLISHER_ID -R "$REPO" --body "$(val CHROME_PUBLISHER_ID "$DIR/cws.env")"
 gh variable set FIREFOX_EXTENSION_ID -R "$REPO" --body canvas-course-downloader@jasp-nerd
 gh variable set EDGE_PRODUCT_ID -R "$REPO" --body "$(val EDGE_PRODUCT_ID "$DIR/edge.env")"
-gh variable set CHROME_PUBLISH_TYPE -R "$REPO" --body STAGED_PUBLISH
+# Chrome publishes as soon as Google approves: the approval on store-submit is the human step.
+gh variable delete CHROME_PUBLISH_TYPE -R "$REPO" 2>/dev/null || true
 echo "Done: store-submit needs your approval and only runs for v* tags. Secrets:"
 gh secret list -R "$REPO" | cut -f1
