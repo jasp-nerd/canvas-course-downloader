@@ -7,7 +7,7 @@ How a version goes from a tag to the stores, and how the website goes live. CI b
 | Workflow | Runs on | Does |
 | --- | --- | --- |
 | `release.yml` | a `v*.*.*` tag (or by hand, as a dry run) | `pnpm verify`; checks the tag matches `package.json`, the commit is on `main` and `CHANGELOG.md` has a dated section; builds the Chrome, Edge, Firefox and sources zips; rebuilds Firefox from the sources zip without git and compares it; attests the zips; drafts a GitHub release with the changelog section as notes |
-| `submit.yml` | publishing that draft (or by hand, dry run by default) | after approval on the `store-submit` environment, checks the checksums and attestations, then `wxt submit` to the Chrome Web Store and Firefox Add-ons |
+| `submit.yml` | publishing that draft (or by hand, dry run by default) | after approval on the `store-submit` environment, checks the checksums and attestations, then `wxt submit` to the Chrome Web Store, Firefox Add-ons and Edge Add-ons |
 
 Every release has the same four files, so these links always point at the newest one:
 
@@ -29,8 +29,10 @@ The website sends people to the stores first: a hand-loaded copy doesn't update 
 | variable | `CHROME_PUBLISH_TYPE` (optional) | `STAGED_PUBLISH`: after Google approves, you press Publish |
 | secret | `FIREFOX_JWT_ISSUER`, `FIREFOX_JWT_SECRET` | addons.mozilla.org › Manage API keys |
 | variable | `FIREFOX_EXTENSION_ID` | `canvas-course-downloader@jasp-nerd` |
+| secret | `EDGE_CLIENT_ID`, `EDGE_API_KEY` | Partner Center › Microsoft Edge › Publish API. The key expires (the current one on 13 January 2027): make a new one there and run `scripts/github-store-setup.sh` again |
+| variable | `EDGE_PRODUCT_ID` | the same Publish API page |
 
-Edge comes later: after the first Edge listing is made by hand, add `EDGE_CLIENT_ID`, `EDGE_API_KEY` (rotate every 72 days) and `EDGE_PRODUCT_ID`, and the `--edge-zip` line in `submit.yml`.
+`scripts/github-store-setup.sh` sets all of these from `~/.config/canvas-downloader/` without printing them.
 
 Before the first real submission, run `submit.yml` by hand with `dry_run` on.
 
@@ -45,7 +47,7 @@ Before the first real submission, run `submit.yml` by hand with `dry_run` on.
 1. Bump `version` in `package.json`. In `CHANGELOG.md`, rename `## X.Y.Z (unreleased)` to `## X.Y.Z (YYYY-MM-DD)`. Run `pnpm verify` and `pnpm test:firefox`.
 2. Merge to `main`, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
 3. Read the draft release and its files on GitHub, then publish it.
-4. Approve `store-submit`. Once Chrome approves the update, press Publish there if staged publishing is on.
+4. Approve `store-submit`. Firefox and Edge publish once their review passes. Once Chrome approves the update, press Publish there if staged publishing is on.
 
 ## The website
 

@@ -17,9 +17,12 @@ node -p 'require(process.argv[1]).client_email' "$DIR/cws-key.json" | gh secret 
 node -p 'require(process.argv[1]).private_key' "$DIR/cws-key.json" | gh secret set CHROME_SERVICE_ACCOUNT_PRIVATE_KEY -R "$REPO"
 val FIREFOX_JWT_ISSUER "$DIR/amo.env" | gh secret set FIREFOX_JWT_ISSUER -R "$REPO"
 val FIREFOX_JWT_SECRET "$DIR/amo.env" | gh secret set FIREFOX_JWT_SECRET -R "$REPO"
+val EDGE_CLIENT_ID "$DIR/edge.env" | gh secret set EDGE_CLIENT_ID -R "$REPO"
+val EDGE_API_KEY "$DIR/edge.env" | gh secret set EDGE_API_KEY -R "$REPO"
 gh variable set CHROME_EXTENSION_ID -R "$REPO" --body mmnmcnffbkcnhcjiidmdnaclpfeekiol
 gh variable set CHROME_PUBLISHER_ID -R "$REPO" --body "$(val CHROME_PUBLISHER_ID "$DIR/cws.env")"
 gh variable set FIREFOX_EXTENSION_ID -R "$REPO" --body canvas-course-downloader@jasp-nerd
+gh variable set EDGE_PRODUCT_ID -R "$REPO" --body "$(val EDGE_PRODUCT_ID "$DIR/edge.env")"
 gh variable set CHROME_PUBLISH_TYPE -R "$REPO" --body STAGED_PUBLISH
 echo "Done: store-submit needs your approval and only runs for v* tags. Secrets:"
 gh secret list -R "$REPO" | cut -f1
