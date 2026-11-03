@@ -1,4 +1,4 @@
-# Sends a published release to the stores, after jasp approves the store-submit environment.
+# Sends a published release to the Chrome Web Store, Firefox Add-ons and Edge Add-ons, after jasp approves the store-submit environment.
 # Uses the exact zips release.yml built and attested; never rebuilds them.
 name: Submit to stores
 
@@ -61,9 +61,13 @@ jobs:
           FIREFOX_EXTENSION_ID: ${{ vars.FIREFOX_EXTENSION_ID }}
           FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
           FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+          # Partner Center › Publish API. The key expires; make a new one there before it does.
+          EDGE_PRODUCT_ID: ${{ vars.EDGE_PRODUCT_ID }}
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
         run: |
           args="--chrome-zip dist/canvas-course-downloader-chrome.zip"
           args="$args --firefox-zip dist/canvas-course-downloader-firefox.zip --firefox-sources-zip dist/canvas-course-downloader-sources.zip"
-          # Add --edge-zip dist/canvas-course-downloader-edge.zip and the EDGE_* settings once the Edge listing exists.
+          args="$args --edge-zip dist/canvas-course-downloader-edge.zip"
           if [ "$DRY_RUN" = "true" ]; then args="$args --dry-run"; fi
           pnpm exec wxt submit $args
