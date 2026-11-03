@@ -227,7 +227,7 @@ async function edge() {
     rating: p.averageRating || null,
     ratings: p.ratingCount ?? null,
     version: p.version ?? null,
-    url: `https://microsoftedge.microsoft.com/addons/detail/${id}`,
+    url: `https://microsoftedge.microsoft.com/addons/detail/canvas-course-downloader-/${id}`,
   };
 }
 

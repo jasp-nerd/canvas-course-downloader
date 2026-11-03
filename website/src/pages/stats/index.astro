@@ -84,7 +84,11 @@ import Base from '../../layouts/Base.astro';
       ${lines}</svg><figcaption class="legend">${legend}</figcaption>`;
   }
 
-  /** What's live in a store, and what it's still reviewing. */
+  /** The newest GitHub release, like "3.0.1": what every store should end up with. */
+  let newest: string | null = null;
+
+  /** What's live in a store, what it's still reviewing, and whether the newest release is missing.
+   *  Edge can't say what it's reviewing, so there "not live yet" is all we know. */
   function status(s: Stats | undefined) {
     const st = s?.status;
     if (!st) return '';
@@ -92,6 +96,8 @@ import Base from '../../layouts/Base.astro';
     if (st.live) parts.push(`<span class="pill live">Live ${esc(st.live)}</span>`);
     else parts.push('<span class="pill">Not public</span>');
     if (st.review) parts.push(`<span class="pill review">In review ${esc(st.review)}</span>`);
+    else if (newest && st.live && st.live !== newest)
+      parts.push(`<span class="pill">${esc(newest)} not live yet</span>`);
     return `<p class="pills">${parts.join(' ')}</p>`;
   }
 
@@ -127,6 +133,7 @@ import Base from '../../layouts/Base.astro';
       ['edge', 'Edge', '#0E7CD3'],
     ]);
 
+    newest = now.github?.latestRelease?.replace(/^v/, '') ?? null;
     $('stores').innerHTML =
       store('Chrome', now.chrome, 'Weekly users') +
       store('Firefox', now.firefox, 'Daily users') +
