@@ -2,7 +2,7 @@
   "name": "canvas-course-downloader",
   "description": "Download your Canvas courses in one click, before you lose access: every file, page, assignment and grade. Free, no API token.",
   "homepage": "https://coursedownloader.com",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "private": true,
   "type": "module",
   "license": "MIT",

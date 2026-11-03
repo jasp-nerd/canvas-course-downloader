@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0.1 (unreleased)
+## 3.0.1 (2026-11-03)
 
 - The receipt after a download fits more on a laptop screen: a lower band at the top, and the card to buy me a coffee or rate the extension at the top of the right column instead of below the fold.
 
