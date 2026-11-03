@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.1 (unreleased)
+
+- The receipt after a download fits more on a laptop screen: a lower band at the top, and the card to buy me a coffee or rate the extension at the top of the right column instead of below the fold.
+
 ## 3.0.0 (2026-11-02)
 
 A rewrite of the whole extension. Your settings and the list of files you already downloaded carry over.

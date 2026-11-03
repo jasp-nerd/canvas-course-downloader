@@ -83,6 +83,11 @@
   </section>
 
   <div class="aside">
+    <!-- First, so it's on screen without scrolling. It only shows when every file was saved,
+         so it never pushes a warning about missing files down. -->
+    {#if showSupport}
+      <SupportCard mode={showSupport} />
+    {/if}
     <Notices {course} />
     {#if agents}
       <section class="card side-card" aria-labelledby="agent-title">
@@ -114,8 +119,14 @@
     {:else if zip && explain}
       <OpeningIt {course} {isWindows} />
     {/if}
-    {#if showSupport}
-      <SupportCard mode={showSupport} />
-    {/if}
   </div>
 </main>
+
+<style>
+  /* One column: the notes and next steps come before the counts, so they aren't below the fold. */
+  @media (max-width: 1040px) {
+    .aside {
+      order: -1;
+    }
+  }
+</style>

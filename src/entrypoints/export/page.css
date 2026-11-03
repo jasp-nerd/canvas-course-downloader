@@ -153,6 +153,26 @@ code {
   overflow-wrap: anywhere;
 }
 
+/* Short screens (most laptops): a lower band, so the cards below start higher. */
+@media (max-height: 900px) {
+  .band {
+    padding-top: 22px;
+  }
+  .band-text {
+    gap: 8px;
+    padding-bottom: 22px;
+  }
+  .band-text h1 {
+    font-size: 44px;
+  }
+  .band-actions {
+    margin-top: 6px;
+  }
+  .band > img.band-pip {
+    max-height: 190px;
+  }
+}
+
 @media (max-width: 1040px) {
   .topbar {
     padding: 0 16px;

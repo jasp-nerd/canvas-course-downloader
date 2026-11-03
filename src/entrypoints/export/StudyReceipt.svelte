@@ -126,6 +126,8 @@
   </section>
 
   <div class="aside">
+    <!-- First, so it's on screen without scrolling; it only shows when every file was saved. -->
+    {#if showSupport}<SupportCard mode={showSupport} />{/if}
     <Notices {course} />
     <section class="card side-card pack" aria-labelledby="pack-title">
       <div class="card-head">
@@ -176,7 +178,6 @@
         >Also want it for Claude Code or Cursor? Download the course again as Files for code.</span
       >
     </div>
-    {#if showSupport}<SupportCard mode={showSupport} />{/if}
   </div>
 </main>
 
